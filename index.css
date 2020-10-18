@@ -128,9 +128,8 @@ code[class*="language-"] {
 .nd-canvas {
     outline: none;
     /*background-color: #444;*/
-    background: url("img/abstract-background-4675153_1280.webp");
+    background: url("img/abstract-background-4675153_1280_grey.jpg");
     background-size: cover;
-    filter: grayscale(100);
     width: 100%;
     height: 100%;
 }
