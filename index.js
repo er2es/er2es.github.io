@@ -72,14 +72,14 @@
 
                     if (searchBar.classList.contains("hidden")) {
                         searchBar.classList.remove("hidden");
-                        searchButton.firstElementChild.src = "x.svg";
+                        searchButton.firstElementChild.src = "img/x.svg";
                         searchInput.focus()
                         searchInput.select();
                     }
                     else {
                         searchBar.classList.add("hidden");
                         resetSearch();
-                        searchButton.firstElementChild.src = "search.svg";
+                        searchButton.firstElementChild.src = "img/search.svg";
                     }
                 });
                 document.getElementById("searchBar").addEventListener("submit", function(ev) {

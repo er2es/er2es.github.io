@@ -22,28 +22,28 @@
     <form id="searchBar" class="hidden">
         <input id="searchInput" type="text">
         <div id="searchIndicator">
-            <button id="searchIcon" type="submit"><img src="search-dark.svg"></button>
+            <button id="searchIcon" type="submit"><img src="img/search-dark.svg"></button>
             <span id="searchCount" class="hidden"></span>
         </div>
         <button id="searchNext" type="button" disabled="">
-            <img src="chevron-down.svg">
+            <img src="img/chevron-down.svg">
         </button>
         <button id="searchPrev" type="button" disabled="">
-            <img src="chevron-up.svg">
+            <img src="img/chevron-up.svg">
         </button>
     </form>
     <button id="searchButton">
-        <img src="search.svg">
+        <img src="img/search.svg">
     </button>
 
     <button id="langButton">
-        <img class="max-w-50" src="HU-Hungary-Flag-icon.png">
+        <img class="max-w-50" src="img/HU-Hungary-Flag-icon.png">
     </button>
 
     <div id="root" style="display: none;">
         <div class="noode">
             <h1 class="center">Szabó József</h1>
-            <p><center><img src="szj.jpg" class='szj'> </center> <p>
+            <p><center><img src="img/szj.jpg" class='szj'> </center> <p>
             <p class="center">webdeveloper & QA agent</p>
             <div class="link-container">
                 <span class="link" id="jumpContact" title='szabo.jozsef@onmail.com'  target="_blank"><img src="img/email-mail-sent.png" class="link-icon max-w-50"></span>
@@ -184,7 +184,7 @@
                 <p><a class='copyLink' href="mailto:szabo.jozsef@onmail.com">szabo.jozsef@onmail.com</a></p>
                 
             </div>
-            <div class="noode">
+            <div class="noode" style="overflow: hidden;">
                 
                        
                 <div class="fcf-body">
@@ -197,21 +197,21 @@
                         <div class="fcf-form-group">
                             <label for="Name" class="fcf-label ">Your name *</label>
                             <div class="fcf-input-group">
-                                <input type="text" id="Name" name="Name" class="fcf-form-control" required>
+                                <input type="text" autocomplete="off" id="Name" name="Name" class="fcf-form-control" required>
                             </div>
                         </div>
                 
                         <div class="fcf-form-group">
                             <label for="Email" class="fcf-label ">Your email address *</label>
                             <div class="fcf-input-group">
-                                <input type="email" id="Email" name="Email" class="fcf-form-control" required>
+                                <input type="email" autocomplete="off" id="Email" name="Email" class="fcf-form-control" required>
                             </div>
                         </div>
                 
                         <div class="fcf-form-group">
                             <label for="Message" class="fcf-label ">Your message *</label>
                             <div class="fcf-input-group">
-                                <textarea id="Message" name="Message" class="fcf-form-control" rows="5" maxlength="3000" required></textarea>
+                                <textarea id="Message" autocomplete="off" name="Message" class="fcf-form-control" rows="5" maxlength="3000" required></textarea>
                             </div>
                         </div>
                 
@@ -235,7 +235,7 @@
                 <p><a target="_blank" href="https://github.com/zlu883/noodel-js"> zlu883 / noodel-js</a></p>
                 <div class="noode">
                     <h3>...and of course on me</h3>
-                    <center><img src="szabo_jozsef_v1.jpg" class="szj2 greyscale"></center>
+                    <center><img src="img/szabo_jozsef_v1.jpg" class="szj2 greyscale"></center>
                 </div>
                
             </div>
@@ -258,10 +258,7 @@ $(document).ready(function() {
 
 	var mailto = $('.mailto-link');
 	var messageCopy = 'Click to copy email address';
-	var messageSuccess = 'Email address copied to clipboard';
-	
-	mailto.append('<span class="mailto-message"></span>');
-    $('.mailto-message').append(messageCopy);
+    var messageSuccess = 'Email address copied to clipboard';
     
     var isMobile = false; //initiate as false
         // device detection
@@ -270,6 +267,12 @@ $(document).ready(function() {
             isMobile = true;
         }
 
+    if(!isMobile) {
+        mailto.append('<span class="mailto-message"></span>');
+        $('.mailto-message').append(messageCopy);
+    }
+    
+   
     // Disable opening your email client. yuk.
 	$(document).on('click', '.copyLink', function() {
         if(!isMobile) {
@@ -281,8 +284,6 @@ $(document).ready(function() {
 
     
     $(document).on('click', '.copyLink', function() {
-
-       
 
         //console.log(isMobile);
         
