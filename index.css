@@ -11,7 +11,7 @@ h1,h2,h3,p,label { font-family: 'elite'}
 
 .center {text-align:center}
 
-.szj {max-width:300px;border-radius:200px;}
+.szj {max-width:250px;border-radius:200px;}
 
 .szj2 {max-width:100px;border-radius:200px;}
 
@@ -176,7 +176,7 @@ code[class*="language-"] {
 
 @media (max-width: 800px) {
     .nd-noode {
-        max-width: 80vw;
+        max-width: 70vw;
     }
 
     .logo {
@@ -200,7 +200,7 @@ code[class*="language-"] {
     }
 
     .menu-item {
-        max-width: 280px;
+        max-width: 250px;
     }
 }
 
