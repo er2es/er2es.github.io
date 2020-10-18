@@ -13,6 +13,14 @@ h1,h2,h3,p,label { font-family: 'elite'}
     overflow:hidden;
 }
 
+.nd-child-indicator-expanded::after {
+
+    border-left: 0.5em solid #000 !important;
+    left: 0 !important;
+}
+
+
+
 .center {text-align:center}
 
 .szj {max-width:220px;border-radius:200px;}
@@ -22,6 +30,8 @@ h1,h2,h3,p,label { font-family: 'elite'}
 .greyscale {filter: grayscale(100%);}
 
 .max-w-50 {max-width:50px;}
+
+.max-w-40 {max-width:40px;}
 
 @font-face {
     font-family: 'elite';
@@ -118,14 +128,16 @@ code[class*="language-"] {
 .nd-canvas {
     outline: none;
     /*background-color: #444;*/
-    background: url("img/3t1nPQ.webp");
+    background: url("img/abstract-background-4675153_1280.webp");
     background-size: cover;
+    filter: grayscale(100);
     width: 100%;
     height: 100%;
 }
 
 .nd-noode, .nd-child-indicator {
     background-color: #cac7d2;
+    border: 1px solid #000;
 }
 
 .nd-noode {
@@ -135,6 +147,7 @@ code[class*="language-"] {
 
 .nd-noode-active, .nd-child-indicator-active {
     background-color: white;
+    border: 1px solid #000;
 }
 
 .nd-branch-inner {
