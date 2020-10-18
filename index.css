@@ -300,14 +300,17 @@ code[class*="language-"] {
     max-width: 130px;
     background-color: white;
     font-family: inherit;
+    text-align: left;
 }
 
 #searchIndicator {
     min-width: 35px;
     padding: 0 .3em;
     height: 1.5em;
-    border-top-right-radius: .3em;
-    border-bottom-right-radius: .3em;
+    margin:2px;
+    /*border-top-right-radius: .3em;
+    border-bottom-right-radius: .3em;*/
+    border-radius:.3em;
     background-color: white;
     box-sizing: border-box;
 }
@@ -547,7 +550,7 @@ label.fcf-label {
 
 .fcf-btn:focus, .fcf-btn.focus {
     outline: 0;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.25);
 }
 
 .fcf-btn-primary {
@@ -564,9 +567,9 @@ label.fcf-label {
 
 .fcf-btn-primary:focus, .fcf-btn-primary.focus {
     color: #fff;
-    background-color: #0069d9;
-    border-color: #0062cc;
-    box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.5);
+    background-color: #000;
+    border-color: #000;
+    box-shadow: 0 0 0 0.2rem rgba(0, 0, 0, 0.5);
 }
 
 .fcf-btn-lg, .fcf-btn-group-lg>.fcf-btn {
