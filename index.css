@@ -7,7 +7,7 @@
     color: #222222;
 }
 
-h1,h2,h3,p,label { font-family: 'elite'}
+h1,h2,h3,h4,p,label { font-family: 'elite'}
 
 #_29 > div.nd-branch.nd-branch-focal > div > div.nd-noode-box.nd-noode-box-active {
     overflow:hidden;
@@ -32,6 +32,8 @@ h1,h2,h3,p,label { font-family: 'elite'}
 .max-w-50 {max-width:50px;}
 
 .max-w-40 {max-width:40px;}
+
+.max-w-20 {max-width:20px;}
 
 @font-face {
     font-family: 'elite';

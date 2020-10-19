@@ -97,7 +97,8 @@
                 });
                 document.getElementById("searchPrev").addEventListener("click", toPrev);
                 document.getElementById("searchNext").addEventListener("click", toNext);
-                document.getElementById("jumpContact").addEventListener("click", toContact);
+                document.getElementById("jumpContact1").addEventListener("click", toContact);
+                document.getElementById("jumpContact2").addEventListener("click", toContact);
             }
         });
         
