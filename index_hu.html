@@ -29,7 +29,7 @@
     <script src="https://cdn.jsdelivr.net/npm/noodel/dist/noodel-full.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/noodel-search/dist/noodel-search.umd.min.js"></script>
     <script src="index.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/noodel/dist/noodel.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/noodel@2.3.1/dist/noodel.min.css">
     <link rel="stylesheet" href="index.css">
     <link rel="alternate" href="https://er2es.github.io/" hreflang="en-us" />
     <link rel="alternate" href="https://er2es.github.io/index_hu.html" hreflang="hu-hu" />
@@ -135,7 +135,7 @@
                 </div>
             </div>
             <div class="noode">
-                <h3>references</h3>
+                <h3>referenciák</h3>
                 <p>hamarosan!</p>
             </div>
         </div>
@@ -146,8 +146,8 @@
                 <p>majdnem mindenben</p>
                 <div class="noode">
                     <h4>+ új weboldal / webshop készítése</h4>
-                    <h4>+ teljesítmény optimalizálás</h4>
-                    <h4>+ hibajavítások </h4>
+                    <h4>+ teljesítmény optimalizálás (Google PageSpeed / GTMetrix)</h4>
+                    <h4>+ hibajavítások / egyedi fejlesztések </h4>
                     <h4>+ költözötetés / migráció </h4>
                     <h4>+ vírusírtás </h4>
                     <h4>+ stb. </h4>
@@ -155,11 +155,13 @@
 
             </div>
             <div class="noode">
-                <h3>egyéb php fejlesztések</h3>
-                <p>beszéljünk róla</p>
+                <h3>egyedi PHP fejlesztések</h3>
+                <p>Laravel vagy Codeigniter keretrendszerben</p>
+                <img src="img/w/ci.png" style="float: left;" class="max-w-50"/>
+                <img src="img/w/laravel.png" style="float: right;" class="max-w-50"/>
             </div>
             <div class="noode">
-                <h3>Limesurvey VAGY egyedi lekérdező felületek</h3>
+                <h3>Limesurvey VAGY egyedi lekérdező / kérdőív felületek</h3>
             </div>
             <div class="noode">
                 <h3>Excel / Access VBA programozás</h3>
@@ -188,21 +190,21 @@
                     <form id="fcf-form-id" class="fcf-form-class" method="post" action="https://usebasin.com/f/4c34d75b83e5">
                         
                         <div class="fcf-form-group">
-                            <label for="Name" class="fcf-label ">Your name *</label>
+                            <label for="Name" class="fcf-label ">Név *</label>
                             <div class="fcf-input-group">
                                 <input type="text" autocomplete="chrome-off" id="Name" name="Name" class="fcf-form-control" required>
                             </div>
                         </div>
                 
                         <div class="fcf-form-group">
-                            <label for="Email" class="fcf-label ">Your email address *</label>
+                            <label for="Email" class="fcf-label ">Email *</label>
                             <div class="fcf-input-group">
                                 <input type="email" autocomplete="chrome-off" id="Email" name="Email" class="fcf-form-control" required>
                             </div>
                         </div>
                 
                         <div class="fcf-form-group">
-                            <label for="Message" class="fcf-label ">Your message *</label>
+                            <label for="Message" class="fcf-label ">Üzenet *</label>
                             <div class="fcf-input-group">
                                 <textarea id="Message" autocomplete="chrome-off" name="Message" class="fcf-form-control" rows="5" maxlength="3000" required></textarea>
                             </div>
@@ -251,8 +253,8 @@ $(document).ready(function() {
 	$('a[href^=mailto]').addClass('mailto-link');
 
 	var mailto = $('.mailto-link');
-	var messageCopy = 'Click to copy email address';
-    var messageSuccess = 'Email address copied to clipboard';
+	var messageCopy = 'Kattints a másoláshoz!';
+    var messageSuccess = 'Email cím kimásolva!';
     
     var isMobile = false; //initiate as false
         // device detection
