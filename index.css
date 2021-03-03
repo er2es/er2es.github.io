@@ -130,9 +130,9 @@ code[class*="language-"] {
 .nd-canvas {
     outline: none;
     /* background-color: #444; */
-    background: url("img/johatter.jpg");
+    background: url(img/johatter.jpg);
     width: 100%;
-    box-shadow: 0 0 10px 10px white inset;
+    box-shadow: 0 0 10px 1px #ddd inset;
     height: 100%;
 }
 
