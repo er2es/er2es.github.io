@@ -129,10 +129,10 @@ code[class*="language-"] {
 
 .nd-canvas {
     outline: none;
-    /* background-color: #444; */
-    background: url(img/johatter.jpg);
+    background-color: #444;
+    /* background: url(img/johatter.jpg);*/
     width: 100%;
-    box-shadow: 0 0 10px 1px #ddd inset;
+    box-shadow: 0 0 5px 1px #fff inset;
     height: 100%;
 }
 
