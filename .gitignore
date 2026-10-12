@@ -1,0 +1,9 @@
+node_modules/
+app/dist/
+app/.angular/
+app/test-results/
+app/playwright-report/
+app/.privacy-terms.local
+specs/
+*.log
+.DS_Store
