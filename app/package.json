@@ -7,7 +7,8 @@
     "build": "node scripts/build-docs.mjs",
     "preview": "http-server ../docs -p 4300 -c-1",
     "test": "ng test --no-watch",
-    "check:contrast": "node scripts/check-contrast.mjs"
+    "check:contrast": "node scripts/check-contrast.mjs",
+    "portrait": "node scripts/portrait.mjs"
   },
   "private": true,
   "packageManager": "npm@12.2.0",

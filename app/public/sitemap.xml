@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://er2es.github.io/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://er2es.github.io/"/>
+    <xhtml:link rel="alternate" hreflang="hu" href="https://er2es.github.io/hu/"/>
+  </url>
+  <url>
+    <loc>https://er2es.github.io/hu/</loc>
+    <xhtml:link rel="alternate" hreflang="en" href="https://er2es.github.io/"/>
+    <xhtml:link rel="alternate" hreflang="hu" href="https://er2es.github.io/hu/"/>
+  </url>
+</urlset>
