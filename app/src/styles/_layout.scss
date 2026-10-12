@@ -1,0 +1,22 @@
+.wrap { width: min(100% - 2 * var(--gutter), 68rem); margin-inline: auto; }
+.measure { max-width: 44rem; }
+
+.block {
+  padding-block: clamp(3rem, 7vw, 6rem);
+  scroll-margin-top: calc(var(--bar-h) + 1.5rem);
+  outline: none;
+}
+.block + .block { border-top: 1px solid var(--line); }
+.block.alt { background: var(--bg-2); }
+
+.eyebrow { margin-bottom: 0.75rem; font: 500 var(--t-footnote) / 1 var(--mono); letter-spacing: 0.04em; color: var(--fg-2); }
+.lead { font-size: var(--t-title2); line-height: 1.4; }
+.lead + .lead { margin-top: 1rem; }
+.intro { margin-top: 0.75rem; color: var(--fg-2); max-width: 44rem; }
+
+.card { padding: 1.5rem; border-radius: var(--radius); background: var(--bg-2); }
+.block.alt .card { background: var(--bg); }
+
+@supports (corner-shape: squircle) {
+  .card, .glass { corner-shape: squircle; }
+}

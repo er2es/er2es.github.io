@@ -1,0 +1,25 @@
+.glass {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--glass-edge);
+  box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-edge);
+}
+
+// Chromium only: SVG displacement gives the lens-like edge. The class is set after first paint.
+html.refract .glass {
+  -webkit-backdrop-filter: url('#cv-refract') blur(18px) saturate(180%);
+  backdrop-filter: url('#cv-refract') blur(18px) saturate(180%);
+}
+
+@media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+  .glass {
+    background: var(--bg-2);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+    border-color: var(--line);
+  }
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass { background: var(--bg-2); }
+}
