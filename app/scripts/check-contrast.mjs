@@ -38,4 +38,15 @@ for (const [theme, label, fg, bg, min] of PAIRS) {
   if (!ok) failed = true;
   console.log(`${ok ? 'ok  ' : 'FAIL'} ${theme.padEnd(5)} ${label.padEnd(28)} ${fg}/${bg} ${r.toFixed(2)}${declared ? '' : '  (hex not in _tokens.scss)'}`);
 }
+// The dark token overrides must also be inlined in index.html's <style> so first paint is dark.
+const mixin = tokens.match(/@mixin dark \{([^}]*)\}/);
+if (!mixin) { console.log('FAIL @mixin dark block not found in _tokens.scss'); process.exit(1); }
+const indexStyle = (readFileSync(join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'index.html'), 'utf8').match(/<style>([\s\S]*?)<\/style>/) ?? [])[1] ?? '';
+const missing = [...new Set(mixin[1].match(/#[0-9a-fA-F]{6}/g) ?? [])].filter((h) => !indexStyle.toLowerCase().includes(h.toLowerCase()));
+if (missing.length) {
+  failed = true;
+  console.log('FAIL dark tokens missing from src/index.html <style>: ' + missing.join(', '));
+} else {
+  console.log('ok   dark tokens mirrored in src/index.html <style>');
+}
 process.exit(failed ? 1 : 0);

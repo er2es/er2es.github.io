@@ -13,7 +13,7 @@ html.refract .glass {
 }
 
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
-  .glass {
+  .glass, html.refract .glass {
     background: var(--bg-2);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
