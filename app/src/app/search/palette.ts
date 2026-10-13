@@ -36,7 +36,7 @@ type Entry =
         @if (entries().length) {
           <ul id="pal-list" class="list" role="listbox">
             @for (e of entries(); track $index) {
-              <li role="option" [id]="'pal-' + $index" [attr.aria-selected]="$index === index()" (click)="run(e)" (pointermove)="index.set($index)">{{ e.label }}</li>
+              <li role="option" [id]="'pal-' + $index" [attr.data-anchor]="anchorOf(e)" [attr.aria-selected]="$index === index()" (click)="run(e)" (pointermove)="index.set($index)">{{ e.label }}</li>
             }
           </ul>
         } @else {
@@ -135,6 +135,10 @@ export class Palette {
       const entry = this.entries()[this.index()];
       if (entry) this.run(entry);
     }
+  }
+
+  protected anchorOf(e: Entry): string | null {
+    return e.kind === 'doc' ? e.doc.anchor : e.kind === 'section' ? e.id : null;
   }
 
   protected backdrop(e: MouseEvent): void {

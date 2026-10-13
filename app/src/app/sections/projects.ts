@@ -4,7 +4,7 @@ import { FACT_BY_ID, FILES, PROJECT_ORDER, period, type SiteContent } from '../c
 @Component({
   selector: 'app-projects',
   template: `
-    <section id="projects" class="block" tabindex="-1" aria-labelledby="projects-h">
+    <section id="projects" class="block alt" tabindex="-1" aria-labelledby="projects-h">
       <div class="wrap">
         <p class="eyebrow mono">{{ file }}</p>
         <h2 id="projects-h">{{ c().ui.sections.projects }}</h2>
@@ -21,7 +21,7 @@ import { FACT_BY_ID, FILES, PROJECT_ORDER, period, type SiteContent } from '../c
               @if (kw(id).length) {
                 <p class="tags"><span class="sr-only">{{ c().ui.tags }}: </span>@for (k of kw(id); track k) { <span>{{ k }}</span> }</p>
               }
-              @if (url(id); as u) { <p><a [attr.href]="u" rel="noopener">{{ c().projects.open }}</a></p> }
+              @if (url(id); as u) { <p><a [attr.href]="u">{{ c().projects.open }}</a></p> }
             </li>
           }
         </ul>
@@ -29,7 +29,7 @@ import { FACT_BY_ID, FILES, PROJECT_ORDER, period, type SiteContent } from '../c
     </section>
   `,
   styles: [`
-    .cards { display: grid; gap: 1rem; margin-top: 2rem; }
+    .cards { display: grid; gap: 1rem; margin-top: 1.5rem; }
     .card { display: grid; gap: 0.75rem; align-content: start; outline: none; }
     .per { color: var(--fg-2); font-size: var(--t-footnote); }
     .pts li { padding-left: 1rem; position: relative; }

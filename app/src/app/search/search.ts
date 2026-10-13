@@ -18,7 +18,7 @@ export function buildDocs(c: SiteContent): SearchDoc[] {
       section: f.kind === 'job' ? 'experience' : 'projects',
       title: t.org ? `${t.title} · ${t.org}` : t.title,
       text: [t.summary ?? '', ...t.points, ...f.keywords, period(f)].join(' '),
-      anchor: f.kind === 'job' ? 'experience' : `p-${f.id}`,
+      anchor: f.kind === 'job' ? `job-${f.id}` : `p-${f.id}`,
     });
   }
 
@@ -27,16 +27,16 @@ export function buildDocs(c: SiteContent): SearchDoc[] {
       id: `skills:${g.group}`,
       section: 'skills',
       title: c.skills.groups[g.group],
-      text: g.items.map((s) => s.name).join(' '),
-      anchor: 'skills',
+      text: g.items.map((s) => s.label?.[c.lang] ?? s.name).join(' '),
+      anchor: `skills-${g.group}`,
     });
   }
 
   const a = c.about;
   docs.push(
-    { id: 'about:education', section: 'about', title: a.education.heading, text: a.education.items.join(' '), anchor: 'about' },
-    { id: 'about:languages', section: 'about', title: a.languages.heading, text: a.languages.items.join(' '), anchor: 'about' },
-    { id: 'about:award', section: 'about', title: a.award.heading, text: a.award.text, anchor: 'about' },
+    { id: 'about:education', section: 'about', title: a.education.heading, text: a.education.items.join(' '), anchor: 'about-education' },
+    { id: 'about:languages', section: 'about', title: a.languages.heading, text: a.languages.items.join(' '), anchor: 'about-languages' },
+    { id: 'about:award', section: 'about', title: a.award.heading, text: a.award.text, anchor: 'about-award' },
     { id: 'section:contact', section: 'contact', title: c.ui.sections.contact, text: `${c.contact.text} ${c.contact.workMode} ${EMAIL}`, anchor: 'contact' },
   );
   return docs;

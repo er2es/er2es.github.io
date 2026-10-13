@@ -30,7 +30,7 @@ describe('search', () => {
 
   it('builds a CV context that includes the email once and the content', () => {
     const ctx = buildCvContext(getContent('en'));
-    expect(ctx).toContain('claude@mbvk.hu');
+    expect(ctx).toContain('szabo.jozsef.acc@gmail.com');
     expect(ctx).toContain('Symfony');
   });
 });

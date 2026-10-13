@@ -11,7 +11,7 @@ for (const f of readdirSync(cv)) {
   if (/\.pdf$/i.test(f)) {
     const text = execFileSync('pdftotext', ['-enc', 'UTF-8', join(cv, f), '-'], { encoding: 'utf8' });
     for (const m of text.match(/\+?36[\s\-/]*\d{1,2}[\s\-/]*\d{3}[\s\-/]*\d{2}[\s\-/]*\d{2}/g) ?? []) terms.add(`digits:${m.replace(/\D/g, '')}`);
-    for (const m of text.match(/[\w.+-]+@[\w-]+\.[\w.]+/g) ?? []) if (m !== 'claude@mbvk.hu') terms.add(`text:${m}`);
+    for (const m of text.match(/[\w.+-]+@[\w-]+\.[\w.]+/g) ?? []) if (m.toLowerCase() !== 'szabo.jozsef.acc@gmail.com') terms.add(`text:${m}`);
   }
   if (/\.jpe?g$/i.test(f)) terms.add(`text:${f.replace(/\.[^.]+$/, '')}`);
 }

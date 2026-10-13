@@ -2,7 +2,7 @@
 .measure { max-width: 44rem; }
 
 .block {
-  padding-block: clamp(3rem, 7vw, 6rem);
+  padding-block: clamp(2rem, 4.5vw, 3.5rem);
   scroll-margin-top: calc(var(--bar-h) + 1.5rem);
   outline: none;
 }
@@ -12,11 +12,16 @@
 .eyebrow { margin-bottom: 0.75rem; font: 500 var(--t-footnote) / 1 var(--mono); letter-spacing: 0.04em; color: var(--fg-2); }
 .lead { font-size: var(--t-title2); line-height: 1.4; }
 .lead + .lead { margin-top: 1rem; }
-.intro { margin-top: 0.75rem; color: var(--fg-2); max-width: 44rem; }
+.intro { margin-top: 0.5rem; color: var(--fg-2); max-width: 44rem; }
 
-.card { padding: 1.5rem; border-radius: var(--radius); background: var(--bg-2); }
-.block.alt .card { background: var(--bg); }
+.card { scroll-margin-top: calc(var(--bar-h) + 1.25rem); --card: var(--bg-2); padding: 1.25rem 1.5rem; border-radius: var(--radius); background: var(--card); }
+.block.alt .card { --card: var(--bg-3); }
 
 @supports (corner-shape: squircle) {
   .card, .glass { corner-shape: squircle; }
 }
+
+/* where a search result or an in-page link lands: a brief highlight (static under reduced motion) */
+.flash { animation: flash 1.4s ease-out; }
+@keyframes flash { 0% { background: color-mix(in srgb, var(--accent) 22%, transparent); } 100% { background: transparent; } }
+@media (prefers-reduced-motion: reduce) { .flash { animation: none; background: color-mix(in srgb, var(--accent) 16%, transparent); } }

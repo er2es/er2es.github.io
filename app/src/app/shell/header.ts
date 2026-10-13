@@ -1,4 +1,4 @@
-import { Component, afterNextRender, computed, inject, input, output, signal } from '@angular/core';
+import { Component, computed, inject, input, output } from '@angular/core';
 import { SECTION_IDS, type Locale, type SectionId, type SiteContent } from '../content/model';
 import { LangSwitch } from '../core/lang';
 import { anchorHref, inPageClick, pagePath } from '../core/nav';
@@ -15,10 +15,27 @@ import { Theme } from '../core/theme';
         }
       </nav>
       <div class="ctl">
-        <button type="button" class="chip" aria-keyshortcuts="Control+K Meta+K" (click)="palette.emit()">
-          {{ c().ui.palette.short }} <kbd aria-hidden="true">{{ mac() ? '⌘K' : 'Ctrl K' }}</kbd>
+        <button type="button" class="chip icon" aria-keyshortcuts="Control+K Meta+K" [attr.aria-label]="c().ui.palette.open" (click)="palette.emit()">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            <circle cx="11" cy="11" r="6.5" /><path d="M16 16l4.5 4.5" />
+          </svg>
         </button>
-        <button type="button" class="chip" (click)="theme.cycle()">{{ c().ui.theme.label }}: {{ themeLabel() }}</button>
+        <button type="button" class="chip icon" [attr.aria-label]="themeLabel()" (click)="theme.cycle()">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            @switch (theme.mode()) {
+              @case ('light') {
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" />
+              }
+              @case ('dark') {
+                <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" />
+              }
+              @default {
+                <circle cx="12" cy="12" r="8" /><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" />
+              }
+            }
+          </svg>
+        </button>
         <a class="chip" [attr.href]="otherHref()" [attr.lang]="other()" [attr.hreflang]="other()" (click)="switchLang($event)">{{ c().ui.otherLanguage }}</a>
       </div>
     </header>
@@ -33,10 +50,17 @@ import { Theme } from '../core/theme';
     .links { display: none; gap: 0.25rem; margin-inline: auto; }
     .links a { padding: 0.75rem 0.75rem; border-radius: 999px; color: var(--fg-2); text-decoration: none; font-size: var(--t-subhead); font-weight: 500; }
     .links a[aria-current] { color: var(--fg); background: color-mix(in srgb, var(--fg) 8%, transparent); }
-    .ctl { display: flex; margin-left: auto; }
-    .chip kbd { display: inline-block; min-width: 2.75rem; text-align: right; }
+    .ctl { display: flex; align-items: center; margin-left: auto; }
+    .chip.icon { width: 44px; padding: 0; justify-content: center; }
     @media (min-width: 900px) { .links { display: flex; } .ctl { margin-left: 0; } }
-    @media (max-width: 520px) { .ctl .chip:nth-child(2) { display: none; } }
+
+    /* large title -> inline title: the wordmark appears once the hero heading has scrolled away */
+    @media (prefers-reduced-motion: no-preference) {
+      @supports (animation-timeline: scroll()) {
+        .mark { animation: dock linear both; animation-timeline: scroll(root); animation-range: 90px 240px; }
+      }
+    }
+    @keyframes dock { from { opacity: 0; translate: 0 6px; } to { opacity: 1; translate: 0 0; } }
   `],
 })
 export class Header {
@@ -48,15 +72,10 @@ export class Header {
   protected readonly theme = inject(Theme);
   private readonly lang = inject(LangSwitch);
   protected readonly sections = SECTION_IDS;
-  protected readonly mac = signal(false);
   protected readonly other = computed<Locale>(() => (this.locale() === 'en' ? 'hu' : 'en'));
   protected readonly otherHref = computed(() => pagePath(this.other()));
   protected readonly home = computed(() => pagePath(this.locale()));
-  protected readonly themeLabel = computed(() => this.c().ui.theme[this.theme.mode()]);
-
-  constructor() {
-    afterNextRender(() => this.mac.set(/Mac|iPhone|iPad/.test(navigator.userAgent)));
-  }
+  protected readonly themeLabel = computed(() => `${this.c().ui.theme.label}: ${this.c().ui.theme[this.theme.mode()]}`);
 
   protected href(s: SectionId): string {
     return anchorHref(this.locale(), s);

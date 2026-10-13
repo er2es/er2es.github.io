@@ -17,7 +17,7 @@ describe('Seo', () => {
     ]);
     const ld = JSON.parse(document.head.querySelector('script[type="application/ld+json"]')!.textContent!);
     expect(Object.keys(ld).sort()).toEqual(['@context', '@type', 'email', 'jobTitle', 'name']);
-    expect(ld.email).toBe('claude@mbvk.hu');
+    expect(ld.email).toBe('szabo.jozsef.acc@gmail.com');
   });
 
   it('is idempotent', () => {

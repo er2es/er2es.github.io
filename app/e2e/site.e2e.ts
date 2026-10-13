@@ -1,9 +1,10 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
+const EMAIL = 'szabo.jozsef.acc@gmail.com';
 const PAGES = [
-  { url: '/', lang: 'en' },
-  { url: '/hu/', lang: 'hu' },
+  { url: '/', lang: 'en', name: 'József Szabó' },
+  { url: '/hu/', lang: 'hu', name: 'Szabó József' },
 ];
 
 const ready = async (page: Page, url: string) => {
@@ -19,11 +20,11 @@ for (const p of PAGES) {
       page.on('pageerror', (e) => errors.push(String(e)));
       await ready(page, p.url);
       await expect(page.locator('html')).toHaveAttribute('lang', p.lang);
-      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Szabó József');
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText(p.name);
       const html = await page.content();
       const emails = [...new Set(html.match(/[\w.+-]+@[\w-]+\.[\w.]+/g) ?? [])];
-      expect(emails).toEqual(['claude@mbvk.hu']);
-      expect(html).not.toMatch(/\+36|gmail/i);
+      expect(emails).toEqual([EMAIL]);
+      expect(html).not.toMatch(/\+36/);
       expect(errors).toEqual([]);
     });
 
@@ -69,29 +70,43 @@ test('language switch is an in-app navigation and keeps hreflang correct', async
   expect(await page.evaluate(() => (window as unknown as { __m?: number }).__m)).toBe(1); // no full reload
 });
 
-test.describe('Hungarian browser', () => {
-  test.use({ locale: 'hu-HU' });
-  test('sees the discreet Hungarian prompt on the English page only, and can dismiss it', async ({ page }) => {
-    await ready(page, '/');
-    const banner = page.getByRole('region', { name: 'Nyelv' });
-    await expect(banner).toBeVisible();
-    await banner.getByRole('button', { name: 'Bezár' }).click();
-    await expect(banner).toBeHidden();
-    await page.reload();
-    await page.waitForLoadState('networkidle');
-    await expect(page.getByRole('region', { name: 'Nyelv' })).toHaveCount(0);
+test.describe('browser language detection', () => {
+  test.describe('Hungarian browser', () => {
+    test.use({ locale: 'hu-HU' });
+    test('/ goes to the Hungarian page before first paint', async ({ page }) => {
+      await page.goto('/');
+      await expect(page).toHaveURL(/\/hu\/$/);
+      await expect(page.locator('html')).toHaveAttribute('lang', 'hu');
+    });
+    test('an explicit choice of English wins over the browser language', async ({ page }) => {
+      await page.addInitScript(() => localStorage.setItem('cv:lang', 'en'));
+      await page.goto('/');
+      await expect(page).toHaveURL(/\/$/);
+      await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+    });
+    test('switching to English from the Hungarian page sticks', async ({ page }) => {
+      await ready(page, '/hu/');
+      await page.getByRole('link', { name: 'English' }).first().click();
+      await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+      await page.goto('/');
+      await expect(page).toHaveURL(/\/$/);
+      await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+    });
   });
-  test('does not see it on /hu/', async ({ page }) => {
-    await ready(page, '/hu/');
-    await expect(page.getByRole('region', { name: 'Nyelv' })).toHaveCount(0);
-  });
-});
-
-test.describe('English browser', () => {
-  test('never sees the Hungarian prompt', async ({ page }) => {
-    await ready(page, '/');
-    await expect(page.getByRole('region', { name: 'Nyelv' })).toHaveCount(0);
-  });
+  for (const locale of ['en-US', 'de-DE', 'fr-FR']) {
+    test.describe(`${locale} browser`, () => {
+      test.use({ locale });
+      test('stays on the English page', async ({ page }) => {
+        await ready(page, '/');
+        await expect(page).toHaveURL(/\/$/);
+        await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+      });
+      test('an explicit /hu/ link is respected', async ({ page }) => {
+        await ready(page, '/hu/');
+        await expect(page.locator('html')).toHaveAttribute('lang', 'hu');
+      });
+    });
+  }
 });
 
 test.describe('JavaScript disabled', () => {
@@ -99,7 +114,7 @@ test.describe('JavaScript disabled', () => {
   for (const p of PAGES) {
     test(`${p.url} is readable and navigable`, async ({ page }) => {
       await page.goto(p.url);
-      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Szabó József');
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText(p.name);
       await expect(page.locator('#experience')).toContainText('2021–2026');
       const hrefs = await page.locator('header nav a').evaluateAll((a) => a.map((x) => x.getAttribute('href')));
       expect(hrefs.every((h) => h!.startsWith(p.url))).toBe(true);
@@ -120,4 +135,70 @@ test('no horizontal scroll on a phone', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 780 });
   await ready(page, '/');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+});
+
+test.describe('search results land exactly on their target', () => {
+  for (const p of PAGES) {
+    test(`${p.url}: every result exists and is shown below the header`, async ({ page }) => {
+      await ready(page, p.url);
+      const queries = ['php', 'qa', 'symfony', 'wordpress', 'laravel', 'egyetem', 'university', 'tesztel', 'tester', 'postgre', 'angular', 'survey', 'kérdőív', 'english', 'angol', 'education', 'tanulm', 'award', 'elismer', 'contact', 'kapcsolat', 'profile', 'profil', 'audit', 'fuzzphony', 'seeddms', 'vba'];
+      const open = async (q: string) => {
+        await page.keyboard.press('Control+k');
+        await page.getByRole('dialog').waitFor();
+        await page.keyboard.type(q);
+        // the list re-renders one frame after the last keystroke: wait for it before reading or clicking
+        await page.evaluate(() => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))));
+      };
+      const seen = new Map<string, string>(); // anchor -> query that finds it
+      for (const q of queries) {
+        await open(q);
+        const anchors = await page.getByRole('dialog').getByRole('option').evaluateAll((os) => os.map((o) => o.getAttribute('data-anchor')).filter(Boolean) as string[]);
+        for (const a of anchors) if (!seen.has(a)) seen.set(a, q);
+        await page.keyboard.press('Escape');
+        await expect(page.getByRole('dialog')).toBeHidden();
+      }
+      expect(seen.size).toBeGreaterThanOrEqual(14);
+      for (const [anchor, q] of seen) {
+        await open(q);
+        await page.getByRole('dialog').locator(`[role=option][data-anchor="${anchor}"]`).first().click();
+        await expect(page.getByRole('dialog')).toBeHidden();
+        await page.waitForFunction((id) => {
+          const el = document.getElementById(id);
+          if (!el) return false;
+          const r = el.getBoundingClientRect();
+          const header = document.querySelector('header')!.getBoundingClientRect().bottom;
+          const atBottom = window.scrollY >= document.documentElement.scrollHeight - window.innerHeight - 2;
+          // lands just under the fixed header; targets near the page end cannot reach the top, they must still be in view
+          return atBottom ? r.bottom > header && r.top < window.innerHeight : r.top >= header - 2 && r.top < window.innerHeight * 0.6;
+        }, anchor, { timeout: 4000 }).catch(async (e) => {
+          const m = await page.evaluate((id) => { const el = document.getElementById(id); const r = el?.getBoundingClientRect(); return { id, found: !!el, top: r?.top, bottom: r?.bottom, header: document.querySelector('header')!.getBoundingClientRect().bottom, sy: scrollY, max: document.documentElement.scrollHeight - innerHeight }; }, anchor);
+          throw new Error(`result ${JSON.stringify(m)} (query "${q}"): ${e.message}`);
+        });
+        if (anchor.startsWith('job-')) {
+          expect(await page.locator(`#${anchor} details`).evaluate((d) => (d as HTMLDetailsElement).open)).toBe(true);
+        }
+      }
+    });
+  }
+});
+
+test.describe('easter egg', () => {
+  test('console hint, and three Shifts open "Under the hood" with live numbers', async ({ page }) => {
+    const logs: string[] = [];
+    page.on('console', (m) => logs.push(m.text()));
+    await ready(page, '/');
+    expect(logs.some((l) => /stat/.test(l) && /shift shift shift/.test(l) && /Geralt/.test(l))).toBe(true);
+    await page.keyboard.press('Shift');
+    await page.keyboard.press('Shift');
+    await page.keyboard.press('Shift');
+    const dlg = page.getByRole('dialog', { name: 'Under the hood' });
+    await expect(dlg).toBeVisible();
+    await expect(dlg.getByText('Third-party requests')).toBeVisible();
+    await expect(dlg.locator('dd').nth(1)).toHaveText('0'); // third-party requests
+    await expect(dlg.locator('dd').nth(2)).toHaveText('0'); // cookies
+    const r = await new AxeBuilder({ page }).include('dialog').analyze();
+    expect(r.violations).toEqual([]);
+    await page.keyboard.press('Escape');
+    await expect(dlg).toBeHidden();
+  });
 });

@@ -1,6 +1,6 @@
 export type Locale = 'en' | 'hu';
 export const SITE_URL = 'https://er2es.github.io';
-export const EMAIL = 'claude@mbvk.hu';
+export const EMAIL = 'szabo.jozsef.acc@gmail.com';
 
 export type SectionId = 'profile' | 'experience' | 'skills' | 'projects' | 'about' | 'contact';
 export const SECTION_IDS: readonly SectionId[] = ['profile', 'experience', 'skills', 'projects', 'about', 'contact'];
@@ -33,7 +33,7 @@ export interface Fact {
 
 export const FACTS: readonly Fact[] = [
   { id: 'chamber', kind: 'job', main: true, inGraph: true, start: 2021, end: 2026,
-    keywords: ['Legacy PHP refactor', 'WordPress multisite', 'SASS', 'Node', 'Bootstrap 4', 'PostgreSQL', 'MariaDB', 'RHEL', 'Symfony', 'Angular', 'QA', 'GitLab', 'CI/CD'] },
+    keywords: ['Symfony', 'Angular', 'PostgreSQL', 'MariaDB', 'GitLab', 'CI/CD', 'RHEL', 'Legacy PHP refactor', 'WordPress multisite', 'SASS', 'Node', 'Bootstrap 4', 'QA'] },
   { id: 'uni-med', kind: 'job', main: true, inGraph: true, start: 2020, end: 2021,
     keywords: ['WordPress multisite', 'SASS', 'Node', 'Bootstrap 4', 'Laravel'] },
   { id: 'uni-admin', kind: 'job', main: true, inGraph: true, start: 2016, end: 2020,
@@ -48,9 +48,9 @@ export const FACTS: readonly Fact[] = [
     keywords: ['SeedDMS', 'Ubuntu'] },
   { id: 'health-inst', kind: 'job', main: false, inGraph: true, start: 2014, end: 2015,
     keywords: ['LimeSurvey', 'MySQL', 'Excel VBA', 'MS Access'] },
-  { id: 'wordpress', kind: 'project', main: false, inGraph: true, start: 2016, end: 2021,
+  { id: 'wordpress', kind: 'project', main: false, inGraph: false, start: 2016, end: 2021,
     keywords: ['WordPress', 'PHP 7', 'CDN'] },
-  { id: 'sport-programme', kind: 'project', main: false, inGraph: true, start: 2013, end: 2015, keywords: [] },
+  { id: 'sport-programme', kind: 'project', main: false, inGraph: false, start: 2013, end: 2015, keywords: [] },
   { id: 'fuzzphony', kind: 'project', main: false, inGraph: false, start: null, end: null,
     url: 'https://github.com/er2es/fuzzphony', keywords: ['PHP', 'Symfony', 'PostgreSQL'] },
   { id: 'gov-reporting', kind: 'project', main: false, inGraph: false, start: 2015, end: 2020,
@@ -76,50 +76,54 @@ export type SkillGroupId = 'backend' | 'frontend' | 'database' | 'devops' | 'qua
 
 export interface SkillFact {
   name: string;
-  /** Items whose CV keywords or description mention this skill. Empty: shown without evidence. */
-  usedIn: readonly ItemId[];
+  /** Display name where it differs by language (tool names stay as they are). */
+  label?: Partial<Record<Locale, string>>;
 }
 
 export const SKILLS: readonly { group: SkillGroupId; items: readonly SkillFact[] }[] = [
   { group: 'backend', items: [
-    { name: 'PHP', usedIn: ['chamber', 'uni-admin', 'edu-authority', 'pricing-co', 'gov-reporting', 'wordpress', 'audit', 'fuzzphony'] },
-    { name: 'Symfony', usedIn: ['chamber', 'fuzzphony'] },
-    { name: 'Laravel', usedIn: ['uni-med', 'audit'] },
-    { name: 'WordPress', usedIn: ['chamber', 'uni-med', 'wordpress', 'gov-reporting'] },
-    { name: 'Node.js', usedIn: ['chamber', 'uni-med'] },
+    { name: 'PHP' },
+    { name: 'Symfony' },
+    { name: 'Laravel' },
+    { name: 'WordPress' },
+    { name: 'Node.js' },
   ] },
   { group: 'frontend', items: [
-    { name: 'Angular', usedIn: ['chamber'] },
-    { name: 'TypeScript / JavaScript', usedIn: ['chamber'] },
-    { name: 'SCSS', usedIn: ['chamber', 'uni-med'] },
-    { name: 'Bootstrap', usedIn: ['chamber', 'uni-med', 'audit'] },
+    { name: 'Angular' },
+    { name: 'TypeScript' },
+    { name: 'JavaScript' },
+    { name: 'jQuery' },
+    { name: 'SCSS' },
+    { name: 'Bootstrap' },
   ] },
   { group: 'database', items: [
-    { name: 'PostgreSQL', usedIn: ['chamber', 'fuzzphony'] },
-    { name: 'MariaDB', usedIn: ['chamber'] },
-    { name: 'MySQL', usedIn: ['uni-admin', 'health-inst', 'edu-authority', 'pricing-co'] },
+    { name: 'PostgreSQL' },
+    { name: 'MariaDB' },
+    { name: 'MySQL' },
   ] },
   { group: 'devops', items: [
-    { name: 'GitLab CI/CD', usedIn: ['chamber'] },
-    { name: 'RHEL', usedIn: ['chamber'] },
-    { name: 'Bash', usedIn: [] },
-    { name: 'Git', usedIn: [] },
+    { name: 'GitLab' },
+    { name: 'CI/CD' },
+    { name: 'RHEL' },
+    { name: 'Bash' },
+    { name: 'Git' },
   ] },
   { group: 'quality', items: [
-    { name: 'QA', usedIn: ['chamber', 'uni-admin', 'edu-authority', 'pricing-co'] },
-    { name: 'Selenium WebDriver', usedIn: ['edu-authority', 'pricing-co'] },
+    { name: 'QA' },
+    { name: 'Selenium WebDriver' },
+    { name: 'UAT' },
+    { name: 'Exploratory testing', label: { hu: 'Felfedező tesztelés' } },
   ] },
   { group: 'other', items: [
-    { name: 'REST / SOAP API', usedIn: ['chamber'] },
-    { name: 'O365', usedIn: [] },
-    { name: 'Redis', usedIn: [] },
-    { name: 'XML', usedIn: [] },
+    { name: 'REST / SOAP API' },
+    { name: 'O365' },
+    { name: 'Redis' },
+    { name: 'XML' },
+    { name: 'SPSS' },
   ] },
 ];
 
 export interface ItemText {
-  /** Short label used in the skills evidence line. */
-  short: string;
   title: string;
   org?: string;
   summary?: string;
@@ -135,10 +139,12 @@ export interface SiteContent {
     tabsLabel: string;
     sections: Record<SectionId, string>;
     otherLanguage: string;
-    usedIn: string;
     tags: string;
     theme: { label: string; auto: string; light: string; dark: string };
-    graph: { seeProject: string };
+    egg: {
+      title: string; intro: string; requests: string; thirdParty: string; cookies: string;
+      transferred: string; scripts: string; dom: string; lcp: string; cls: string; note: string; close: string;
+    };
     palette: {
       open: string; short: string; placeholder: string; empty: string; close: string;
       ask: string; thinking: string; onDevice: string; askFailed: string;

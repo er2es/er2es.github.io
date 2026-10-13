@@ -30,14 +30,14 @@ for (const f of files) {
   if (TEXT.has(extname(f))) {
     const body = readFileSync(f, 'utf8');
     const digits = body.replace(/\D/g, '');
-    const scrubbed = body.replace(/claude@mbvk\.hu/gi, '');
+    const scrubbed = body.replace(/szabo\.jozsef\.acc@gmail\.com/gi, '');
     if (IDENT.test(scrubbed)) problems.push(`${f}: contains an employer/system/client name (${scrubbed.match(IDENT)[0]})`);
     for (const t of terms) {
       if (t.kind === 'text' && body.toLowerCase().includes(t.value.toLowerCase())) problems.push(`${f}: contains "${t.value}"`);
       if (t.kind === 'digits' && digits.includes(t.value.replace(/^36/, ''))) problems.push(`${f}: contains the phone number`);
     }
     for (const m of body.match(/[\w.+-]+@[\w-]+\.[a-z]{2,}/gi) ?? []) {
-      if (m.toLowerCase() !== 'claude@mbvk.hu' && !/\.(avif|webp|jpg|png|svg|js|css)$/i.test(m)) problems.push(`${f}: unexpected email ${m}`);
+      if (m.toLowerCase() !== 'szabo.jozsef.acc@gmail.com' && !/\.(avif|webp|jpg|png|svg|js|css)$/i.test(m)) problems.push(`${f}: unexpected email ${m}`);
     }
   } else if (/\.(jpe?g|png|webp|avif)$/i.test(f)) {
     const meta = await sharp(f).metadata();

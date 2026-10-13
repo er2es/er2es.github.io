@@ -29,9 +29,12 @@ describe('content', () => {
     expect(period(FACTS.find((f) => f.id === 'fuzzphony')!)).toBe('');
   });
 
-  it('skill evidence points at real items', () => {
-    const ids = new Set(FACTS.map((f) => f.id));
-    for (const g of SKILLS) for (const s of g.items) for (const u of s.usedIn) expect(ids.has(u)).toBe(true);
+  it('lists each skill once per group', () => {
+    for (const g of SKILLS) {
+      const names = g.items.map((s) => s.name);
+      expect(new Set(names).size).toBe(names.length);
+      for (const n of names) expect(n.trim().length).toBeGreaterThan(0);
+    }
   });
 
   for (const locale of LOCALES) {
@@ -42,7 +45,6 @@ describe('content', () => {
         for (const f of FACTS) {
           const t = c.items[f.id];
           expect(t.title.length).toBeGreaterThan(0);
-          expect(t.short.length).toBeGreaterThan(0);
           if (f.kind === 'job') {
             expect(t.org?.length ?? 0).toBeGreaterThan(0);
             expect(t.points.length).toBeGreaterThan(0);
