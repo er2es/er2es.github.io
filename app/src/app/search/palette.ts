@@ -1,4 +1,4 @@
-import { Component, ElementRef, afterNextRender, computed, inject, input, output, signal, viewChild } from '@angular/core';
+import { Component, DestroyRef, ElementRef, afterNextRender, computed, inject, input, output, signal, viewChild } from '@angular/core';
 import { EMAIL, SECTION_IDS, type Locale, type SectionId, type SiteContent } from '../content/model';
 import { LangSwitch } from '../core/lang';
 import { scrollToSection } from '../core/nav';
@@ -20,18 +20,19 @@ type Entry =
     <dialog #dlg class="palette glass" [attr.aria-label]="c().ui.palette.open" (close)="closed.emit()" (click)="backdrop($event)">
       <div class="in">
         <div class="field">
-          <input #q type="text" role="combobox" aria-autocomplete="list" aria-expanded="true" aria-controls="pal-list"
+          <input #q type="text" role="combobox" aria-autocomplete="list"
+            [attr.aria-expanded]="entries().length > 0 ? 'true' : 'false'" [attr.aria-controls]="entries().length ? 'pal-list' : null"
             [attr.aria-activedescendant]="entries().length ? 'pal-' + index() : null"
             [attr.aria-label]="c().ui.palette.placeholder" [placeholder]="c().ui.palette.placeholder"
             autocomplete="off" spellcheck="false" [value]="query()" (input)="onInput($event)" (keydown)="onKey($event)">
           <button type="button" class="chip" (click)="dlg.close()">{{ c().ui.palette.close }}</button>
         </div>
-        @if (answer(); as a) {
-          <div class="answer" role="status">
+        <div class="answer" role="status" aria-live="polite">
+          @if (answer(); as a) {
             <p>{{ a.text }}</p>
-            <p class="note">{{ a.note }}</p>
-          </div>
-        }
+            @if (a.note) { <p class="note">{{ a.note }}</p> }
+          }
+        </div>
         @if (entries().length) {
           <ul id="pal-list" class="list" role="listbox">
             @for (e of entries(); track $index) {
@@ -57,6 +58,7 @@ type Entry =
     li { padding: 0.75rem 1rem; border-radius: 14px; cursor: pointer; min-height: 44px; }
     li[aria-selected='true'] { background: color-mix(in srgb, var(--fg) 10%, transparent); }
     .answer { padding: 1rem 1.25rem; border-bottom: 1px solid var(--line); }
+    .answer:empty { padding: 0; border: 0; }
     .note, .empty { color: var(--fg-2); font-size: var(--t-footnote); }
     .empty { padding: 1.25rem; }
     .note { margin-top: 0.5rem; }
@@ -71,12 +73,15 @@ export class Palette {
   private readonly q = viewChild.required<ElementRef<HTMLInputElement>>('q');
   private readonly theme = inject(Theme);
   private readonly lang = inject(LangSwitch);
+  private readonly destroyRef = inject(DestroyRef);
 
   protected readonly query = signal('');
   protected readonly index = signal(0);
   protected readonly answer = signal<{ text: string; note: string } | null>(null);
   private readonly assistant = signal<CvAssistant | null>(null);
-  private docs: SearchDoc[] = [];
+  private readonly docs = computed(() => buildDocs(this.c()));
+  private readonly busy = signal(false);
+  private gone = false;
 
   protected readonly entries = computed<Entry[]>(() => {
     const ui = this.c().ui;
@@ -90,19 +95,25 @@ export class Palette {
     ];
     if (!q) return commands;
     const out: Entry[] = [];
-    if (this.assistant()) out.push({ kind: 'ask', label: `${ui.palette.ask}: ${raw}` });
     out.push(...commands.filter((e) => norm(e.label).includes(q)));
-    out.push(...search(this.docs, raw).map((doc): Entry => ({ kind: 'doc', doc, label: doc.title })));
+    out.push(...search(this.docs(), raw).map((doc): Entry => ({ kind: 'doc', doc, label: doc.title })));
+    if (this.assistant()) out.push({ kind: 'ask', label: `${ui.palette.ask}: ${raw}` });
     return out;
   });
 
   constructor() {
+    this.destroyRef.onDestroy(() => {
+      this.gone = true;
+      this.assistant()?.close();
+    });
     afterNextRender(() => {
-      this.docs = buildDocs(this.c());
       const el = this.dlg().nativeElement;
       el.showModal();
       this.q().nativeElement.focus();
-      void createCvAssistant(buildCvContext(this.c()), this.locale()).then((a) => this.assistant.set(a));
+      createCvAssistant(buildCvContext(this.c()), this.locale()).then(
+        (a) => (this.gone ? a?.close() : this.assistant.set(a)),
+        () => undefined,
+      );
     });
   }
 
@@ -146,12 +157,16 @@ export class Palette {
     const ui = this.c().ui.palette;
     const a = this.assistant();
     const question = this.query().trim();
-    if (!a || !question) return;
+    if (!a || !question || this.busy()) return;
+    this.busy.set(true);
     this.answer.set({ text: ui.thinking, note: '' });
+    let result: { text: string; note: string };
     try {
-      this.answer.set({ text: await a.ask(question), note: ui.onDevice });
+      result = { text: await a.ask(question), note: ui.onDevice };
     } catch {
-      this.answer.set({ text: ui.askFailed, note: '' });
+      result = { text: ui.askFailed, note: '' };
     }
+    this.busy.set(false);
+    if (!this.gone && this.query().trim() === question) this.answer.set(result);
   }
 }
