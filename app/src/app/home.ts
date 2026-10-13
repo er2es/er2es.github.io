@@ -20,6 +20,12 @@ import { TabBar } from './shell/tabbar';
   selector: 'app-home',
   imports: [Header, TabBar, LangBanner, Hero, Profile, Experience, Skills, Projects, About, Contact, Palette],
   template: `
+    <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+      <filter id="cv-refract" x="0" y="0" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="1" seed="3" result="n" />
+        <feDisplacementMap in="SourceGraphic" in2="n" scale="14" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </svg>
     <a class="skip" [attr.href]="mainHref" (click)="skip($event)">{{ c.ui.skip }}</a>
     <app-header [c]="c" [locale]="locale" [active]="active()" (palette)="paletteOpen.set(true)" />
     <main id="main" tabindex="-1">
@@ -54,6 +60,9 @@ export class Home {
     afterNextRender(() => {
       const stop = trackActive(SECTION_IDS, (id) => this.active.set(id as SectionId));
       destroy.onDestroy(stop);
+      const chromium = (navigator as Navigator & { userAgentData?: { brands: { brand: string }[] } }).userAgentData?.brands.some((b) => b.brand === 'Chromium');
+      const calm = !matchMedia('(prefers-reduced-motion: reduce), (prefers-reduced-transparency: reduce), (prefers-contrast: more)').matches;
+      if (chromium && calm) requestAnimationFrame(() => document.documentElement.classList.add('refract'));
     });
   }
 
