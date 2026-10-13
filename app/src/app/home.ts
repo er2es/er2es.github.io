@@ -1,9 +1,10 @@
 import { Component, DestroyRef, afterNextRender, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { getContent } from './content';
-import { EMAIL, SECTION_IDS, type Locale, type SectionId } from './content/model';
+import { SECTION_IDS, type Locale, type SectionId } from './content/model';
 import { trackActive } from './core/active';
 import { Seo } from './core/seo';
+import { Palette } from './search/palette';
 import { About } from './sections/about';
 import { Contact } from './sections/contact';
 import { Experience } from './sections/experience';
@@ -17,7 +18,7 @@ import { TabBar } from './shell/tabbar';
 
 @Component({
   selector: 'app-home',
-  imports: [Header, TabBar, LangBanner, Hero, Profile, Experience, Skills, Projects, About, Contact],
+  imports: [Header, TabBar, LangBanner, Hero, Profile, Experience, Skills, Projects, About, Contact, Palette],
   template: `
     <a class="skip" [attr.href]="mainHref" (click)="skip($event)">{{ c.ui.skip }}</a>
     <app-header [c]="c" [locale]="locale" [active]="active()" (palette)="paletteOpen.set(true)" />
@@ -32,6 +33,11 @@ import { TabBar } from './shell/tabbar';
     </main>
     <app-tabbar [c]="c" [locale]="locale" [active]="active()" />
     <app-lang-banner [locale]="locale" />
+    @if (paletteOpen()) {
+      @defer (on immediate) {
+        <app-palette [c]="c" [locale]="locale" (closed)="paletteOpen.set(false)" />
+      }
+    }
   `,
   host: { '(window:keydown)': 'onKey($event)' },
 })
@@ -63,5 +69,3 @@ export class Home {
     }
   }
 }
-
-export const CONTACT_EMAIL = EMAIL;
