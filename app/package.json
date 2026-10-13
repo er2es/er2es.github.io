@@ -5,10 +5,14 @@
     "ng": "ng",
     "start": "ng serve --port 4200",
     "build": "node scripts/build-docs.mjs",
-    "preview": "http-server ../docs -p 4300 -c-1",
+    "preview": "node scripts/serve.mjs 4300",
     "test": "ng test --no-watch",
     "check:contrast": "node scripts/check-contrast.mjs",
-    "portrait": "node scripts/portrait.mjs"
+    "portrait": "node scripts/portrait.mjs",
+    "e2e": "playwright test -c e2e/playwright.config.ts",
+    "check:privacy": "node scripts/verify-privacy.mjs",
+    "lighthouse": "node scripts/lighthouse-gate.mjs",
+    "verify": "node scripts/verify.mjs"
   },
   "private": true,
   "packageManager": "npm@12.2.0",
