@@ -19,7 +19,7 @@ import { FACT_BY_ID, FILES, PROJECT_ORDER, period, type SiteContent } from '../c
                 <ul class="pts">@for (p of c().items[id].points; track $index) { <li>{{ p }}</li> }</ul>
               }
               @if (kw(id).length) {
-                <p class="tags"><span class="sr-only">Tags: </span>@for (k of kw(id); track k) { <span>{{ k }}</span> }</p>
+                <p class="tags"><span class="sr-only">{{ c().ui.tags }}: </span>@for (k of kw(id); track k) { <span>{{ k }}</span> }</p>
               }
               @if (url(id); as u) { <p><a [attr.href]="u" rel="noopener">{{ c().projects.open }}</a></p> }
             </li>

@@ -47,7 +47,7 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
                     </summary>
                     <ul class="pts">@for (p of c().items[r.id].points; track $index) { <li>{{ p }}</li> }</ul>
                     @if (r.fact.keywords.length) {
-                      <p class="tags"><span class="sr-only">Tags: </span>@for (k of r.fact.keywords; track k) { <span>{{ k }}</span> }</p>
+                      <p class="tags"><span class="sr-only">{{ c().ui.tags }}: </span>@for (k of r.fact.keywords; track k) { <span>{{ k }}</span> }</p>
                     }
                   </details>
                 } @else {
@@ -70,7 +70,16 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
     .railcol { position: relative; flex: none; }
     .rail { position: absolute; inset: 0; height: 100%; overflow: visible; }
     .body { flex: 1; min-width: 0; padding-bottom: 1.5rem; padding-top: 0.5rem; }
-    summary, .proj { display: grid; gap: 0.125rem; cursor: pointer; padding-block: 0.5rem; min-height: 44px; list-style-position: outside; }
+    summary, .proj { display: grid; gap: 0.125rem; padding-block: 0.5rem; min-height: 44px; }
+    summary { position: relative; cursor: pointer; margin-inline: -0.5rem; padding-inline: 0.5rem 2rem; border-radius: 10px; }
+    summary::after {
+      content: ''; position: absolute; right: 1rem; top: 1.125rem; width: 8px; height: 8px;
+      border-right: 2px solid var(--fg-2); border-bottom: 2px solid var(--fg-2); rotate: 45deg;
+      transition: rotate 0.2s ease;
+    }
+    details[open] > summary::after { rotate: 225deg; top: 1.375rem; }
+    @media (hover: hover) { summary:hover { background: color-mix(in srgb, var(--fg) 6%, transparent); } }
+    @media (prefers-reduced-motion: reduce) { summary::after { transition: none; } }
     .proj { cursor: default; }
     .role { font-weight: 700; }
     .org { color: var(--fg); }

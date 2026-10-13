@@ -136,6 +136,7 @@ export interface SiteContent {
     sections: Record<SectionId, string>;
     otherLanguage: string;
     usedIn: string;
+    tags: string;
     theme: { label: string; auto: string; light: string; dark: string };
     graph: { seeProject: string };
     palette: {

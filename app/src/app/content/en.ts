@@ -14,6 +14,7 @@ export const en: SiteContent = {
     sections: { profile: 'Profile', experience: 'Experience', skills: 'Skills', projects: 'Projects', about: 'About', contact: 'Contact' },
     otherLanguage: 'Magyar',
     usedIn: 'Used in',
+    tags: 'Tags',
     theme: { label: 'Theme', auto: 'Auto', light: 'Light', dark: 'Dark' },
     graph: { seeProject: 'See in Projects' },
     palette: {

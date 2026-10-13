@@ -34,6 +34,7 @@ import { Theme } from '../core/theme';
     .links a { padding: 0.75rem 0.75rem; border-radius: 999px; color: var(--fg-2); text-decoration: none; font-size: var(--t-subhead); font-weight: 500; }
     .links a[aria-current] { color: var(--fg); background: color-mix(in srgb, var(--fg) 8%, transparent); }
     .ctl { display: flex; margin-left: auto; }
+    .chip kbd { display: inline-block; min-width: 2.75rem; text-align: right; }
     @media (min-width: 900px) { .links { display: flex; } .ctl { margin-left: 0; } }
     @media (max-width: 520px) { .ctl .chip:nth-child(2) { display: none; } }
   `],

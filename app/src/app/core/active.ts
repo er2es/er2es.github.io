@@ -10,5 +10,13 @@ export function trackActive(ids: readonly string[], onActive: (id: string) => vo
     const el = document.getElementById(id);
     if (el) io.observe(el);
   }
-  return () => io.disconnect();
+  // The last section can be too short to reach the observer band: at the very bottom it wins.
+  const onScroll = (): void => {
+    if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2) onActive(ids[ids.length - 1]);
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  return () => {
+    io.disconnect();
+    window.removeEventListener('scroll', onScroll);
+  };
 }

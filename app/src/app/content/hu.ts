@@ -14,6 +14,7 @@ export const hu: SiteContent = {
     sections: { profile: 'Profil', experience: 'Tapasztalat', skills: 'Kompetenciák', projects: 'Projektek', about: 'Rólam', contact: 'Kapcsolat' },
     otherLanguage: 'English',
     usedIn: 'Használva',
+    tags: 'Címkék',
     theme: { label: 'Téma', auto: 'Auto', light: 'Világos', dark: 'Sötét' },
     graph: { seeProject: 'Lásd a Projektek között' },
     palette: {
