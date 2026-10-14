@@ -218,8 +218,8 @@ test.describe('easter egg', () => {
   });
 });
 
-test('the easter egg counts only cookies this page set, not those of other sites on the same host', async ({ page, context }) => {
-  await context.addCookies([{ name: 'other-project', value: '1', url: 'http://localhost:4300' }, { name: 'another', value: '2', url: 'http://localhost:4300' }]);
+test('the easter egg counts only cookies this page set, not those of other sites on the same host', async ({ page, context, baseURL }) => {
+  await context.addCookies([{ name: 'other-project', value: '1', url: baseURL! }, { name: 'another', value: '2', url: baseURL! }]);
   await ready(page, '/');
   await page.keyboard.press('Shift');
   await page.keyboard.press('Shift');
