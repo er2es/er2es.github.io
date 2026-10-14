@@ -26,6 +26,7 @@ export function careerArc(jobs: readonly ArcJob[], lanes: readonly ArcLaneIn[], 
   }
   const ticks: Arc['ticks'] = [];
   for (let y = min; y <= max; y += tickEvery) ticks.push({ year: y, left: pct(y) });
+  if (ticks[ticks.length - 1].year !== max) ticks.push({ year: max, left: 100 }); // the axis always ends with its last year
   return { min, max, ticks, lanes: out };
 }
 

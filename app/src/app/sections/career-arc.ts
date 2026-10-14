@@ -26,7 +26,7 @@ const BASE: ItemId = 'edu-nonprofit';
               {{ c().skills.groups[l.group] }} <small class="mono">{{ from(l.since) }}</small>
             </button>
             <div class="track" aria-hidden="true" (pointermove)="scrub($event)" (pointerdown)="scrub($event)" (pointerleave)="leave()">
-              @for (t of arc().ticks; track t.year) { <i class="grid" [style.left.%]="t.left"></i> }
+              @for (t of arc().ticks; track t.year) { @if (t.left < 100) { <i class="grid" [style.left.%]="t.left"></i> } }
               <i class="base" [class.first]="i === 0" [class.last]="last" [style.width.%]="arc().base.width" [style.--c]="arc().base.width / 2" (click)="go(base)">
                 <span class="tip"><b>{{ t(base).title }}</b>{{ t(base).org }} · {{ per(base) }}<em>{{ baseTags() }}</em></span>
               </i>
@@ -41,7 +41,7 @@ const BASE: ItemId = 'edu-nonprofit';
           </div>
         }
         <div class="axis mono" aria-hidden="true">
-          @for (t of arc().ticks; track t.year) { <span [style.left.%]="t.left">{{ t.year }}</span> }
+          @for (t of arc().ticks; track t.year; let last = $last) { <span [class.end]="last" [style.left.%]="t.left">{{ t.year }}</span> }
         </div>
         <p class="readout" aria-hidden="true">{{ readout() }}</p>
       </div>
@@ -100,6 +100,7 @@ const BASE: ItemId = 'edu-nonprofit';
     .axis { position: relative; height: 1.25rem; margin-left: calc(var(--label) + 0.75rem); color: var(--fg-2); font-size: var(--t-footnote); }
     .axis span { position: absolute; top: 0.25rem; translate: -50%; }
     .axis span:first-child { translate: 0; }
+    .axis span.end { translate: -100%; } /* the last year ends at the edge instead of hanging over it */
     .readout { min-height: 2.75em; margin: 0.25rem 0 0 calc(var(--label) + 0.75rem); color: var(--fg-2); font-size: var(--t-footnote); }
 
     @media (max-width: 599px) {
@@ -109,6 +110,7 @@ const BASE: ItemId = 'edu-nonprofit';
       .bar { top: calc(50% - 13px); height: 22px; }
       .bar.side { top: calc(50% + 11px); height: 5px; }
       .axis, .readout { margin-left: 0; }
+      .axis span:nth-last-child(2) { display: none; } /* the year before it would touch the last one on a narrow screen */
     }
 
     /* the branches grow out of the trunk as the chart scrolls into view (scroll-driven, transform only) */

@@ -44,7 +44,7 @@ describe('fromYear', () => {
 });
 
 describe('defaults', () => {
-  it('puts a tick every four years unless told otherwise', () => {
-    expect(careerArc(jobs, []).ticks.map((t) => t.year)).toEqual([2010, 2014, 2018]);
+  it('puts a tick every four years unless told otherwise, and always one for the last year', () => {
+    expect(careerArc(jobs, []).ticks.map((t) => t.year)).toEqual([2010, 2014, 2018, 2020]);
   });
 });
