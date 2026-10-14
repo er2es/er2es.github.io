@@ -1,4 +1,5 @@
-import { Component, input } from '@angular/core';
+import { Component, DestroyRef, ElementRef, afterNextRender, inject, input } from '@angular/core';
+import { replayOnReturn } from '../core/replay';
 import { FILES, type SiteContent } from '../content/model';
 import { Email } from './email';
 
@@ -20,10 +21,28 @@ import { Email } from './email';
     .lead { margin-top: 1.25rem; }
     .mode { margin-top: 0.5rem; color: var(--fg-2); }
     .act { margin-top: 1.5rem; }
+    /* the closing chapter settles in like the hero does, each time it scrolls into view (transform only) */
+    @media (prefers-reduced-motion: no-preference) {
+      .enter .wrap > * { animation: settle 500ms var(--ease-spring) both; }
+      .enter .wrap > :nth-child(2) { animation-delay: 50ms; }
+      .enter .wrap > :nth-child(3) { animation-delay: 100ms; }
+      .enter .wrap > :nth-child(4) { animation-delay: 150ms; }
+      .enter .wrap > :nth-child(5) { animation-delay: 200ms; }
+    }
+    @keyframes settle { from { transform: translateY(14px); } }
     @media (max-width: 899px) { .block { padding-bottom: calc(5rem + var(--tabbar-h) + env(safe-area-inset-bottom)); } }
   `],
 })
 export class Contact {
   readonly c = input.required<SiteContent>();
   protected readonly file = FILES.contact;
+
+  constructor() {
+    const host = inject<ElementRef<HTMLElement>>(ElementRef);
+    const destroy = inject(DestroyRef);
+    afterNextRender(() => {
+      const section = host.nativeElement.querySelector<HTMLElement>('#contact');
+      if (section) destroy.onDestroy(replayOnReturn(section, 'enter'));
+    });
+  }
 }

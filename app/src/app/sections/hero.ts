@@ -1,4 +1,5 @@
 import { Component, ElementRef, afterNextRender, inject, input, signal, DestroyRef } from '@angular/core';
+import { replayOnReturn } from '../core/replay';
 import type { SiteContent } from '../content/model';
 import { Email } from './email';
 
@@ -59,16 +60,17 @@ import { Email } from './email';
     /*
      * First load: the lines settle into place one after another, the portrait settles in scale.
      * Transform only: everything is painted (and readable) from the first frame, the LCP image is never hidden.
-     * Played once per visit (html.settled is set afterwards), never under reduced motion.
+     * Plays on first load (until html.settled is set) and again, via .replay, whenever the visitor scrolls back up
+     * to the hero after it had left the screen (core/replay.ts). Never under reduced motion.
      */
     @media (prefers-reduced-motion: no-preference) {
-      :host-context(html:not(.settled)) .text > * { animation: settle 500ms var(--ease-spring) both; }
-      :host-context(html:not(.settled)) .text > :nth-child(2) { animation-delay: 50ms; }
-      :host-context(html:not(.settled)) .text > :nth-child(3) { animation-delay: 100ms; }
-      :host-context(html:not(.settled)) .text > :nth-child(4) { animation-delay: 150ms; }
-      :host-context(html:not(.settled)) .text > :nth-child(5) { animation-delay: 200ms; }
-      :host-context(html:not(.settled)) .portrait img { animation: settle-in 650ms var(--ease-spring) both; }
-      :host-context(html:not(.settled)) .dot::after { animation: ping 520ms var(--ease-out) 180ms both; }
+      :host-context(html:not(.settled)) .text > *, .replay .text > * { animation: settle 500ms var(--ease-spring) both; }
+      :host-context(html:not(.settled)) .text > :nth-child(2), .replay .text > :nth-child(2) { animation-delay: 50ms; }
+      :host-context(html:not(.settled)) .text > :nth-child(3), .replay .text > :nth-child(3) { animation-delay: 100ms; }
+      :host-context(html:not(.settled)) .text > :nth-child(4), .replay .text > :nth-child(4) { animation-delay: 150ms; }
+      :host-context(html:not(.settled)) .text > :nth-child(5), .replay .text > :nth-child(5) { animation-delay: 200ms; }
+      :host-context(html:not(.settled)) .portrait img, .replay .portrait img { animation: settle-in 650ms var(--ease-spring) both; }
+      :host-context(html:not(.settled)) .dot::after, .replay .dot::after { animation: ping 520ms var(--ease-out) 180ms both; }
     }
     @keyframes settle { from { transform: translateY(14px); } }
     @keyframes settle-in { from { transform: scale(0.96); } }
@@ -103,6 +105,8 @@ export class Hero {
       io.observe(host.nativeElement);
       destroy.onDestroy(() => io.disconnect());
       destroy.onDestroy(tilt(host.nativeElement));
+      const stage = host.nativeElement.querySelector<HTMLElement>('.stage');
+      if (stage) destroy.onDestroy(replayOnReturn(stage, 'replay'));
     });
   }
 }
