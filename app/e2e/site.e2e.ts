@@ -208,7 +208,7 @@ test.describe('easter egg', () => {
     await page.keyboard.press('Shift');
     const dlg = page.getByRole('dialog', { name: 'Under the hood' });
     await expect(dlg).toBeVisible();
-    await expect(dlg.getByText('Third-party requests')).toBeVisible();
+    await expect(dlg.getByText('Third-party cookies')).toBeVisible();
     await expect(dlg.locator('dd').nth(1)).toHaveText('0'); // third-party requests
     await expect(dlg.locator('dd').nth(2)).toHaveText('0'); // cookies
     const r = await new AxeBuilder({ page }).include('dialog').analyze();

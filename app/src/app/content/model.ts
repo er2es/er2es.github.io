@@ -145,7 +145,8 @@ export interface SiteContent {
     theme: { label: string; auto: string; light: string; dark: string };
     egg: {
       title: string; intro: string; requests: string; thirdParty: string; cookies: string;
-      transferred: string; scripts: string; dom: string; lcp: string; cls: string; note: string; close: string;
+      transferred: string; scripts: string; dom: string; lcp: string; cls: string; framework: string; typescript: string;
+      rendering: string; renderingValue: string; built: string; tests: string; pagespeed: string; localStorage: string; sessionStorage: string; close: string;
     };
     palette: {
       open: string; short: string; placeholder: string; empty: string; close: string;

@@ -72,3 +72,8 @@ a { color: var(--accent); text-underline-offset: 0.2em; }
   background: color-mix(in srgb, var(--fg) 8%, transparent);
   border: 1px solid color-mix(in srgb, var(--fg) 22%, transparent);
 }
+
+/* text selection: quiet grey on dark, dark on light (never the browser's blue); pictures are not selectable at all */
+::selection { background: var(--sel-bg); color: var(--sel-fg); }
+img, picture, svg { -webkit-user-select: none; user-select: none; -webkit-user-drag: none; }
+img::selection { background: transparent; }

@@ -6,7 +6,7 @@ import { dirname, extname, join, normalize, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { brotliCompressSync, gzipSync } from 'node:zlib';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'docs');
+const root = process.env.SERVE_ROOT ? normalize(process.env.SERVE_ROOT) : join(dirname(fileURLToPath(import.meta.url)), '..', '..', 'docs');
 const port = Number(process.argv[2] ?? process.env.PORT ?? 4300);
 const TYPES = {
   '.html': 'text/html; charset=utf-8',
