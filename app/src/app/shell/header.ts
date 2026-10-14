@@ -115,8 +115,7 @@ export class Header {
       const bar = this.host.nativeElement.querySelector<HTMLElement>('.bar');
       if (!bar) return;
       const fit = (): void => this.outline.set(squirclePath(bar.offsetWidth, bar.offsetHeight, 22));
-      new ResizeObserver(fit).observe(bar);
-      fit();
+      new ResizeObserver(fit).observe(bar); // its first callback measures, after the first layout
 
       // reading progress, eased towards the real scroll position (frame-rate independent, instant under reduced motion)
       const svg = bar.querySelector<SVGSVGElement>('.read');
@@ -147,7 +146,7 @@ export class Header {
       };
       addEventListener('scroll', kick, { passive: true });
       addEventListener('resize', kick);
-      kick();
+      if (scrollY > 0) kick(); // at the top there is nothing to draw yet
       destroy.onDestroy(() => {
         removeEventListener('scroll', kick);
         removeEventListener('resize', kick);

@@ -1,7 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { Injectable, inject } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
-import { EMAIL, SITE_URL, type Locale, type SiteContent } from '../content/model';
+import { EMAIL, GITHUB_URL, LINKEDIN_URL, SITE_URL, type Locale, type SiteContent } from '../content/model';
 import { pagePath } from './nav';
 
 const url = (l: Locale): string => `${SITE_URL}${pagePath(l)}`;
@@ -53,6 +53,7 @@ export class Seo {
       name: c.hero.name,
       jobTitle: c.hero.role,
       email: EMAIL,
+      sameAs: [GITHUB_URL, LINKEDIN_URL], // the same person on the two profiles linked from the Contact section
     });
     head.appendChild(ld);
   }

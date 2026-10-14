@@ -71,7 +71,7 @@ export class TabBar {
     const destroy = inject(DestroyRef);
     afterNextRender(() => {
       this.ready = true;
-      this.fit();
+      // the observer's first callback measures once the bar has its first layout: no forced reflow here
       const ro = new ResizeObserver(() => this.fit());
       ro.observe(this.nav().nativeElement);
       destroy.onDestroy(() => ro.disconnect());
@@ -83,14 +83,25 @@ export class TabBar {
     });
   }
 
+  /** The width and language the labels were last fitted for: the same inputs give the same answer, so nothing is measured again. */
+  private fitted = '';
+
   /** Picks the largest label size at which every label fits; if none does, the bar shows icons only. */
   private fit(): void {
+    if (matchMedia('(min-width: 900px)').matches) return; // the bar is not shown on wide screens
     const nav = this.nav().nativeElement;
+    const key = `${nav.clientWidth}|${this.c().lang}`;
+    if (key === this.fitted) return;
     const labels = Array.from(nav.querySelectorAll<HTMLElement>('.lbl'));
+    const fits = (): boolean => labels.every((l) => l.scrollWidth <= l.clientWidth);
+    this.fitted = key;
+    // the usual case: it already fits at the largest size, so nothing is written
+    const now = nav.style.getPropertyValue('--tab-fs');
+    if (!nav.classList.contains('compact') && (now === '' || now === `${LABEL_SIZES[0]}px`) && fits()) return;
     nav.classList.remove('compact');
     for (const size of LABEL_SIZES) {
       nav.style.setProperty('--tab-fs', `${size}px`);
-      if (labels.every((l) => l.scrollWidth <= l.clientWidth)) return;
+      if (fits()) return;
     }
     nav.style.removeProperty('--tab-fs');
     nav.classList.add('compact');
