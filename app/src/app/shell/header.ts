@@ -7,6 +7,7 @@ import { Theme } from '../core/theme';
 @Component({
   selector: 'app-header',
   template: `
+    <div class="edge" aria-hidden="true"></div>
     <header class="bar glass">
       <a class="mark" [attr.href]="home()" (click)="go($event, 'profile')">{{ c().hero.name }}</a>
       <nav class="links" [attr.aria-label]="c().ui.navLabel">
@@ -20,7 +21,7 @@ import { Theme } from '../core/theme';
             <circle cx="11" cy="11" r="6.5" /><path d="M16 16l4.5 4.5" />
           </svg>
         </button>
-        <button type="button" class="chip icon" [attr.aria-label]="themeLabel()" (click)="theme.cycle()">
+        <button type="button" class="chip icon" [attr.aria-label]="themeLabel()" (click)="theme.cycle($any($event.currentTarget))">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
             @switch (theme.mode()) {
               @case ('light') {
@@ -46,10 +47,35 @@ import { Theme } from '../core/theme';
       width: min(100% - 20px, 70rem); min-height: var(--bar-h); padding: 0 0.5rem 0 1.25rem;
       display: flex; align-items: center; gap: 1rem; border-radius: 22px;
     }
+    /* scroll edge: text passing above the floating bar softens into the page instead of showing sharp */
+    .edge {
+      position: fixed; z-index: 19; inset: 0 0 auto; height: calc(max(10px, env(safe-area-inset-top)) + var(--bar-h) * 0.6); pointer-events: none;
+      background: color-mix(in srgb, var(--bg) 55%, transparent);
+      -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+      -webkit-mask-image: linear-gradient(#000 35%, transparent); mask-image: linear-gradient(#000 35%, transparent);
+    }
+    @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
+      .edge { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--bg); }
+    }
     .mark { font-weight: 700; color: var(--fg); text-decoration: none; letter-spacing: -0.01em; white-space: nowrap; }
     .links { display: none; gap: 0.25rem; margin-inline: auto; }
     .links a { padding: 0.75rem 0.75rem; border-radius: 999px; color: var(--fg-2); text-decoration: none; font-size: var(--t-subhead); font-weight: 500; }
-    .links a[aria-current] { color: var(--fg); background: color-mix(in srgb, var(--fg) 8%, transparent); }
+    .links a[aria-current] { color: var(--fg); background: var(--tint-current); }
+    .links a { transition: color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out), scale var(--dur-press) var(--ease-out); }
+    .links a:active { background: var(--tint-press); scale: 0.96; }
+    /* one selection pill that glides to the current section (anchor positioning; a static pill elsewhere) */
+    @supports (anchor-name: --a) {
+      .links { position: relative; isolation: isolate; }
+      .links a[aria-current] { anchor-name: --nav-current; background: none; }
+      .links::after {
+        content: ''; position: absolute; z-index: -1; position-anchor: --nav-current; pointer-events: none;
+        top: anchor(top); bottom: anchor(bottom); left: anchor(left); right: anchor(right); border-radius: 999px;
+        background: var(--tint-current);
+        transition: left var(--dur-med) var(--ease-spring), right var(--dur-med) var(--ease-spring);
+      }
+    }
+    @media (hover: hover) { .links a:hover { color: var(--fg); } .links a:not([aria-current]):hover { background: var(--tint-hover); } }
+    @media (prefers-reduced-motion: reduce) { .links a:active { scale: none; } }
     .ctl { display: flex; align-items: center; margin-left: auto; }
     .chip.icon { width: 44px; padding: 0; justify-content: center; }
     @media (min-width: 900px) { .links { display: flex; } .ctl { margin-left: 0; } }

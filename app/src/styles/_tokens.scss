@@ -14,6 +14,9 @@
   --aurora-b: rgba(255, 255, 255, 0.07);
   --aurora-c: rgba(152, 152, 157, 0.1);
   --lit: rgba(255, 255, 255, 0.1);
+  --tint-hover: color-mix(in srgb, var(--fg) 11%, transparent);
+  --tint-current: color-mix(in srgb, var(--fg) 19%, transparent);
+  --tint-press: color-mix(in srgb, var(--fg) 24%, transparent);
 }
 
 :root {
@@ -33,6 +36,10 @@
   --aurora-b: rgba(0, 0, 0, 0.06);
   --aurora-c: rgba(110, 110, 115, 0.1);
   --lit: rgba(0, 0, 0, 0.05);
+  // Control states on glass: hover < current < pressed, clearly visible on the light glass too
+  --tint-hover: color-mix(in srgb, var(--fg) 12%, transparent);
+  --tint-current: color-mix(in srgb, var(--fg) 22%, transparent);
+  --tint-press: color-mix(in srgb, var(--fg) 28%, transparent);
 
   --lane-0: var(--fg-2);
   --lane-1: var(--accent);
@@ -57,6 +64,14 @@
   --bar-h: 56px;
   --tabbar-h: 64px;
   --radius: 22px;
+
+  // Motion: one set of curves and durations for the whole site (zeroed under reduced motion in _motion.scss).
+  // Spring: stiffness 220, damping 22, mass 1 (about 3 % overshoot), sampled for linear().
+  --ease-spring: linear(0, 0.049, 0.164, 0.308, 0.458, 0.597, 0.717, 0.815, 0.891, 0.947, 0.985, 1.009, 1.023, 1.03, 1.031, 1.029, 1.025, 1.02, 1.016, 1.012, 1.008, 1.005, 1.003, 1.001, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-press: 150ms;
+  --dur-short: 250ms;
+  --dur-med: 400ms;
 }
 
 @media (prefers-color-scheme: dark) {

@@ -44,7 +44,8 @@ a { color: var(--accent); text-underline-offset: 0.2em; }
   border: 0; border-radius: 999px; background: transparent; color: var(--fg);
   font: 500 var(--t-subhead) / 1 var(--font); text-decoration: none; cursor: pointer;
 }
-@media (hover: hover) { .chip:hover { background: color-mix(in srgb, var(--fg) 8%, transparent); } }
+@media (hover: hover) { .chip:hover { background: var(--tint-hover); } }
+.chip:active { background: var(--tint-press); }
 .chip kbd { font: 500 var(--t-footnote) / 1 var(--mono); color: var(--fg-2); }
 
 .btn {
