@@ -54,6 +54,17 @@ a { color: var(--accent); text-underline-offset: 0.2em; }
 }
 @media (hover: hover) { .btn:hover { box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent); } }
 
+/* icon + underlined text link with a tinted hover (the GitHub link, the mailto link): one style so they always match */
+.link-action {
+  display: inline-flex; align-items: center; gap: 0.5rem; min-height: 44px; margin-inline: -0.75rem; padding: 0 0.75rem;
+  border-radius: 999px; color: var(--accent); font-weight: 600; text-underline-offset: 0.2em;
+  transition: background-color var(--dur-short) var(--ease-out), scale var(--dur-press) var(--ease-out);
+}
+.link-action svg { flex: none; }
+@media (hover: hover) { .link-action:hover { background: var(--tint-hover); } }
+.link-action:active { background: var(--tint-press); scale: 0.96; }
+@media (prefers-reduced-motion: reduce) { .link-action:active { scale: none; } }
+
 /* tags: readable chips, not faint outlines */
 .tags { display: flex; flex-wrap: wrap; gap: 0.5rem; font: 500 var(--t-footnote) / 1.2 var(--mono); color: var(--fg); }
 .tags span {

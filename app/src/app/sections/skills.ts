@@ -31,9 +31,9 @@ interface Use { id: ItemId; job: boolean; title: string; meta: string; anchor: s
                   @for (s of g.items; track s.name) {
                     @if (open() === s.name) {
                       <div class="uses" role="region" [id]="'uses-' + g.group" [attr.aria-label]="usedIn(s.label)">
-                        @if (!s.uses.length) { <p class="none" lang="en">{{ noUses }}</p> } @else {
+                        @if (!uses().length) { <p class="none" lang="en">{{ noUses }}</p> } @else {
                         <ul>
-                          @for (u of s.uses; track u.id; let i = $index) {
+                          @for (u of uses(); track u.id; let i = $index) {
                             <li [style.--i]="i">
                               <a [attr.href]="href(u.anchor)" (click)="go($event, u.anchor)">
                                 <svg class="ico" viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
@@ -115,19 +115,26 @@ export class Skills {
       items: g.items.map((s) => ({
         name: s.name,
         label: s.label?.[c.lang] ?? s.name,
-        uses: usesOf(s.name, FACTS, c.items).map((id): Use => {
-          const f = FACT_BY_ID[id];
-          const t = c.items[id];
-          return {
-            id,
-            job: f.kind === 'job',
-            title: f.kind === 'job' && t.org ? `${t.title} · ${t.org}` : t.title,
-            meta: period(f),
-            anchor: f.kind === 'job' ? `job-${id}` : `p-${id}`,
-          };
-        }),
       })),
     }));
+  });
+
+  /** Where the open skill was used; worked out only when a panel opens, not while the page hydrates. */
+  protected readonly uses = computed((): Use[] => {
+    const name = this.open();
+    const c = this.c();
+    if (!name) return [];
+    return usesOf(name, FACTS, c.items).map((id) => {
+      const f = FACT_BY_ID[id];
+      const t = c.items[id];
+      return {
+        id,
+        job: f.kind === 'job',
+        title: f.kind === 'job' && t.org ? `${t.title} · ${t.org}` : t.title,
+        meta: period(f),
+        anchor: f.kind === 'job' ? `job-${id}` : `p-${id}`,
+      };
+    });
   });
 
   protected readonly first = computed(() => this.view()[0]?.items[0]?.name);
@@ -159,8 +166,7 @@ export class Skills {
 
   private set(name: string | null): void {
     this.open.set(name);
-    const uses = name ? this.view().flatMap((g) => g.items).find((s) => s.name === name)?.uses ?? [] : [];
-    this.lens.ids.set(new Set(uses.map((u) => u.id)));
+    this.lens.ids.set(new Set(this.uses().map((u) => u.id)));
   }
 
   private pill(name: string): HTMLButtonElement | null {

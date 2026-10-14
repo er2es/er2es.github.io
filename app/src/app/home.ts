@@ -17,10 +17,11 @@ import { Projects } from './sections/projects';
 import { Skills } from './sections/skills';
 import { Header } from './shell/header';
 import { TabBar } from './shell/tabbar';
+import { ToastHost } from './shell/toast';
 
 @Component({
   selector: 'app-home',
-  imports: [Header, TabBar, Egg, Hero, Profile, Experience, Skills, Projects, About, Contact, Palette],
+  imports: [Header, TabBar, ToastHost, Egg, Hero, Profile, Experience, Skills, Projects, About, Contact, Palette],
   template: `
     <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
       <filter id="cv-refract" x="0" y="0" width="100%" height="100%">
@@ -40,6 +41,7 @@ import { TabBar } from './shell/tabbar';
       <app-contact [c]="c" />
     </main>
     <app-tabbar [c]="c" [locale]="locale" [active]="active()" />
+    @defer (on idle) { <app-toast /> }
     @if (paletteOpen()) {
       @for (g of [paletteGen()]; track g) {
         @defer (on immediate) {

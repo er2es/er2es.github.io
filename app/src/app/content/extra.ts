@@ -9,6 +9,13 @@ export interface ExtraText {
   /** Spoken with a job or project link inside the skill panel. */
   job: string;
   project: string;
+  /** Spoken after the address on the copy button. */
+  copy: string;
+  /** Toasts after copying the address. */
+  copied: string;
+  copyFailed: string;
+  /** Appended (visually hidden) to links that open in a new tab. */
+  newTab: string;
 }
 
 export const EXTRA: Record<Locale, ExtraText> = {
@@ -17,12 +24,20 @@ export const EXTRA: Record<Locale, ExtraText> = {
     skillsToolbar: 'Skills: choose one to see where I used it',
     job: 'Job',
     project: 'Project',
+    copy: 'copy',
+    copied: 'Email address copied to clipboard',
+    copyFailed: 'Could not copy. The address is shown below.',
+    newTab: '(opens in a new tab)',
   },
   hu: {
     usedIn: 'Hol használtam: {skill}',
     skillsToolbar: 'Kompetenciák: válassz egyet, és megmutatom, hol használtam',
     job: 'Munkahely',
     project: 'Projekt',
+    copy: 'másolás',
+    copied: 'Az email cím a vágólapra másolva',
+    copyFailed: 'Nem sikerült a másolás. A cím lent olvasható.',
+    newTab: '(új lapon nyílik)',
   },
 };
 

@@ -1,8 +1,10 @@
 import { Component, ElementRef, afterNextRender, inject, input, signal, DestroyRef } from '@angular/core';
-import { EMAIL, type SiteContent } from '../content/model';
+import type { SiteContent } from '../content/model';
+import { Email } from './email';
 
 @Component({
   selector: 'app-hero',
+  imports: [Email],
   template: `
     <div class="stage" [class.paused]="paused()">
       <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
@@ -10,9 +12,8 @@ import { EMAIL, type SiteContent } from '../content/model';
       <div class="text">
         <h1 id="hero-title">{{ c().hero.name }}</h1>
         <p class="role">{{ c().hero.role }}</p>
-        <p class="loc mono">{{ c().hero.location }}</p>
-        <p class="status"><span class="dot" aria-hidden="true"></span>{{ c().hero.status }}</p>
-        <a class="btn" [attr.href]="'mailto:' + email">{{ c().hero.cta }}</a>
+        <p class="meta"><span class="in"><span class="status"><span class="dot" aria-hidden="true"></span>{{ c().hero.status }}</span> <span class="loc">{{ c().hero.location }}</span></span></p>
+        <app-email [c]="c()" />
       </div>
       <picture class="portrait">
         <source type="image/avif" srcset="/img/portrait-320.avif 320w, /img/portrait-640.avif 640w" sizes="(min-width: 800px) 320px, 240px">
@@ -35,8 +36,17 @@ import { EMAIL, type SiteContent } from '../content/model';
     @media (prefers-reduced-motion: reduce) { .aurora i { animation: none; } }
     .text { display: grid; gap: 0.75rem; justify-items: start; }
     .role { font-size: var(--t-title2); line-height: 1.3; }
-    .loc { color: var(--fg-2); font-size: var(--t-subhead); }
-    .status { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; font-weight: 500; }
+    /*
+     * Availability and place on one line. Every part carries a leading separator dot; the inner line is pulled left
+     * by one separator width and the outer one clips it, so a part that wraps to a new line loses its dot (no orphans).
+     * The small clip margin leaves room for the status dot's one-off ring.
+     */
+    .meta { margin-bottom: 0.75rem; overflow: clip; overflow-clip-margin: 0.5rem; }
+    .in { display: flex; flex-wrap: wrap; align-items: center; margin-left: -1.5rem; }
+    .in > span { display: inline-flex; align-items: center; position: relative; padding-left: 1.5rem; }
+    .in > span::before { content: '·'; position: absolute; left: 0; width: 1.5rem; text-align: center; color: var(--fg-2); font-weight: 700; }
+    .status { gap: 0.5rem; font-weight: 600; }
+    .loc { color: var(--fg-2); }
     .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
     .portrait { order: -1; position: relative; display: block; width: fit-content; border-radius: 2rem; }
     .portrait img { display: block; width: min(100%, 15rem); height: auto; aspect-ratio: 1; object-fit: cover; border-radius: inherit; }
@@ -64,7 +74,7 @@ import { EMAIL, type SiteContent } from '../content/model';
     @keyframes settle-in { from { transform: scale(0.96); } }
     .dot { position: relative; }
     .dot::after { content: ''; position: absolute; inset: 0; border-radius: inherit; background: var(--accent); opacity: 0; pointer-events: none; }
-    @keyframes ping { from { transform: scale(1); opacity: 0.55; } to { transform: scale(3.2); opacity: 0; } }
+    @keyframes ping { from { transform: scale(1); opacity: 0.55; } to { transform: scale(2.6); opacity: 0; } }
 
     /* the portrait leans a few degrees toward a fine pointer and catches a soft highlight (hero.ts sets the vars) */
     @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
@@ -81,7 +91,6 @@ import { EMAIL, type SiteContent } from '../content/model';
 })
 export class Hero {
   readonly c = input.required<SiteContent>();
-  protected readonly email = EMAIL;
   /** The aurora only drifts while the hero is on screen. */
   protected readonly paused = signal(false);
 
