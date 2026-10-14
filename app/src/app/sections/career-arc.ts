@@ -32,6 +32,7 @@ const BASE: ItemId = 'edu-nonprofit';
               </i>
               @for (b of l.bars; track b.id) {
                 <i class="bar" [class.side]="!b.main" [class.dim]="dim(b.id)" [style.left.%]="b.left" [style.width.%]="b.width" [style.--c]="b.left + b.width / 2" (click)="go(b.id)">
+                  <span class="fill"></span>
                   <span class="tip"><b>{{ t(b.id).title }}</b>{{ t(b.id).org }} · {{ per(b.id) }}@if (b.tags.length) { <em>{{ b.tags.join(' · ') }}</em> }</span>
                 </i>
               }
@@ -73,15 +74,17 @@ const BASE: ItemId = 'edu-nonprofit';
     .base.first { border-top-left-radius: 10px; border-top-right-radius: 10px; }
     .base.last { border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; }
 
-    .bar {
-      position: absolute; top: calc(50% - 15px); height: 24px; background: var(--accent); border-radius: 8px; cursor: pointer;
-      box-shadow: 0 0 0 1.5px var(--bg-2); transition: opacity var(--dur-short) var(--ease-out), scale var(--dur-short) var(--ease-spring);
-      transform-origin: 0 50%; font-style: normal;
+    .bar { position: absolute; top: calc(50% - 15px); height: 24px; cursor: pointer; transform-origin: 0 50%; font-style: normal; transition: opacity var(--dur-short) var(--ease-out); }
+    /* the coloured part is its own layer: it grows on hover, while the card inside the bar keeps its shape */
+    .fill {
+      position: absolute; inset: 0; background: var(--accent); border-radius: 8px; box-shadow: 0 0 0 1.5px var(--bg-2);
+      transition: scale var(--dur-short) var(--ease-spring);
     }
     /* a side job runs alongside a main one: a thin bar just below it */
-    .bar.side { top: calc(50% + 12px); height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--accent) 60%, transparent); box-shadow: none; }
+    .bar.side { top: calc(50% + 12px); height: 6px; }
+    .bar.side .fill { border-radius: 3px; background: color-mix(in srgb, var(--accent) 60%, transparent); box-shadow: none; }
     .bar.dim { opacity: 0.25; }
-    @media (hover: hover) { .bar:hover { scale: 1 1.2; z-index: 6; } }
+    @media (hover: hover) { .bar:hover { z-index: 6; } .bar:hover .fill { scale: 1 1.2; } }
 
     /* what a bar is, on hover (the log below carries the same facts for everyone else) */
     .tip {
@@ -120,7 +123,7 @@ const BASE: ItemId = 'edu-nonprofit';
       }
     }
     @keyframes sprout { from { transform: scaleX(0); opacity: 0; } to { transform: scaleX(1); opacity: 1; } }
-    @media (prefers-reduced-motion: reduce) { .name, .bar { transition: none; } }
+    @media (prefers-reduced-motion: reduce) { .name, .bar, .fill { transition: none; } }
   `],
 })
 export class CareerArc implements OnInit {
