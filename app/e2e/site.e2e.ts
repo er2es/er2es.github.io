@@ -43,7 +43,7 @@ for (const p of PAGES) {
       const dlg = page.getByRole('dialog');
       await expect(dlg).toBeVisible();
       await page.keyboard.type('selenium');
-      await expect(dlg.getByRole('option').first()).toContainText(/tester|tesztelő/i);
+      await expect(dlg.getByRole('option').filter({ hasText: /tester|tesztelő/i }).first()).toBeVisible();
       const r = await new AxeBuilder({ page }).include('dialog').analyze();
       expect(r.violations).toEqual([]);
       await page.keyboard.press('Escape');
@@ -200,5 +200,145 @@ test.describe('easter egg', () => {
     expect(r.violations).toEqual([]);
     await page.keyboard.press('Escape');
     await expect(dlg).toBeHidden();
+  });
+});
+
+test.describe('interaction layer', () => {
+  test('hero entrance plays once, transform only, and is skipped under reduced motion', async ({ page }) => {
+    await ready(page, '/');
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+    await expect(page.locator('html')).toHaveClass(/\bsettled\b/);
+    const uses = await page.evaluate(() => [...document.styleSheets].flatMap((s) => [...s.cssRules]).map((r) => r.cssText).filter((t) => /@keyframes[^{]*settle/.test(t)));
+    expect(uses.length).toBeGreaterThan(0);
+    for (const k of uses) expect(k).not.toMatch(/opacity/); // never fades text or the LCP portrait
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+    const names = await page.evaluate(() => document.getAnimations().map((a) => (a as CSSAnimation).animationName ?? ''));
+    expect(names.filter((n) => /settle|ping|drift/.test(n))).toEqual([]);
+  });
+
+  test('portrait follows a fine pointer and lets go on leave; not under reduced motion', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await ready(page, '/');
+    await expect(page.locator('html')).toHaveClass(/\bsettled\b/); // hydrated, listeners attached
+    const pic = page.locator('.portrait');
+    const box = (await pic.boundingBox())!;
+    await page.mouse.move(box.x + box.width * 0.9, box.y + box.height * 0.1, { steps: 4 });
+    await expect(pic).toHaveClass(/tracking/);
+    expect(await pic.evaluate((e) => e.style.getPropertyValue('--tilt-y'))).toMatch(/deg$/);
+    await page.mouse.move(box.x + box.width / 2, 880, { steps: 4 }); // below the hero
+    await expect(pic).not.toHaveClass(/tracking/);
+    expect(await pic.evaluate((e) => e.style.getPropertyValue('--tilt-y'))).toBe('');
+  });
+
+  test('a skill opens where it was used, with the keyboard, and lights up those entries', async ({ page }) => {
+    await ready(page, '/');
+    const toolbar = page.getByRole('toolbar');
+    const pills = toolbar.locator('button.pill');
+    expect(await pills.evaluateAll((bs) => bs.filter((b) => b.getAttribute('tabindex') === '0').length)).toBe(1); // one Tab stop
+    await pills.first().focus();
+    await expect(pills.first()).toHaveText('PHP');
+    await page.keyboard.press('ArrowRight');
+    await expect(page.getByRole('button', { name: 'Symfony' })).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('button', { name: 'Symfony' })).toHaveAttribute('aria-expanded', 'true');
+    const panel = page.getByRole('region', { name: 'Where I used Symfony' });
+    await expect(panel).toBeVisible();
+    await expect(panel.locator('a[href="/#job-chamber"]')).toBeVisible();
+    await expect(panel.locator('a[href="/#p-fuzzphony"]')).toBeVisible();
+    await expect(page.locator('#job-chamber')).toHaveClass(/\blit\b/);
+    await expect(page.locator('#p-fuzzphony')).toHaveClass(/\blit\b/);
+    await expect(page.locator('#job-edu-nonprofit')).not.toHaveClass(/\blit\b/);
+    const r = await new AxeBuilder({ page }).include('#skills').analyze();
+    expect(r.violations).toEqual([]);
+    await page.keyboard.press('ArrowDown');
+    await expect(page.getByRole('button', { name: 'Angular' })).toBeFocused();
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('Escape');
+    await expect(panel).toBeHidden();
+    await expect(page.getByRole('button', { name: 'PHP' })).toBeFocused();
+    await expect(page.locator('#job-chamber')).not.toHaveClass(/\blit\b/);
+    // a link in the panel jumps to the entry and opens it
+    await page.getByRole('button', { name: 'Laravel' }).click();
+    await page.getByRole('region', { name: 'Where I used Laravel' }).locator('a[href="/#job-uni-med"]').click();
+    await expect(page).toHaveURL(/#job-uni-med$/);
+    expect(await page.locator('#job-uni-med details').evaluate((d) => (d as HTMLDetailsElement).open)).toBe(true);
+  });
+
+  // the owner's line is the same, in English, on both pages
+  for (const p of [{ url: '/', none: "Trust me bro' :)", label: 'Where I used' }, { url: '/hu/', none: "Trust me bro' :)", label: 'Hol használtam:' }]) {
+    test(`${p.url}: a skill with no entry in the CV still answers, and one with entries lists them`, async ({ page }) => {
+      await ready(page, p.url);
+      const redis = page.getByRole('button', { name: 'Redis' });
+      await redis.click();
+      await expect(redis).toHaveAttribute('aria-expanded', 'true');
+      const panel = page.getByRole('region', { name: new RegExp(`^${p.label}.*Redis`) });
+      await expect(panel).toHaveText(p.none);
+      await expect(panel.getByRole('link')).toHaveCount(0);
+      await page.getByRole('button', { name: 'PostgreSQL' }).click();
+      await expect(redis).toHaveAttribute('aria-expanded', 'false');
+      const rows = page.getByRole('region', { name: /PostgreSQL/ }).getByRole('link');
+      expect(await rows.count()).toBeGreaterThan(0);
+      await expect(page.getByText(p.none)).toHaveCount(0);
+    });
+  }
+
+  test('career entries: arrow keys move between them, Home and End jump', async ({ page }) => {
+    await ready(page, '/');
+    const summaries = page.locator('#experience summary');
+    await summaries.first().focus();
+    await page.keyboard.press('ArrowDown');
+    await expect(summaries.nth(1)).toBeFocused();
+    await page.keyboard.press('End');
+    await expect(summaries.last()).toBeFocused();
+    await page.keyboard.press('ArrowUp');
+    await expect(summaries.nth(-2)).toBeFocused();
+    await page.keyboard.press('Home');
+    await expect(summaries.first()).toBeFocused();
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    expect(await summaries.nth(1).evaluate((s) => (s.parentElement as HTMLDetailsElement).open)).toBe(true);
+  });
+
+  test('theme change starts from the theme button and cleans up after itself', async ({ page }) => {
+    await ready(page, '/');
+    const btn = page.getByRole('button', { name: /^Theme:/ });
+    const seen = page.evaluate(() => new Promise<string>((resolve) => {
+      const root = document.documentElement;
+      const mo = new MutationObserver(() => { if (root.classList.contains('theme-vt')) { mo.disconnect(); resolve(root.style.getPropertyValue('--vt-x')); } });
+      mo.observe(root, { attributes: true });
+    }));
+    await btn.press('Enter'); // keyboard activation still has an origin: the button itself
+    const x = parseFloat(await seen);
+    const b = (await btn.boundingBox())!;
+    expect(Math.abs(x - (b.x + b.width / 2))).toBeLessThan(2);
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+    await expect(page.locator('html')).not.toHaveClass(/theme-vt/);
+    expect(await page.evaluate(() => document.documentElement.style.getPropertyValue('--vt-x'))).toBe('');
+  });
+
+  test('palette marks the matched text and gives each result an icon', async ({ page }) => {
+    await ready(page, '/');
+    await page.keyboard.press('Control+k');
+    await page.getByRole('combobox').waitFor();
+    await page.keyboard.type('tester');
+    const first = page.getByRole('dialog').getByRole('option').first();
+    await expect(first.locator('.hit').first()).toHaveText(/tester/i);
+    await expect(first.locator('svg')).toHaveCount(1);
+  });
+
+  test('the header selection follows the current section', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await ready(page, '/');
+    await page.getByRole('navigation', { name: /./ }).first().getByRole('link', { name: 'Skills' }).click();
+    const link = page.locator('header nav a[aria-current]');
+    await expect(link).toHaveText('Skills');
+    await expect.poll(async () => page.evaluate(() => {
+      const nav = document.querySelector('header nav')!;
+      const cur = nav.querySelector('a[aria-current]')!.getBoundingClientRect();
+      if (!CSS.supports('anchor-name: --a')) return 0;
+      const pill = getComputedStyle(nav, '::after');
+      return Math.abs(parseFloat(pill.left) + nav.getBoundingClientRect().left - cur.left);
+    })).toBeLessThan(2);
   });
 });
