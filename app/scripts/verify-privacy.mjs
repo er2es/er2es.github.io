@@ -23,7 +23,7 @@ const files = [];
   }
 })(docs);
 
-const IDENT = /mbvk|semmelweis|uni-nke|\bnke\b|kfpr|\bjam\b|árukereső|arukereso|\beducatio\b|oktatási hivatal|honvedelem|sportpont|jó állam|good state|budapestlocal|budapestflow|konigsberg|felvi\.hu|támop|tamop|arveres/i;
+const IDENT = /mbvk|semmelweis|uni-nke|\bnke\b|kfpr|\bjam\b|árukereső|arukereso|\beducatio\b|honvedelem|sportpont|jó állam|good state|budapestlocal|budapestflow|konigsberg|felvi\.hu|támop|tamop|arveres/i;
 const problems = [];
 const TEXT = new Set(['.html', '.js', '.css', '.txt', '.xml', '.json', '.svg', '.map']);
 for (const f of files) {

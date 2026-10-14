@@ -146,7 +146,7 @@ export const en: SiteContent = {
     },
     'edu-authority': {
       title: 'Software tester (QA)',
-      org: 'National education authority',
+      org: 'National education office',
       points: ['Tested new releases of education-sector IT systems, partly through automated tests written in Selenium WebDriver.'],
     },
     'pricing-co': {

@@ -146,7 +146,7 @@ export const hu: SiteContent = {
     },
     'edu-authority': {
       title: 'Szoftvertesztelő (QA)',
-      org: 'Országos oktatási hatóság',
+      org: 'Országos oktatási hivatal',
       points: ['Oktatási informatikai rendszerek új verzióit teszteltem, részben Selenium WebDriverrel írt automatizált tesztekkel.'],
     },
     'pricing-co': {

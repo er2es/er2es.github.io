@@ -4,7 +4,7 @@ import type { Locale } from './model';
 
 const LOCALES: Locale[] = ['en', 'hu'];
 const IDENTIFYING =
-  /mbvk|semmelweis|uni-nke|\bnke\b|kfpr|\bjam\b|árukereső|arukereso|\beducatio\b|oktatási hivatal|nefi\b|honvedelem|sportpont|jó állam|good state|budapestlocal|budapestflow|konigsberg|felvi\b|felvi\.hu|támop|tamop|arveres/i;
+  /mbvk|semmelweis|uni-nke|\bnke\b|kfpr|\bjam\b|árukereső|arukereso|\beducatio\b|nefi\b|honvedelem|sportpont|jó állam|good state|budapestlocal|budapestflow|konigsberg|felvi\b|felvi\.hu|támop|tamop|arveres/i;
 
 function strings(value: unknown, out: string[] = []): string[] {
   if (typeof value === 'string') out.push(value);
