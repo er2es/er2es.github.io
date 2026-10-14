@@ -25,6 +25,7 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
         <p class="intro">{{ c().experience.intro }}</p>
         <app-career-arc [c]="c()" />
         <p class="eyebrow mono roles" aria-hidden="true">roles/</p>
+        <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -- one delegated keydown handler for the summaries inside (roving arrow keys); the list itself is not an interactive element -->
         <ol class="log" (keydown)="onKey($event)">
           @for (r of rows; track r.id) {
             <li class="row" [id]="'job-' + r.id" tabindex="-1" [class.lit]="lens.ids().has(r.id)">

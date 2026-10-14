@@ -14,6 +14,7 @@ interface Use { id: ItemId; job: boolean; title: string; meta: string; anchor: s
         <p class="eyebrow mono">{{ file }}</p>
         <h2 id="skills-h">{{ c().ui.sections.skills }}</h2>
         <p class="intro">{{ c().skills.intro }}</p>
+        <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -- a toolbar delegates its arrow keys to the pills inside it (roving tabindex) -->
         <div role="toolbar" [attr.aria-label]="x().skillsToolbar" (keydown)="onKey($event)">
           <dl class="groups">
             @for (g of view(); track g.group) {

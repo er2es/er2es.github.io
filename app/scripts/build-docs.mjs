@@ -28,6 +28,9 @@ rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
 cpSync(built, out, { recursive: true });
 rmSync(join(out, 'index.csr.html'), { force: true });
+// the licence notices of the bundled libraries (the build writes them beside, not inside, the browser folder)
+const licences = join(root, 'dist', 'cv', '3rdpartylicenses.txt');
+if (existsSync(licences)) cpSync(licences, join(out, '3rdpartylicenses.txt'));
 writeFileSync(join(out, '.nojekyll'), '');
 
 // The prerendered HTML is complete without JS: hydration code must not compete with the

@@ -67,6 +67,7 @@ function measure(t: SiteContent['ui']['egg']): Promise<Row[]> {
 @Component({
   selector: 'app-egg',
   template: `
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- a click on the dialog's own backdrop closes it; Esc and the Close button are the keyboard routes -->
     <dialog #dlg class="egg glass" [attr.aria-label]="c().ui.egg.title" (close)="closed.emit()" (click)="backdrop($event)">
       <div class="in" tabindex="-1" autofocus>
         <h2>{{ c().ui.egg.title }}</h2>

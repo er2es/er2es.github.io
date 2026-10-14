@@ -23,6 +23,7 @@ type Entry =
 @Component({
   selector: 'app-palette',
   template: `
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- a click on the dialog's own backdrop closes it; Esc is the keyboard route -->
     <dialog #dlg class="palette glass" [attr.aria-label]="c().ui.palette.open" (close)="closed.emit()" (click)="backdrop($event)">
       <div class="in">
         <div class="field">
@@ -42,6 +43,7 @@ type Entry =
         @if (entries().length) {
           <ul id="pal-list" class="list" role="listbox">
             @for (e of entries(); track key(e)) {
+              <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- options of a combobox listbox are never focused: the input keeps focus and points at the active option (aria-activedescendant) -->
               <li role="option" [id]="'pal-' + $index" [attr.data-anchor]="anchorOf(e)" [attr.aria-selected]="$index === index()" [style.--i]="$index" (click)="run(e)" (pointermove)="index.set($index)">
                 <svg class="ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path [attr.d]="icon(e)" /></svg>
                 <span>@for (g of segments(e); track $index) { <span [class.hit]="g.hit">{{ g.text }}</span> }</span>

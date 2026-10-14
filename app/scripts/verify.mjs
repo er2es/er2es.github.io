@@ -21,6 +21,8 @@ const runCapture = (cmd) => {
 };
 const count = (text, re) => Number(re.exec(text)?.[1] ?? 0);
 
+run('npm run typecheck');
+run('npm run lint');
 const unit = count(runCapture('npm test'), /Tests\s+(\d+) passed/);
 run('npm run check:contrast');
 run('npm run portrait');

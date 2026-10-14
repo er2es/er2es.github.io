@@ -432,7 +432,7 @@ test.describe('email address: visible, copyable, with a toast', () => {
       await expect(page.locator('.hero').getByText(EMAIL, { exact: true })).toBeVisible();
       await expect(page.locator('#contact').getByText(EMAIL, { exact: true })).toBeVisible();
       await expect(page.locator('#contact a[href^="mailto:"]')).toHaveAttribute('href', `mailto:${EMAIL}`); // the mail icon beside the other links
-      const copy = page.locator('.hero').getByRole('button', { name: new RegExp(EMAIL.replace(/\./g, '\.')) });
+      const copy = page.locator('.hero').getByRole('button', { name: new RegExp(EMAIL.replace(/\./g, '\\.')) });
       await copy.focus();
       await page.keyboard.press('Enter');
       const toast = page.getByRole('status').filter({ hasText: COPIED[p.lang as 'en' | 'hu'] });
@@ -440,7 +440,7 @@ test.describe('email address: visible, copyable, with a toast', () => {
       expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(EMAIL);
       await expect(copy).toBeFocused(); // the toast never takes focus
       // a second copy replaces the toast instead of stacking a new one
-      await page.locator('#contact').getByRole('button', { name: new RegExp(EMAIL.replace(/\./g, '\.')) }).click();
+      await page.locator('#contact').getByRole('button', { name: new RegExp(EMAIL.replace(/\./g, '\\.')) }).click();
       await expect(page.locator('app-toast [role=status]')).toHaveCount(1);
       await expect(toast).toBeHidden({ timeout: 5000 });
       const r = await new AxeBuilder({ page }).include('.hero').include('#contact').analyze();
