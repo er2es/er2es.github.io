@@ -38,12 +38,44 @@ import { EMAIL, type SiteContent } from '../content/model';
     .loc { color: var(--fg-2); font-size: var(--t-subhead); }
     .status { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; font-weight: 500; }
     .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
-    .portrait { order: -1; }
-    .portrait img { display: block; width: min(100%, 15rem); height: auto; aspect-ratio: 1; object-fit: cover; border-radius: 2rem; }
+    .portrait { order: -1; position: relative; display: block; width: fit-content; border-radius: 2rem; }
+    .portrait img { display: block; width: min(100%, 15rem); height: auto; aspect-ratio: 1; object-fit: cover; border-radius: inherit; }
     @media (min-width: 800px) {
       .hero { grid-template-columns: 1.2fr 0.8fr; }
-      .portrait { order: 0; justify-self: end; }
-      .portrait img { width: min(100%, 20rem); border-radius: 2.5rem; }
+      .portrait { order: 0; justify-self: end; border-radius: 2.5rem; }
+      .portrait img { width: min(100%, 20rem); }
+    }
+
+    /*
+     * First load: the lines settle into place one after another, the portrait settles in scale.
+     * Transform only: everything is painted (and readable) from the first frame, the LCP image is never hidden.
+     * Played once per visit (html.settled is set afterwards), never under reduced motion.
+     */
+    @media (prefers-reduced-motion: no-preference) {
+      :host-context(html:not(.settled)) .text > * { animation: settle 500ms var(--ease-spring) both; }
+      :host-context(html:not(.settled)) .text > :nth-child(2) { animation-delay: 50ms; }
+      :host-context(html:not(.settled)) .text > :nth-child(3) { animation-delay: 100ms; }
+      :host-context(html:not(.settled)) .text > :nth-child(4) { animation-delay: 150ms; }
+      :host-context(html:not(.settled)) .text > :nth-child(5) { animation-delay: 200ms; }
+      :host-context(html:not(.settled)) .portrait img { animation: settle-in 650ms var(--ease-spring) both; }
+      :host-context(html:not(.settled)) .dot::after { animation: ping 520ms var(--ease-out) 180ms both; }
+    }
+    @keyframes settle { from { transform: translateY(14px); } }
+    @keyframes settle-in { from { transform: scale(0.96); } }
+    .dot { position: relative; }
+    .dot::after { content: ''; position: absolute; inset: 0; border-radius: inherit; background: var(--accent); opacity: 0; pointer-events: none; }
+    @keyframes ping { from { transform: scale(1); opacity: 0.55; } to { transform: scale(3.2); opacity: 0; } }
+
+    /* the portrait leans a few degrees toward a fine pointer and catches a soft highlight (hero.ts sets the vars) */
+    @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+      .portrait { transform: perspective(900px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)); transition: transform var(--dur-med) var(--ease-spring); }
+      .portrait.tracking { transition-duration: 120ms; transition-timing-function: var(--ease-out); }
+      .portrait::after {
+        content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0;
+        background: radial-gradient(circle at var(--spec-x, 50%) var(--spec-y, 30%), rgba(255, 255, 255, 0.22), transparent 55%);
+        transition: opacity var(--dur-med) var(--ease-out);
+      }
+      .portrait.tracking::after { opacity: 1; }
     }
   `],
 })
@@ -61,6 +93,43 @@ export class Hero {
       const io = new IntersectionObserver(([e]) => this.paused.set(!e.isIntersecting));
       io.observe(host.nativeElement);
       destroy.onDestroy(() => io.disconnect());
+      destroy.onDestroy(tilt(host.nativeElement));
     });
   }
+}
+
+/** The portrait leans toward a fine pointer anywhere over the hero (at most 4 degrees, a portrait-width away). Returns a cleanup. */
+function tilt(stage: HTMLElement): () => void {
+  const pic = stage.querySelector<HTMLElement>('.portrait');
+  if (!pic || !matchMedia('(hover: hover) and (pointer: fine)').matches || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    return () => undefined;
+  }
+  let raf = 0;
+  const move = (e: PointerEvent): void => {
+    if (raf || e.pointerType !== 'mouse') return;
+    raf = requestAnimationFrame(() => {
+      raf = 0;
+      const r = pic.getBoundingClientRect();
+      const nx = Math.max(-1, Math.min(1, (e.clientX - (r.left + r.width / 2)) / r.width));
+      const ny = Math.max(-1, Math.min(1, (e.clientY - (r.top + r.height / 2)) / r.height));
+      pic.classList.add('tracking');
+      pic.style.setProperty('--tilt-x', `${(-ny * 4).toFixed(2)}deg`);
+      pic.style.setProperty('--tilt-y', `${(nx * 4).toFixed(2)}deg`);
+      pic.style.setProperty('--spec-x', `${(((e.clientX - r.left) / r.width) * 100).toFixed(1)}%`);
+      pic.style.setProperty('--spec-y', `${(((e.clientY - r.top) / r.height) * 100).toFixed(1)}%`);
+    });
+  };
+  const leave = (): void => {
+    cancelAnimationFrame(raf);
+    raf = 0;
+    pic.classList.remove('tracking');
+    for (const p of ['--tilt-x', '--tilt-y']) pic.style.removeProperty(p);
+  };
+  stage.addEventListener('pointermove', move, { passive: true });
+  stage.addEventListener('pointerleave', leave);
+  return () => {
+    leave();
+    stage.removeEventListener('pointermove', move);
+    stage.removeEventListener('pointerleave', leave);
+  };
 }

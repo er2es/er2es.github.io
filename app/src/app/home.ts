@@ -76,6 +76,8 @@ export class Home {
       destroy.onDestroy(stop);
       destroy.onDestroy(initLit());
       destroy.onDestroy(onTripleShift(() => this.egg()));
+      // the hero's entrance plays once per visit, not again after an in-app language switch
+      setTimeout(() => document.documentElement.classList.add('settled'), 900);
       console.log('%cstat%c → shift shift shift\n%c“If I’m to choose between one evil and another, I prefer not to choose at all.”%c – Geralt of Rivia', 'font-weight:700;color:#30d158', 'color:inherit', 'font-style:italic', 'opacity:.7');
       const chromium = (navigator as Navigator & { userAgentData?: { brands: { brand: string }[] } }).userAgentData?.brands.some((b) => b.brand === 'Chromium');
       const calm = !matchMedia('(prefers-reduced-motion: reduce), (prefers-reduced-transparency: reduce), (prefers-contrast: more)').matches;
