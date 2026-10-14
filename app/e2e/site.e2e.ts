@@ -79,12 +79,12 @@ test.describe('browser language detection', () => {
       await expect(page.locator('html')).toHaveAttribute('lang', 'hu');
     });
     test('an explicit choice of English wins over the browser language', async ({ page }) => {
-      await page.addInitScript(() => localStorage.setItem('cv:lang', 'en'));
+      await page.addInitScript(() => sessionStorage.setItem('cv:lang', 'en'));
       await page.goto('/');
       await expect(page).toHaveURL(/\/$/);
       await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     });
-    test('switching to English from the Hungarian page sticks', async ({ page }) => {
+    test('switching to English from the Hungarian page sticks within the tab session', async ({ page }) => {
       await ready(page, '/hu/');
       await page.getByRole('link', { name: 'English' }).first().click();
       await expect(page.locator('html')).toHaveAttribute('lang', 'en');
@@ -92,6 +92,20 @@ test.describe('browser language detection', () => {
       await expect(page).toHaveURL(/\/$/);
       await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     });
+  });
+  test('a new tab session with a Hungarian browser goes to /hu/ again, and old localStorage choices are ignored', async ({ browser, baseURL }) => {
+    const first = await browser.newContext({ locale: 'hu-HU', baseURL });
+    const p1 = await first.newPage();
+    await ready(p1, '/hu/');
+    await p1.getByRole('link', { name: 'English' }).first().click();
+    await expect(p1.locator('html')).toHaveAttribute('lang', 'en');
+    await first.close();
+    const second = await browser.newContext({ locale: 'hu-HU', baseURL });
+    const p2 = await second.newPage();
+    await p2.addInitScript(() => localStorage.setItem('cv:lang', 'en')); // a value from the old, permanent behaviour
+    await p2.goto('/');
+    await expect(p2).toHaveURL(/\/hu\/$/);
+    await second.close();
   });
   for (const locale of ['en-US', 'de-DE', 'fr-FR']) {
     test.describe(`${locale} browser`, () => {
@@ -140,6 +154,7 @@ test('no horizontal scroll on a phone', async ({ page }) => {
 test.describe('search results land exactly on their target', () => {
   for (const p of PAGES) {
     test(`${p.url}: every result exists and is shown below the header`, async ({ page }) => {
+      test.setTimeout(60_000); // ~45 palette round trips; clicks wait for the results' short entrance to settle
       await ready(page, p.url);
       const queries = ['php', 'qa', 'symfony', 'wordpress', 'laravel', 'egyetem', 'university', 'tesztel', 'tester', 'postgre', 'angular', 'survey', 'kérdőív', 'english', 'angol', 'education', 'tanulm', 'award', 'elismer', 'contact', 'kapcsolat', 'profile', 'profil', 'audit', 'fuzzphony', 'seeddms', 'vba'];
       const open = async (q: string) => {
@@ -201,6 +216,18 @@ test.describe('easter egg', () => {
     await page.keyboard.press('Escape');
     await expect(dlg).toBeHidden();
   });
+});
+
+test('the easter egg counts only cookies this page set, not those of other sites on the same host', async ({ page, context }) => {
+  await context.addCookies([{ name: 'other-project', value: '1', url: 'http://localhost:4300' }, { name: 'another', value: '2', url: 'http://localhost:4300' }]);
+  await ready(page, '/');
+  await page.keyboard.press('Shift');
+  await page.keyboard.press('Shift');
+  await page.keyboard.press('Shift');
+  const dlg = page.getByRole('dialog', { name: 'Under the hood' });
+  await expect(dlg).toBeVisible();
+  expect(await page.evaluate(() => document.cookie.split(';').length)).toBeGreaterThanOrEqual(2);
+  await expect(dlg.locator('dd').nth(2)).toHaveText('0');
 });
 
 test.describe('interaction layer', () => {
@@ -341,4 +368,97 @@ test.describe('interaction layer', () => {
       return Math.abs(parseFloat(pill.left) + nav.getBoundingClientRect().left - cur.left);
     })).toBeLessThan(2);
   });
+});
+
+test.describe('email address: visible, copyable, with a toast', () => {
+  const COPIED = { en: 'Email address copied to clipboard', hu: 'Az email cím a vágólapra másolva' };
+  for (const p of PAGES) {
+    test(`${p.url}: the address is text in the hero and contact; Enter copies it and a toast confirms`, async ({ page, context }) => {
+      await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+      await ready(page, p.url);
+      await expect(page.locator('.hero').getByText(EMAIL, { exact: true })).toBeVisible();
+      await expect(page.locator('#contact').getByText(EMAIL, { exact: true })).toBeVisible();
+      await expect(page.locator('.hero').getByRole('link', { name: /./ }).first()).toHaveAttribute('href', `mailto:${EMAIL}`); // secondary action stays
+      const copy = page.locator('.hero').getByRole('button', { name: new RegExp(EMAIL.replace(/\./g, '\.')) });
+      await copy.focus();
+      await page.keyboard.press('Enter');
+      const toast = page.getByRole('status').filter({ hasText: COPIED[p.lang as 'en' | 'hu'] });
+      await expect(toast).toBeVisible();
+      expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(EMAIL);
+      await expect(copy).toBeFocused(); // the toast never takes focus
+      // a second copy replaces the toast instead of stacking a new one
+      await page.locator('#contact').getByRole('button', { name: new RegExp(EMAIL.replace(/\./g, '\.')) }).click();
+      await expect(page.locator('app-toast [role=status]')).toHaveCount(1);
+      await expect(toast).toBeHidden({ timeout: 5000 });
+      const r = await new AxeBuilder({ page }).include('.hero').include('#contact').analyze();
+      expect(r.violations).toEqual([]);
+    });
+  }
+
+  test('when copying fails, it says so and selects the address for a manual copy', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'clipboard', { value: { writeText: () => Promise.reject(new Error('denied')) } });
+      document.execCommand = () => false;
+    });
+    await ready(page, '/');
+    await page.locator('.hero').getByRole('button', { name: /@/ }).click();
+    await expect(page.getByRole('status').filter({ hasText: 'Could not copy. The address is shown below.' })).toBeVisible();
+    expect(await page.evaluate(() => getSelection()?.toString())).toBe(EMAIL);
+  });
+});
+
+test('external links open in a new tab, say so, and the GitHub link carries its mark', async ({ page }) => {
+  for (const p of PAGES) {
+    await ready(page, p.url);
+    const ext = page.locator('main a[href^="http"]');
+    expect(await ext.count()).toBeGreaterThan(0);
+    for (const a of await ext.all()) {
+      await expect(a).toHaveAttribute('target', '_blank');
+      await expect(a).toHaveAttribute('rel', /noopener/);
+      await expect(a).toHaveAccessibleName(p.lang === 'en' ? /\(opens in a new tab\)$/ : /\(új lapon nyílik\)$/);
+    }
+    const gh = page.locator('#p-fuzzphony a[href^="https://github.com/"]');
+    await expect(gh.locator('svg[aria-hidden="true"]')).toHaveCount(1);
+    expect((await gh.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  }
+});
+
+test.describe('entrances replay at the top and the bottom', () => {
+  test('scrolling to the bottom plays the contact entrance, back to the top replays the hero', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await ready(page, '/');
+    await expect(page.locator('html')).toHaveClass(/\bsettled\b/);
+    await expect(page.locator('.stage')).not.toHaveClass(/\breplay\b/); // not again on the first load
+    await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; scrollTo(0, document.documentElement.scrollHeight); });
+    await expect(page.locator('#contact')).toHaveClass(/\benter\b/);
+    expect(await page.evaluate(() => document.getAnimations().some((a) => (a as CSSAnimation).animationName?.includes('settle') && (a.effect as KeyframeEffect).target?.closest('#contact')))).toBe(true);
+    await page.waitForTimeout(1300); // cooldown
+    await page.evaluate(() => scrollTo(0, 0));
+    await expect(page.locator('.stage')).toHaveClass(/\breplay\b/);
+    expect(await page.evaluate(() => document.getAnimations().some((a) => (a as CSSAnimation).animationName?.includes('settle') && (a.effect as KeyframeEffect).target?.closest('.hero')))).toBe(true);
+    await expect(page.locator('.stage')).not.toHaveClass(/\breplay\b/, { timeout: 3000 }); // and cleans up
+  });
+
+  test('nothing replays under reduced motion', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await ready(page, '/');
+    await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+    await page.waitForTimeout(400);
+    await page.evaluate(() => scrollTo(0, 0));
+    await page.waitForTimeout(400);
+    await expect(page.locator('.stage')).not.toHaveClass(/\breplay\b/);
+    await expect(page.locator('#contact')).not.toHaveClass(/\benter\b/);
+    expect(await page.evaluate(() => document.getAnimations().filter((a) => /settle/.test((a as CSSAnimation).animationName ?? '')).length)).toBe(0);
+  });
+});
+
+test('palette: empty query lists only the six sections; the placeholder is an example', async ({ page }) => {
+  for (const p of PAGES) {
+    await ready(page, p.url);
+    await page.keyboard.press('Control+k');
+    const input = page.getByRole('combobox');
+    await expect(input).toHaveAttribute('placeholder', p.lang === 'en' ? 'e.g. PHP' : 'pl. PHP');
+    await expect(page.getByRole('dialog').getByRole('option')).toHaveCount(6);
+    await page.keyboard.press('Escape');
+  }
 });
