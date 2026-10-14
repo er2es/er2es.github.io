@@ -1,7 +1,8 @@
-import { Component, input } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { FACTS, FACT_BY_ID, FILES, period, type ItemId, type SiteContent } from '../content/model';
 import { railGeometry } from '../graph/geometry';
 import { layoutGraph } from '../graph/layout';
+import { SkillLens } from './uses';
 
 const LAYOUT = layoutGraph(
   FACTS.filter((f) => f.inGraph).map((f) => ({ id: f.id, main: f.main, start: f.start!, end: f.end! })),
@@ -20,9 +21,9 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
         <p class="eyebrow mono">{{ file }}</p>
         <h2 id="experience-h">{{ c().ui.sections.experience }}</h2>
         <p class="intro">{{ c().experience.intro }}</p>
-        <ol class="log">
+        <ol class="log" (keydown)="onKey($event)">
           @for (r of rows; track r.id; let first = $first) {
-            <li class="row" [id]="'job-' + r.id" tabindex="-1">
+            <li class="row" [id]="'job-' + r.id" tabindex="-1" [class.lit]="lens.ids().has(r.id)">
               <div class="railcol" [style.width.px]="r.rail.width" aria-hidden="true">
                 <svg class="rail" [attr.width]="r.rail.width" height="100%" focusable="false">
                   @for (l of r.rail.lines; track $index) {
@@ -32,7 +33,8 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
                     <path [attr.d]="cv.d" fill="none" stroke-width="2" [style.stroke]="'var(--lane-' + cv.lane + ')'" />
                   }
                   @for (d of r.rail.dots; track $index) {
-                    <circle [attr.cx]="d.x" [attr.cy]="d.y" [attr.r]="d.r" [style.fill]="'var(--lane-' + d.lane + ')'" style="stroke: var(--bg-2); stroke-width: 2px" />
+                    <circle class="halo" [attr.cx]="d.x" [attr.cy]="d.y" [attr.r]="d.r" [style.fill]="'var(--lane-' + d.lane + ')'" />
+                    <circle class="node" [attr.cx]="d.x" [attr.cy]="d.y" [attr.r]="d.r" [style.fill]="'var(--lane-' + d.lane + ')'" style="stroke: var(--bg-2); stroke-width: 2px" />
                   }
                 </svg>
                 <span class="fill"></span>
@@ -79,6 +81,21 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
     .pts li::before { content: ''; position: absolute; left: 0; top: 0.7em; width: 5px; height: 5px; border-radius: 50%; background: var(--fg-2); }
     .tags { padding-bottom: 0.5rem; }
 
+    /* the commit node answers its row: grows a little on hover/focus, sends one ring out when the entry opens */
+    .node, .halo { transform-box: fill-box; transform-origin: center; }
+    .halo { opacity: 0; }
+    @media (prefers-reduced-motion: no-preference) {
+      .node { transition: scale var(--dur-short) var(--ease-spring); }
+      .row:is(:hover, :focus-within) .node { scale: 1.3; }
+      .row:has(details[open]) .halo { animation: ring 600ms var(--ease-out); }
+    }
+    @keyframes ring { from { scale: 1; opacity: 0.5; } to { scale: 2.8; opacity: 0; } }
+
+    /* lit by a skill chosen in the Skills section */
+    summary { transition: background-color var(--dur-short) var(--ease-out); }
+    .row.lit summary { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+    .row.lit .node { scale: 1.3; }
+
     /* the career line fills with the accent colour as you scroll (scroll-driven, transform only) */
     .fill { position: absolute; left: 7px; width: 2px; top: 0; bottom: 0; background: var(--accent); transform-origin: top; pointer-events: none; }
     .row:first-child .fill { top: 22px; }
@@ -107,6 +124,19 @@ export class Experience {
   readonly c = input.required<SiteContent>();
   protected readonly rows = ROWS;
   protected readonly file = FILES.experience;
+
+  protected readonly lens = inject(SkillLens);
+
+  /** Up/Down (and Home/End) move between the entries' summaries, like a list. */
+  protected onKey(e: KeyboardEvent): void {
+    const t = e.target as HTMLElement;
+    if (t.tagName !== 'SUMMARY' || !['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) return;
+    const all = [...(e.currentTarget as HTMLElement).querySelectorAll<HTMLElement>(':scope > li > .body > details > summary')];
+    const i = all.indexOf(t);
+    const next = e.key === 'Home' ? all[0] : e.key === 'End' ? all[all.length - 1] : all[i + (e.key === 'ArrowDown' ? 1 : -1)];
+    e.preventDefault();
+    next?.focus();
+  }
 
   protected per(id: ItemId): string {
     return period(FACT_BY_ID[id]);

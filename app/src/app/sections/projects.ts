@@ -1,5 +1,6 @@
-import { Component, input } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { FACT_BY_ID, FILES, PROJECT_ORDER, period, type SiteContent } from '../content/model';
+import { SkillLens } from './uses';
 
 @Component({
   selector: 'app-projects',
@@ -11,7 +12,7 @@ import { FACT_BY_ID, FILES, PROJECT_ORDER, period, type SiteContent } from '../c
         <p class="intro">{{ c().projects.intro }}</p>
         <ul class="cards">
           @for (id of order; track id) {
-            <li class="card reveal" [id]="'p-' + id" tabindex="-1">
+            <li class="card reveal" [id]="'p-' + id" tabindex="-1" [class.lit]="lens.ids().has(id)">
               <h3>{{ c().items[id].title }}</h3>
               @if (per(id)) { <p class="per mono">{{ per(id) }}</p> }
               <p>{{ c().items[id].summary }}</p>
@@ -34,12 +35,16 @@ import { FACT_BY_ID, FILES, PROJECT_ORDER, period, type SiteContent } from '../c
     .per { color: var(--fg-2); font-size: var(--t-footnote); }
     .pts li { padding-left: 1rem; position: relative; }
     .pts li::before { content: ''; position: absolute; left: 0; top: 0.7em; width: 5px; height: 5px; border-radius: 50%; background: var(--fg-2); }
+    /* lit by a skill chosen in the Skills section */
+    .card { transition: box-shadow var(--dur-short) var(--ease-out); }
+    .card.lit { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 70%, transparent); }
     @media (min-width: 800px) { .cards { grid-template-columns: repeat(2, 1fr); } }
   `],
 })
 export class Projects {
   readonly c = input.required<SiteContent>();
   protected readonly order = PROJECT_ORDER;
+  protected readonly lens = inject(SkillLens);
   protected readonly file = FILES.projects;
   protected per = (id: (typeof PROJECT_ORDER)[number]) => period(FACT_BY_ID[id]);
   protected kw = (id: (typeof PROJECT_ORDER)[number]) => FACT_BY_ID[id].keywords;
