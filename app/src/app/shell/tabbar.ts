@@ -86,25 +86,33 @@ export class TabBar {
   /** The width and language the labels were last fitted for: the same inputs give the same answer, so nothing is measured again. */
   private fitted = '';
 
-  /** Picks the largest label size at which every label fits; if none does, the bar shows icons only. */
+  /**
+   * Picks the largest label size at which every label fits; if none does, the bar shows icons only. The labels are
+   * measured once, at the size they have now, and the other sizes are worked out from that (the text is as wide as its
+   * font size, linearly), so there is a single read followed by a single write: no write-then-read back and forth.
+   */
   private fit(): void {
     if (matchMedia('(min-width: 900px)').matches) return; // the bar is not shown on wide screens
     const nav = this.nav().nativeElement;
     const key = `${nav.clientWidth}|${this.c().lang}`;
     if (key === this.fitted) return;
-    const labels = Array.from(nav.querySelectorAll<HTMLElement>('.lbl'));
-    const fits = (): boolean => labels.every((l) => l.scrollWidth <= l.clientWidth);
     this.fitted = key;
-    // the usual case: it already fits at the largest size, so nothing is written
-    const now = nav.style.getPropertyValue('--tab-fs');
-    if (!nav.classList.contains('compact') && (now === '' || now === `${LABEL_SIZES[0]}px`) && fits()) return;
-    nav.classList.remove('compact');
-    for (const size of LABEL_SIZES) {
+    const labels = Array.from(nav.querySelectorAll<HTMLElement>('.lbl'));
+    nav.classList.remove('compact'); // hidden labels cannot be measured
+    const now = parseFloat(getComputedStyle(labels[0]).fontSize);
+    // a label is as wide as its text, up to the room its tab gives it: that room is the tab's inner width
+    const widths = labels.map((l) => {
+      const tab = l.parentElement as HTMLElement;
+      const css = getComputedStyle(tab);
+      return [l.scrollWidth, tab.clientWidth - parseFloat(css.paddingLeft) - parseFloat(css.paddingRight)] as const;
+    });
+    const size = LABEL_SIZES.find((px) => widths.every(([need, have]) => (need * px) / now <= have));
+    if (size === undefined) {
+      nav.style.removeProperty('--tab-fs');
+      nav.classList.add('compact');
+    } else {
       nav.style.setProperty('--tab-fs', `${size}px`);
-      if (fits()) return;
     }
-    nav.style.removeProperty('--tab-fs');
-    nav.classList.add('compact');
   }
 
   protected href(s: SectionId): string {

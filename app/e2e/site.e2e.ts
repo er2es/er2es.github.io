@@ -734,3 +734,14 @@ test.describe('content security policy', () => {
     expect(ran).toBe(false);
   });
 });
+
+test('the portrait and the name in the header lead back to the very top of the page, and the hash goes', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await ready(page, '/');
+  await page.locator('app-header .links a[href$="#projects"]').click();
+  await expect.poll(() => page.evaluate(() => location.hash)).toBe('#projects');
+  await page.waitForTimeout(1300);
+  await page.locator('app-header .brand').click();
+  await expect.poll(() => page.evaluate(() => scrollY), { timeout: 5000 }).toBe(0);
+  await expect.poll(() => page.evaluate(() => location.hash)).toBe('');
+});

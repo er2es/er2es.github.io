@@ -10,8 +10,10 @@ import { Theme } from '../core/theme';
   template: `
     <div class="edge" aria-hidden="true"></div>
     <header class="bar glass">
-      <span class="avatar-slot" aria-hidden="true"></span>
-      <a class="mark" [attr.href]="home()" (click)="go($event, 'profile')">{{ c().hero.name }}</a>
+      <a class="brand" [attr.href]="home()" (click)="top($event)">
+        <span class="avatar-slot" aria-hidden="true"></span>
+        <span class="mark">{{ c().hero.name }}</span>
+      </a>
       <nav class="links" [attr.aria-label]="c().ui.navLabel">
         @for (s of sections; track s) {
           <a [attr.href]="href(s)" [attr.aria-current]="active() === s ? 'location' : null" (click)="go($event, s)">{{ c().ui.sections[s] }}</a>
@@ -62,7 +64,9 @@ import { Theme } from '../core/theme';
     @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
       .edge { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--bg); }
     }
-    .mark { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-weight: 700; color: var(--fg); text-decoration: none; letter-spacing: -0.01em; white-space: nowrap; }
+    /* the portrait and the name are one link, back to the very top of the page */
+    .brand { display: flex; align-items: center; gap: 0.75rem; min-width: 0; text-decoration: none; border-radius: 14px; }
+    .mark { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-weight: 700; color: var(--fg); letter-spacing: -0.01em; white-space: nowrap; }
     .links { display: none; gap: 0.25rem; margin-inline: auto; }
     .links a { padding: 0.75rem 0.75rem; border-radius: 999px; color: var(--fg-2); text-decoration: none; font-size: var(--t-subhead); font-weight: 500; }
     .links a[aria-current] { color: var(--fg); background: var(--tint-current); }
@@ -127,7 +131,7 @@ export class Header {
       let raf = 0;
       const frame = (now: number): void => {
         raf = 0;
-        const room = document.documentElement.scrollHeight - innerHeight;
+        const room = scrollY > 0 ? document.documentElement.scrollHeight - innerHeight : 0; // at the top there is nothing to measure
         const target = room > 0 ? Math.min(1, Math.max(0, scrollY / room)) : 0;
         const dt = Math.min(64, now - last || 16);
         last = now;
@@ -163,6 +167,14 @@ export class Header {
 
   protected href(s: SectionId): string {
     return anchorHref(this.locale(), s);
+  }
+
+  /** The portrait and name always go to the top of the page, not to the top of a section. */
+  protected top(e: Event): void {
+    if (e instanceof MouseEvent && (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0)) return;
+    e.preventDefault();
+    scrollTo({ top: 0 }); // smooth from the CSS, instant under reduced motion; the hash goes away at the top (core/hash.ts)
+    document.getElementById('main')?.focus({ preventScroll: true });
   }
 
   protected go(e: Event, id: SectionId): void {

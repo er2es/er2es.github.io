@@ -48,6 +48,9 @@ export class AvatarDock {
         const src = img.currentSrc || img.src;
         if (src && g.src !== src) g.src = src; // the file the hero already downloaded: no extra request
 
+        // at the top with the copy not showing there is nothing to place: no layout is read
+        if (window.scrollY === 0 && !g.classList.contains('on')) return;
+
         const pr = img.getBoundingClientRect();
         const sr = slot.getBoundingClientRect();
         const base = img.offsetWidth; // layout size, free of the entrance and lean transforms
