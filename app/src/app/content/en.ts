@@ -4,7 +4,7 @@ export const en: SiteContent = {
   lang: 'en',
   meta: {
     title: 'József Szabó – Full-stack PHP developer (Symfony, Angular, PostgreSQL)',
-    description: 'József Szabó, full-stack PHP developer in Budapest: Symfony, Angular, TypeScript, PostgreSQL triggers and stored procedures, REST APIs. Remote / hybrid.',
+    description: 'József Szabó, full-stack PHP developer in Budapest: Symfony, Angular, TypeScript, PostgreSQL triggers and stored procedures, REST / SOAP APIs. Remote / hybrid.',
     ogLocale: 'en_US',
   },
   ui: {
@@ -55,8 +55,8 @@ export const en: SiteContent = {
   profile: {
     paragraphs: [
       'I am a full-stack PHP developer in Budapest. I build web applications with Symfony on the server and Angular and TypeScript in the browser, and I follow the work down into PostgreSQL, where I write triggers and stored procedures and help design the schema underneath them.',
-      'Where a rule belongs to the data, I would rather enforce it in the database than trust every part of the application to remember it. Before I change anything, I decide how the change will be checked, and I check it again once it is live. I know my way around a GitLab CI/CD and RHEL environment, and I have often worked alongside external development teams, organising the internal testing of what they deliver.',
-      'I came to development by way of testing. I started in IT in 2008 with data preparation and VBA, then spent several years as a software tester, writing Selenium WebDriver tests and running user acceptance and exploratory testing; the habit of checking everything twice comes from there. Since then I have refactored legacy PHP, built applications in Laravel and CodeIgniter, and for a few years looked after WordPress: a multisite of more than 200 sites, with themes I built for it.',
+      'For more than three years I coordinated work on a web platform, in a GitLab CI/CD and RHEL environment. I worked with the external development team and organised the internal testing of what they delivered, and agreed database design and infrastructure needs with colleagues in-house. Alongside that, I built the platform’s support site on my own, as well as REST and SOAP API endpoints for partner organisations.',
+      'I came to development by way of testing. I started in IT in 2008 with data preparation and VBA, then spent several years as a software tester, writing automated tests in Selenium WebDriver and running user acceptance and exploratory testing. Since then I have refactored legacy PHP, built applications in Laravel and CodeIgniter, and for a few years looked after WordPress: a multisite of more than 200 sites, with themes I built for it.',
     ],
   },
   experience: {
@@ -105,7 +105,7 @@ export const en: SiteContent = {
         'Fixed bugs and added features in the Symfony back end and the Angular front end, working within a GitLab CI/CD and RHEL environment.',
         'Wrote and extended PostgreSQL triggers and stored procedures, and agreed database design and infrastructure requirements with internal colleagues.',
         'Built the platform’s support site on my own, in Symfony and Angular.',
-        'Developed web applications and API endpoints for partner organisations.',
+        'Developed web applications for partner organisations, along with REST and SOAP API endpoints.',
         'Maintained and extended the organisation’s WordPress sites and intranet, refactored legacy PHP code, and advised other development projects as a technical expert.',
       ],
     },

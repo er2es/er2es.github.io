@@ -4,7 +4,7 @@ export const hu: SiteContent = {
   lang: 'hu',
   meta: {
     title: 'Szabó József – full-stack PHP-fejlesztő (Symfony, Angular, PostgreSQL)',
-    description: 'Szabó József budapesti full-stack PHP-fejlesztő: Symfony, Angular, TypeScript, PostgreSQL-triggerek és tárolt eljárások, REST API-k. Remote / hybrid.',
+    description: 'Szabó József budapesti full-stack PHP-fejlesztő: Symfony, Angular, TypeScript, PostgreSQL-triggerek és tárolt eljárások, REST / SOAP API-k. Remote / hybrid.',
     ogLocale: 'hu_HU',
   },
   ui: {
@@ -55,8 +55,8 @@ export const hu: SiteContent = {
   profile: {
     paragraphs: [
       'Budapesti full-stack PHP-fejlesztő vagyok. Webalkalmazásokat készítek, a szerveroldalon Symfonyval, a böngészőben Angularral és TypeScripttel, de a munka nálam nem áll meg az alkalmazás kódjánál: a PostgreSQL-ben triggereket és tárolt eljárásokat írok, és az adatbázis tervezésében is részt veszek.',
-      'Az adatokhoz tartozó szabályokat szívesebben bízom az adatbázisra, mint arra, hogy az alkalmazás minden pontja emlékezzen rájuk. Mielőtt bármihez hozzányúlok, eldöntöm, hogyan fogom ellenőrizni a változtatást, és amikor élesbe kerül, újra megnézem. Jól ismerem a GitLab CI/CD-re és RHEL-szerverekre épülő környezetet, és sokat dolgoztam külső fejlesztőcsapatokkal is: én szerveztem a leszállított verzióik belső tesztelését.',
-      'A fejlesztéshez a minőségbiztosítás felől érkeztem. 2008-ban adat-előkészítéssel és VBA-val kezdtem az informatikában, aztán több évig szoftvertesztelő voltam: Selenium WebDriverrel írtam automatizált teszteket, emellett felhasználói elfogadási (UAT) és felfedező tesztelésben vettem részt. Innen hozom azt a szokást, hogy mindent kétszer nézek meg. Azóta refaktoráltam legacy PHP-kódot, Laravelben és CodeIgniterben is készítettem alkalmazásokat, néhány évig pedig WordPresszel foglalkoztam: egy több mint 200 oldalas multisite-ot gondoztam, és témákat is fejlesztettem hozzá.',
+      'Több mint három évig egy webes platform munkáit koordináltam, GitLab CI/CD-re és RHEL-szerverekre épülő környezetben. A külső fejlesztőcsapattal együtt dolgoztam, én szerveztem a leszállított verzióik belső tesztelését, az adatbázis-tervezésről és az infrastruktúra-igényekről pedig a belső kollégákkal egyeztettem. Emellett egyedül építettem fel a platform support oldalát, és partnerszervezeteknek REST és SOAP API-végpontokat is készítettem.',
+      'A fejlesztéshez a minőségbiztosítás felől érkeztem. 2008-ban adat-előkészítéssel és VBA-val kezdtem az informatikában, aztán több évig szoftvertesztelő voltam: Selenium WebDriverrel írtam automatizált teszteket, emellett felhasználói elfogadási (UAT) és felfedező tesztelésben vettem részt. Azóta refaktoráltam legacy PHP-kódot, Laravelben és CodeIgniterben is készítettem alkalmazásokat, néhány évig pedig WordPresszel foglalkoztam: egy több mint 200 oldalas multisite-ot gondoztam, és témákat is fejlesztettem hozzá.',
     ],
   },
   experience: {
@@ -105,7 +105,7 @@ export const hu: SiteContent = {
         'Hibákat javítottam és új funkciókat készítettem a Symfony-backendben és az Angular-frontendben, GitLab CI/CD-re és RHEL-re épülő környezetben.',
         'PostgreSQL-triggereket és tárolt eljárásokat írtam és bővítettem; az adatbázis-tervezésről és az infrastruktúra-igényekről a belső kollégákkal egyeztettem.',
         'A platform support oldalát egyedül építettem fel, Symfonyban és Angularban.',
-        'Partnerszervezeteknek webalkalmazások és API-végpontok is kikerültek a kezem alól.',
+        'Partnerszervezeteknek webalkalmazások, valamint REST és SOAP API-végpontok is kikerültek a kezem alól.',
         'Gondoztam és bővítettem a szervezet WordPress-oldalait és intranetét, refaktoráltam legacy PHP-kódot, és technikai szakértőként más fejlesztési projekteket is támogattam.',
       ],
     },
