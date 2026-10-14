@@ -49,12 +49,12 @@ import { Email } from './email';
     .status { gap: 0.5rem; font-weight: 600; }
     .loc { color: var(--fg-2); }
     .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
-    .portrait { order: -1; position: relative; display: block; width: fit-content; border-radius: 2rem; }
-    .portrait img { display: block; width: min(100%, 15rem); height: auto; aspect-ratio: 1; object-fit: cover; border-radius: inherit; }
+    /* the box has a definite size of its own: with a content-sized width the percentage on the image resolved to 0 until the file arrived, and the text below jumped (layout shift) */
+    .portrait { order: -1; position: relative; display: block; width: min(100%, 15rem); border-radius: 2rem; }
+    .portrait img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; border-radius: inherit; }
     @media (min-width: 800px) {
       .hero { grid-template-columns: 1.2fr 0.8fr; }
-      .portrait { order: 0; justify-self: end; border-radius: 2.5rem; }
-      .portrait img { width: min(100%, 20rem); }
+      .portrait { order: 0; justify-self: end; border-radius: 2.5rem; width: min(100%, 20rem); }
     }
 
     /*
