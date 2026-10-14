@@ -225,6 +225,11 @@ test.describe('easter egg', () => {
     await page.keyboard.press('Shift');
     await page.keyboard.press('Shift');
     await page.keyboard.press('Shift');
+    // first the photo, then any key moves on to the sheet, which sits on the photo's glow
+    await expect(page.locator('app-pup .pup')).toBeVisible();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await page.keyboard.press('Space');
+    await expect(page.locator('app-pup .pup.sheet')).toBeAttached();
     const dlg = page.getByRole('dialog', { name: 'Under the hood' });
     await expect(dlg).toBeVisible();
     await expect(dlg.getByText('Third-party cookies')).toBeVisible();
@@ -234,15 +239,44 @@ test.describe('easter egg', () => {
     expect(r.violations).toEqual([]);
     await page.keyboard.press('Escape');
     await expect(dlg).toBeHidden();
+    // while the glow fades out, the photo does not come back
+    await expect(page.locator('app-pup .pup.leave .stage')).toHaveCSS('opacity', '0');
+    await expect(page.locator('app-pup')).toHaveCount(0, { timeout: 3000 }); // the glow leaves with the sheet
+  });
+
+  test('behind the photo and behind the sheet the page neither scrolls nor takes clicks', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await ready(page, '/');
+    for (let i = 0; i < 3; i++) await page.keyboard.press('Shift');
+    await expect(page.locator('app-pup .hint')).toBeAttached();
+    await page.mouse.move(640, 400);
+    await page.mouse.wheel(0, 900);
+    await page.waitForTimeout(300);
+    expect(await page.evaluate(() => scrollY)).toBe(0);
+    expect(await page.evaluate(() => !!document.querySelector('app-header[inert]') && !!document.querySelector('main[inert]'))).toBe(true);
+    await page.keyboard.press('Space');
+    await expect(page.getByRole('dialog')).toBeVisible();
+    await page.mouse.wheel(0, 900);
+    await page.waitForTimeout(300);
+    expect(await page.evaluate(() => scrollY)).toBe(0);
+    await expect(page.locator('app-pup .stage')).toHaveCSS('opacity', '0', { timeout: 3000 }); // the photo itself is gone
+  });
+
+  test('Escape on the photo itself closes it without ever opening the sheet', async ({ page }) => {
+    await ready(page, '/');
+    for (let i = 0; i < 3; i++) await page.keyboard.press('Shift');
+    await expect(page.locator('app-pup .pup')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('app-pup .pup')).toHaveCount(0, { timeout: 3000 });
+    await expect(page.getByRole('dialog')).toHaveCount(0);
   });
 });
 
 test('the easter egg counts only cookies this page set, not those of other sites on the same host', async ({ page, context, baseURL }) => {
   await context.addCookies([{ name: 'other-project', value: '1', url: baseURL! }, { name: 'another', value: '2', url: baseURL! }]);
   await ready(page, '/');
-  await page.keyboard.press('Shift');
-  await page.keyboard.press('Shift');
-  await page.keyboard.press('Shift');
+  for (let i = 0; i < 3; i++) await page.keyboard.press('Shift');
+  await page.keyboard.press('Space'); // past the photo
   const dlg = page.getByRole('dialog', { name: 'Under the hood' });
   await expect(dlg).toBeVisible();
   expect(await page.evaluate(() => document.cookie.split(';').length)).toBeGreaterThanOrEqual(2);
@@ -397,7 +431,7 @@ test.describe('email address: visible, copyable, with a toast', () => {
       await ready(page, p.url);
       await expect(page.locator('.hero').getByText(EMAIL, { exact: true })).toBeVisible();
       await expect(page.locator('#contact').getByText(EMAIL, { exact: true })).toBeVisible();
-      await expect(page.locator('.hero').getByRole('link', { name: /./ }).first()).toHaveAttribute('href', `mailto:${EMAIL}`); // secondary action stays
+      await expect(page.locator('#contact a[href^="mailto:"]')).toHaveAttribute('href', `mailto:${EMAIL}`); // the mail icon beside the other links
       const copy = page.locator('.hero').getByRole('button', { name: new RegExp(EMAIL.replace(/\./g, '\.')) });
       await copy.focus();
       await page.keyboard.press('Enter');
@@ -511,6 +545,9 @@ test.describe('URL hash follows the scroll, but only after the visitor has click
     await page.waitForTimeout(350);
   };
   const hash = (page: Page) => page.evaluate(() => location.hash);
+  // a spot inside a section, so the test does not depend on how tall the sections above it are
+  const inside = (page: Page, id: string, fraction = 0.5) =>
+    page.evaluate(([i, f]) => { const r = document.getElementById(i as string)!.getBoundingClientRect(); return Math.round(scrollY + r.top + r.height * (f as number) - 200); }, [id, fraction]);
 
   test('no hash while only scrolling; after a click it follows; at the top it goes and stays away', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
@@ -523,14 +560,14 @@ test.describe('URL hash follows the scroll, but only after the visitor has click
     await page.getByRole('link', { name: 'Projektek' }).first().click();
     await expect.poll(() => hash(page)).toBe('#projects');
     await page.waitForTimeout(1300); // the jump has come to rest
-    await scrollTo(page, 2300);
+    await scrollTo(page, await inside(page, 'skills'));
     expect(await hash(page)).toBe('#skills');
-    await scrollTo(page, 1100);
+    await scrollTo(page, await inside(page, 'experience'));
     expect(await hash(page)).toBe('#experience');
 
     await scrollTo(page, 0);
     expect(await hash(page)).toBe('');
-    await scrollTo(page, 1800);
+    await scrollTo(page, await inside(page, 'skills'));
     expect(await hash(page)).toBe(''); // not put back by scrolling
 
     await page.getByRole('link', { name: 'Kapcsolat' }).first().click();
@@ -545,7 +582,7 @@ test.describe('URL hash follows the scroll, but only after the visitor has click
     expect(await hash(page)).toBe('#job-chamber');
     await scrollTo(page, await page.evaluate(() => scrollY + 40)); // still inside Experience
     expect(await hash(page)).toBe('#job-chamber');
-    await scrollTo(page, 3200);
+    await scrollTo(page, await inside(page, 'projects'));
     expect(await hash(page)).not.toBe('#job-chamber');
     await scrollTo(page, 0);
     expect(await hash(page)).toBe('');
@@ -609,5 +646,43 @@ test.describe('the portrait flies into the header', () => {
     await expect(page.locator('app-avatar-dock .ghost')).not.toHaveClass(/on/); // portrait still partly in view: no half-way states
     await page.evaluate(() => window.scrollTo({ top: 700, behavior: 'instant' }));
     await expect(page.locator('app-avatar-dock .ghost')).toHaveClass(/on/);
+  });
+});
+
+test.describe('career arc', () => {
+  test('the log starts collapsed with the Backend lane lit; another lane takes over, and the lens comes back after pointing at a year', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await ready(page, '/hu/');
+    await expect(page.locator('#experience details[open]')).toHaveCount(0);
+    const lit = page.locator('#experience .row.lit');
+    const backend = page.locator('.arc .name', { hasText: 'Backend' });
+    const frontend = page.locator('.arc .name', { hasText: 'Frontend' });
+    await expect(backend).toHaveAttribute('aria-pressed', 'true');
+    const backendJobs = await lit.count();
+    expect(backendJobs).toBeGreaterThan(2);
+    await frontend.click();
+    await expect(frontend).toHaveAttribute('aria-pressed', 'true');
+    await expect(backend).toHaveAttribute('aria-pressed', 'false');
+    await expect(lit).toHaveCount(2); // the two jobs that used a front-end skill
+    // scrub over 2017 on the first lane: only the job of that year is lit, the lane's lens is back afterwards
+    const track = page.locator('.arc .lane').first().locator('.track');
+    await track.scrollIntoViewIfNeeded();
+    const box = (await track.boundingBox())!;
+    await page.mouse.move(box.x + box.width * 0.5, box.y + box.height / 2);
+    await expect(page.locator('.arc .readout')).toContainText('2017');
+    await expect(lit).toHaveCount(1);
+    await page.mouse.move(2, 2);
+    await expect(page.locator('.arc .readout')).not.toContainText('2017');
+    await expect(lit).toHaveCount(2);
+    await frontend.click();
+    await expect(lit).toHaveCount(0);
+  });
+
+  test('the trunk opens the first job in the log', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await ready(page, '/hu/');
+    await page.locator('.arc .base').first().click();
+    await expect(page.locator('#job-edu-nonprofit details')).toHaveJSProperty('open', true);
+    await expect.poll(() => page.evaluate(() => location.hash)).toBe('#job-edu-nonprofit');
   });
 });

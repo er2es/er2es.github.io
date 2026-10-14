@@ -1,6 +1,8 @@
 export type Locale = 'en' | 'hu';
 export const SITE_URL = 'https://er2es.github.io';
 export const EMAIL = 'szabo.jozsef.acc@gmail.com';
+export const GITHUB_URL = 'https://github.com/er2es';
+export const LINKEDIN_URL = 'https://www.linkedin.com/in/szabo-j%C3%B3zsef-a61156357/';
 
 export type SectionId = 'profile' | 'experience' | 'skills' | 'projects' | 'about' | 'contact';
 export const SECTION_IDS: readonly SectionId[] = ['profile', 'experience', 'skills', 'projects', 'about', 'contact'];
@@ -49,8 +51,9 @@ export const FACTS: readonly Fact[] = [
   { id: 'health-inst', kind: 'job', main: false, inGraph: true, start: 2014, end: 2015,
     keywords: ['LimeSurvey', 'MySQL', 'Excel VBA', 'MS Access'] },
   { id: 'wordpress', kind: 'project', main: false, inGraph: false, start: 2016, end: 2021,
-    keywords: ['WordPress', 'PHP 7', 'CDN'] },
-  { id: 'sport-programme', kind: 'project', main: false, inGraph: false, start: 2013, end: 2015, keywords: [] },
+    keywords: ['WordPress', 'PHP', 'SEO', 'Caching', 'PageSpeed'] },
+  { id: 'sport-programme', kind: 'project', main: false, inGraph: false, start: 2013, end: 2015,
+    keywords: ['Legacy PHP', 'Bootstrap'] },
   { id: 'fuzzphony', kind: 'project', main: false, inGraph: false, start: null, end: null,
     url: 'https://github.com/er2es/fuzzphony', keywords: ['PHP', 'Symfony', 'PostgreSQL'] },
   { id: 'gov-reporting', kind: 'project', main: false, inGraph: false, start: 2015, end: 2020,
@@ -59,7 +62,8 @@ export const FACTS: readonly Fact[] = [
     keywords: ['CodeIgniter', 'Laravel', 'Bootstrap', 'Backpack'] },
   { id: 'surveys', kind: 'project', main: false, inGraph: false, start: 2012, end: 2021,
     keywords: ['IBM SPSS'] },
-  { id: 'admissions-map', kind: 'project', main: false, inGraph: false, start: 2013, end: 2013, keywords: [] },
+  { id: 'admissions-map', kind: 'project', main: false, inGraph: false, start: 2013, end: 2013,
+    keywords: ['Legacy PHP', 'jQuery'] },
 ];
 
 export const FACT_BY_ID = Object.fromEntries(FACTS.map((f) => [f.id, f])) as Record<ItemId, Fact>;
@@ -154,8 +158,8 @@ export interface SiteContent {
     };
   };
   hero: { name: string; role: string; location: string; status: string; cta: string; portraitAlt: string };
-  profile: { paragraphs: string[] };
-  experience: { intro: string };
+  profile: { paragraphs: string[]; hobbies: { label: string; cinema: string; woods: string; dog: string; walk: string; pho: string; games: string } };
+  experience: { intro: string; arc: string };
   skills: { intro: string; groups: Record<SkillGroupId, string> };
   projects: { intro: string; open: string };
   about: {

@@ -2,6 +2,7 @@ import { Component, inject, input } from '@angular/core';
 import { FACTS, FACT_BY_ID, FILES, period, type ItemId, type SiteContent } from '../content/model';
 import { railGeometry } from '../graph/geometry';
 import { layoutGraph } from '../graph/layout';
+import { CareerArc } from './career-arc';
 import { SkillLens } from './uses';
 
 const LAYOUT = layoutGraph(
@@ -15,14 +16,17 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
 
 @Component({
   selector: 'app-experience',
+  imports: [CareerArc],
   template: `
     <section id="experience" class="block alt" tabindex="-1" aria-labelledby="experience-h">
       <div class="wrap">
         <p class="eyebrow mono">{{ file }}</p>
         <h2 id="experience-h">{{ c().ui.sections.experience }}</h2>
         <p class="intro">{{ c().experience.intro }}</p>
+        <app-career-arc [c]="c()" />
+        <p class="eyebrow mono roles" aria-hidden="true">roles/</p>
         <ol class="log" (keydown)="onKey($event)">
-          @for (r of rows; track r.id; let first = $first) {
+          @for (r of rows; track r.id) {
             <li class="row" [id]="'job-' + r.id" tabindex="-1" [class.lit]="lens.ids().has(r.id)">
               <div class="railcol" [style.width.px]="r.rail.width" aria-hidden="true">
                 <svg class="rail" [attr.width]="r.rail.width" height="100%" focusable="false">
@@ -40,7 +44,7 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
                 <span class="fill"></span>
               </div>
               <div class="body">
-                <details [open]="first">
+                <details>
                   <summary>
                     <span class="role">{{ c().items[r.id].title }}</span>
                     <span class="org">{{ c().items[r.id].org }}</span>
@@ -59,7 +63,8 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
     </section>
   `,
   styles: [`
-    .log { margin-top: 1.5rem; }
+    .roles { margin-top: 2rem; }
+    .log { margin-top: 0.5rem; }
     .row { display: flex; gap: 0.75rem; scroll-margin-top: calc(var(--bar-h) + 1.25rem); outline: none; border-radius: 12px; }
     .railcol { position: relative; flex: none; }
     .rail { position: absolute; inset: 0; height: 100%; overflow: visible; }
@@ -94,6 +99,7 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
     /* lit by a skill chosen in the Skills section */
     summary { transition: background-color var(--dur-short) var(--ease-out); }
     .row.lit summary { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+    .row.lit .per { color: var(--fg); } /* the tint is darker than the page: keep the small text readable */
     .row.lit .node { scale: 1.3; }
 
     /* the career line fills with the accent colour as you scroll (scroll-driven, transform only) */

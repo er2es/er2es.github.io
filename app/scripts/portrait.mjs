@@ -1,5 +1,5 @@
 import sharp from 'sharp';
-import { mkdirSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -20,6 +20,10 @@ for (const w of [320, 480, 640]) {
   await base.clone().jpeg({ quality: 76, mozjpeg: true }).toFile(join(out, `portrait-${w}.jpg`));
 }
 
+// the easter-egg photo (Shift x3): its native width, nothing is upscaled; WebP is plenty for a rare, on-demand image
+const pup = join(src, 'Screenshot_2.png');
+if (existsSync(pup)) await sharp(pup).flatten({ background: '#fff' }).webp({ quality: 78 }).toFile(join(out, 'pup.webp'));
+
 let bad = false;
 for (const f of readdirSync(out)) {
   const size = statSync(join(out, f)).size;
@@ -28,7 +32,7 @@ for (const f of readdirSync(out)) {
   console.log(`${f}  ${size} B`);
 }
 // the LCP image: 640w on desktop retina, 480w on most phones
-for (const [f, max] of [['portrait-640.avif', 36000], ['portrait-480.avif', 20000]]) {
+for (const [f, max] of [['portrait-640.avif', 36000], ['portrait-480.avif', 20000], ['pup.webp', 60000]]) {
   const size = statSync(join(out, f)).size;
   if (size > max) { console.error(`${f} is ${size} B, over the ${max} B budget: lower the AVIF quality`); bad = true; }
 }

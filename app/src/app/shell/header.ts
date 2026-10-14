@@ -1,7 +1,8 @@
-import { Component, computed, inject, input, output } from '@angular/core';
+import { Component, DestroyRef, ElementRef, afterNextRender, computed, inject, input, output, signal } from '@angular/core';
 import { SECTION_IDS, type Locale, type SectionId, type SiteContent } from '../content/model';
 import { LangSwitch } from '../core/lang';
 import { anchorHref, inPageClick, pagePath } from '../core/nav';
+import { squirclePath } from '../core/squircle';
 import { Theme } from '../core/theme';
 
 @Component({
@@ -40,6 +41,7 @@ import { Theme } from '../core/theme';
         </button>
         <a class="chip" [attr.href]="otherHref()" [attr.lang]="other()" [attr.hreflang]="other()" (click)="switchLang($event)">{{ c().ui.otherLanguage }}</a>
       </div>
+      <svg class="read" aria-hidden="true" focusable="false"><path [attr.d]="outline()" pathLength="1" /></svg>
     </header>
   `,
   styles: [`
@@ -89,6 +91,10 @@ import { Theme } from '../core/theme';
         .mark { animation: dock linear both; animation-timeline: scroll(root); animation-range: 170px 340px; }
       }
     }
+    /* reading progress: a line that starts at the bottom-left corner and runs once around the bar as the page scrolls
+       (the offset is eased in script, so a fast flick still draws it smoothly); it blooms softly as the ring closes */
+    .read { position: absolute; inset: -1px; width: calc(100% + 2px); height: calc(100% + 2px); overflow: visible; pointer-events: none; }
+    .read path { fill: none; stroke: var(--accent); stroke-width: 2; stroke-dasharray: 1 2; stroke-dashoffset: 1; }
     @keyframes dock { from { opacity: 0; translate: 0 6px; } to { opacity: 1; translate: 0 0; } }
   `],
 })
@@ -99,6 +105,56 @@ export class Header {
   readonly palette = output<void>();
 
   protected readonly theme = inject(Theme);
+  /** The progress line follows the bar's own outline (squircle corners included), whatever width the bar has. */
+  protected readonly outline = signal('');
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  constructor() {
+    const destroy = inject(DestroyRef);
+    afterNextRender(() => {
+      const bar = this.host.nativeElement.querySelector<HTMLElement>('.bar');
+      if (!bar) return;
+      const fit = (): void => this.outline.set(squirclePath(bar.offsetWidth, bar.offsetHeight, 22));
+      new ResizeObserver(fit).observe(bar);
+      fit();
+
+      // reading progress, eased towards the real scroll position (frame-rate independent, instant under reduced motion)
+      const svg = bar.querySelector<SVGSVGElement>('.read');
+      const line = bar.querySelector<SVGPathElement>('.read path');
+      if (!svg || !line) return;
+      const still = matchMedia('(prefers-reduced-motion: reduce)');
+      let shown = 0;
+      let last = 0;
+      let raf = 0;
+      const frame = (now: number): void => {
+        raf = 0;
+        const room = document.documentElement.scrollHeight - innerHeight;
+        const target = room > 0 ? Math.min(1, Math.max(0, scrollY / room)) : 0;
+        const dt = Math.min(64, now - last || 16);
+        last = now;
+        shown = still.matches ? target : shown + (target - shown) * (1 - Math.exp(-dt / 110));
+        if (Math.abs(target - shown) < 0.0004) shown = target;
+        line.style.strokeDashoffset = String(1 - shown);
+        const bloom = Math.min(1, Math.max(0, (shown - 0.97) / 0.03)); // 0 until the last 3 %, 1 when the ring is closed
+        svg.style.filter = bloom > 0 && !still.matches ? `drop-shadow(0 0 ${(6 * bloom).toFixed(1)}px var(--accent))` : '';
+        if (shown !== target) raf = requestAnimationFrame(frame);
+      };
+      const kick = (): void => {
+        if (!raf) {
+          last = performance.now();
+          raf = requestAnimationFrame(frame);
+        }
+      };
+      addEventListener('scroll', kick, { passive: true });
+      addEventListener('resize', kick);
+      kick();
+      destroy.onDestroy(() => {
+        removeEventListener('scroll', kick);
+        removeEventListener('resize', kick);
+        cancelAnimationFrame(raf);
+      });
+    });
+  }
   private readonly lang = inject(LangSwitch);
   protected readonly sections = SECTION_IDS;
   protected readonly other = computed<Locale>(() => (this.locale() === 'en' ? 'hu' : 'en'));

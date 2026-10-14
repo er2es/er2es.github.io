@@ -77,3 +77,6 @@ a { color: var(--accent); text-underline-offset: 0.2em; }
 ::selection { background: var(--sel-bg); color: var(--sel-fg); }
 img, picture, svg { -webkit-user-select: none; user-select: none; -webkit-user-drag: none; }
 img::selection { background: transparent; }
+
+/* nothing scrolls behind the photo scene or an open sheet */
+html:has(app-pup .pup, dialog[open]) { overflow: hidden; }

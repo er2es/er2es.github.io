@@ -6,7 +6,7 @@ import { PROJECT_ORDER, type Fact, type ItemId, type ItemText } from '../content
  * CV may be spelled differently from the skill list. Every skill maps to itself even when it is not listed here.
  */
 export const SKILL_TERMS: Readonly<Record<string, readonly string[]>> = {
-  PHP: ['PHP 7', 'Legacy PHP refactor', 'Symfony', 'Laravel', 'CodeIgniter', 'WordPress', 'WordPress multisite'],
+  PHP: ['PHP 7', 'Legacy PHP', 'Legacy PHP refactor', 'Symfony', 'Laravel', 'CodeIgniter', 'WordPress', 'WordPress multisite'],
   Laravel: ['Backpack'],
   WordPress: ['WordPress multisite'],
   'Node.js': ['Node'],

@@ -4,8 +4,8 @@ import { EMAIL, type SiteContent } from '../content/model';
 import { Toast, copyText } from '../core/toast';
 
 /**
- * The address as visible text on a button that copies it (a mail client is not a given), with the mailto link
- * as the secondary action next to it. If copying fails, the address is selected so it can be copied by hand.
+ * The address as visible text on a button that copies it (a mail client is not a given); the Contact section
+ * adds a mailto icon next to its other links. If copying fails, the address is selected so it can be copied by hand.
  */
 @Component({
   selector: 'app-email',
@@ -18,10 +18,6 @@ import { Toast, copyText } from '../core/toast';
         </svg>
         <span class="sr-only">{{ x().copy }}</span>
       </button>
-      <a class="link-action" [attr.href]="'mailto:' + email">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5.5" width="18" height="13" rx="2.5" /><path d="M3.5 7l8.5 6.5L20.5 7" /></svg>
-        {{ c().hero.cta }}
-      </a>
     </div>
   `,
   styles: [`

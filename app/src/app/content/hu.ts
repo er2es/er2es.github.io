@@ -63,9 +63,11 @@ export const hu: SiteContent = {
       'Több mint három évig egy webes platform munkáit koordináltam, GitLab CI/CD-re és RHEL-szerverekre épülő környezetben. A külső fejlesztőcsapattal együtt dolgoztam, én szerveztem a leszállított verzióik belső tesztelését, az adatbázis-tervezésről és az infrastruktúra-igényekről pedig a belső kollégákkal egyeztettem. Emellett egyedül építettem fel a platform support oldalát, és partnerszervezeteknek REST és SOAP API-végpontokat is készítettem.',
       'A fejlesztéshez a minőségbiztosítás felől érkeztem. 2008-ban adat-előkészítéssel és VBA-val kezdtem az informatikában, aztán több évig szoftvertesztelő voltam: Selenium WebDriverrel írtam automatizált teszteket, emellett felhasználói elfogadási (UAT) és felfedező tesztelésben vettem részt. Azóta refaktoráltam legacy PHP-kódot, Laravelben és CodeIgniterben is készítettem alkalmazásokat, néhány évig pedig WordPresszel foglalkoztam: egy több mint 200 oldalas multisite-ot gondoztam, és témákat is fejlesztettem hozzá.',
     ],
+    hobbies: { label: 'Szabadidőben', cinema: 'Mozi', woods: 'Erdei kirándulás', dog: 'Kutyák', walk: 'Séta', pho: 'Pho leves', games: 'Videójátékok' },
   },
   experience: {
-    intro: 'A legfrissebb van elöl. A munkahelyeket név helyett csak a jellegükkel írom le; a részletekért nyiss meg egy tételt, a teljes önéletrajzot pedig emailben kérheted.',
+    intro: 'A munkahelyeket név nélkül, a jellegükkel írom le. A teljes önéletrajzot emailben kérheted.',
+    arc: 'Szakmai területek az időben: minden sáv egy munkahely, ahol használtam őket',
   },
   skills: {
     intro: 'A technológiák, amelyekkel dolgozom, és a tesztelési módszerek, amelyeket a QA-s évekből hoztam magammal, területek szerint.',

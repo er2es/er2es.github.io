@@ -63,9 +63,11 @@ export const en: SiteContent = {
       'For more than three years I coordinated work on a web platform, in a GitLab CI/CD and RHEL environment. I worked with the external development team and organised the internal testing of what they delivered, and agreed database design and infrastructure needs with colleagues in-house. Alongside that, I built the platform’s support site on my own, as well as REST and SOAP API endpoints for partner organisations.',
       'I came to development by way of testing. I started in IT in 2008 with data preparation and VBA, then spent several years as a software tester, writing automated tests in Selenium WebDriver and running user acceptance and exploratory testing. Since then I have refactored legacy PHP, built applications in Laravel and CodeIgniter, and for a few years looked after WordPress: a multisite of more than 200 sites, with themes I built for it.',
     ],
+    hobbies: { label: 'Away from keyboard', cinema: 'Cinema', woods: 'Hiking in the woods', dog: 'Dogs', walk: 'Walks', pho: 'Pho soup', games: 'Video games' },
   },
   experience: {
-    intro: 'Most recent first. I describe employers by type rather than by name; open an entry for the details, or email me for the full CV.',
+    intro: 'Employers are described by type, not by name. The full CV is available by email.',
+    arc: 'Skill families over time: each bar is a job that used them',
   },
   skills: {
     intro: 'The stack I work in, and the testing methods I brought with me from my QA years, grouped by area.',
