@@ -7,7 +7,7 @@ Personal CV site of József Szabó, in English (`/`) and Hungarian (`/hu/`). Liv
 - Angular 22 (standalone components, signals, zoneless), TypeScript, SCSS
 - Static prerender (SSG) with hydration, no server at runtime
 - No UI library, no webfonts, no analytics, no cookies, no third-party requests
-- ESLint with angular-eslint, Vitest (unit), Playwright and axe-core (end-to-end and accessibility), Lighthouse (performance gate)
+- Quality gates: type check (strict TypeScript, strict Angular templates), ESLint with angular-eslint, Vitest (unit), Playwright and axe-core (end-to-end and accessibility), Lighthouse (performance gate)
 
 ## Layout
 
