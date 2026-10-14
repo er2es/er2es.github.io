@@ -1,4 +1,4 @@
-import { Component, computed, inject, input } from '@angular/core';
+import { Component, computed, inject, input, signal } from '@angular/core';
 import { EXTRA } from '../content/extra';
 import { FACT_BY_ID, FILES, PROJECT_ORDER, period, type SiteContent } from '../content/model';
 import { SkillLens } from './uses';
@@ -16,7 +16,13 @@ import { SkillLens } from './uses';
             <li class="card reveal" [id]="'p-' + id" tabindex="-1" [class.lit]="lens.ids().has(id)">
               <h3>{{ c().items[id].title }}</h3>
               @if (per(id)) { <p class="per mono">{{ per(id) }}</p> }
-              <p>{{ c().items[id].summary }}</p>
+              <p class="sum" [id]="'sum-' + id" [class.open]="opened().has(id)">{{ c().items[id].summary }}</p>
+              @if (long(id)) {
+                <button type="button" class="more" [attr.aria-expanded]="opened().has(id)" [attr.aria-controls]="'sum-' + id" (click)="fold(id)">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6" /></svg>
+                  <span class="sr-only">{{ opened().has(id) ? x().less : x().more }}</span>
+                </button>
+              }
               @if (c().items[id].points.length) {
                 <ul class="pts">@for (p of c().items[id].points; track $index) { <li>{{ p }}</li> }</ul>
               }
@@ -44,7 +50,15 @@ import { SkillLens } from './uses';
     /* lit by a skill chosen in the Skills section */
     .card { transition: box-shadow var(--dur-short) var(--ease-out); }
     .card.lit { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 70%, transparent); }
-    @media (min-width: 800px) { .cards { grid-template-columns: repeat(2, 1fr); } }
+    /* on narrow screens a long description folds to a few lines, with a chevron to unfold it */
+    .more { justify-self: start; margin-top: -0.25rem; width: 44px; height: 32px; display: grid; place-items: center; border: 0; border-radius: 999px; background: color-mix(in srgb, var(--fg) 8%, transparent); color: var(--fg); cursor: pointer; }
+    .more svg { transition: rotate var(--dur-short) var(--ease-out); }
+    .more[aria-expanded='true'] svg { rotate: 180deg; }
+    @media (max-width: 799px) {
+      .sum:not(.open) { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 5; line-clamp: 5; overflow: hidden; }
+    }
+    @media (min-width: 800px) { .cards { grid-template-columns: repeat(2, 1fr); } .more { display: none; } }
+    @media (prefers-reduced-motion: reduce) { .more svg { transition: none; } }
   `],
 })
 export class Projects {
@@ -54,6 +68,13 @@ export class Projects {
   protected readonly x = computed(() => EXTRA[this.c().lang]);
   protected readonly file = FILES.projects;
   protected per = (id: (typeof PROJECT_ORDER)[number]) => period(FACT_BY_ID[id]);
+  protected readonly opened = signal<ReadonlySet<string>>(new Set());
+  protected long = (id: (typeof PROJECT_ORDER)[number]): boolean => (this.c().items[id].summary ?? '').length > 220;
+  protected fold(id: string): void {
+    const next = new Set(this.opened());
+    if (!next.delete(id)) next.add(id);
+    this.opened.set(next);
+  }
   protected kw = (id: (typeof PROJECT_ORDER)[number]) => FACT_BY_ID[id].keywords;
   protected url = (id: (typeof PROJECT_ORDER)[number]) => FACT_BY_ID[id].url ?? null;
 }

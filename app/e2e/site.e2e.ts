@@ -770,3 +770,45 @@ test.describe('career arc: pointing at a lane name', () => {
     await expect(backend).toHaveAttribute('aria-pressed', 'false');
   });
 });
+
+test.describe('review fixes', () => {
+  test('phone: the contact icons wrap inside the page margin', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
+    await ready(page, '/hu/');
+    const lefts = await page.locator('#contact .icon').evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().left)));
+    expect(lefts.length).toBe(3);
+    for (const x of lefts) expect(x).toBeGreaterThanOrEqual(16);
+  });
+
+  test('phone: the current tab keeps its name when the labels give way to icons', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
+    await ready(page, '/hu/');
+    const tabs = page.locator('app-tabbar .tabs');
+    await expect(tabs).toHaveClass(/compact/);
+    const w = await page.locator('app-tabbar a[aria-current] .lbl').evaluate((e) => e.getBoundingClientRect().width);
+    expect(w).toBeGreaterThan(20); // visible, not the 1px visually hidden label
+  });
+
+  test('the footer names the release and links to it and to the licence', async ({ page }) => {
+    await ready(page, '/');
+    const links = await page.locator('footer a').evaluateAll((els) => els.map((e) => (e as HTMLAnchorElement).href));
+    expect(links[0]).toMatch(/\/releases\/tag\/v\d+\.\d+\.\d+$/);
+    expect(links[1]).toMatch(/\/blob\/main\/LICENSE$/);
+  });
+
+  test('phone: a long project description folds and unfolds', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
+    await ready(page, '/');
+    const more = page.locator('#projects .more').first();
+    await expect(more).toHaveAttribute('aria-expanded', 'false');
+    await more.click();
+    await expect(more).toHaveAttribute('aria-expanded', 'true');
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await expect(more).toBeHidden();
+  });
+
+  test('a skill pill knows how many entries mention it', async ({ page }) => {
+    await ready(page, '/');
+    expect(Number(await page.locator('button.pill[data-skill="PHP"]').getAttribute('data-n'))).toBeGreaterThan(3);
+  });
+});

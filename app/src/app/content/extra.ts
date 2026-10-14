@@ -16,6 +16,9 @@ export interface ExtraText {
   copyFailed: string;
   /** Appended (visually hidden) to links that open in a new tab. */
   newTab: string;
+  /** Unfold / fold a long project description on narrow screens (spoken only). */
+  more: string;
+  less: string;
 }
 
 export const EXTRA: Record<Locale, ExtraText> = {
@@ -28,6 +31,8 @@ export const EXTRA: Record<Locale, ExtraText> = {
     copied: 'Email address copied to clipboard',
     copyFailed: 'Could not copy. The address is shown below.',
     newTab: '(opens in a new tab)',
+    more: 'Show the whole description',
+    less: 'Show less',
   },
   hu: {
     usedIn: 'Hol használtam: {skill}',
@@ -38,6 +43,8 @@ export const EXTRA: Record<Locale, ExtraText> = {
     copied: 'Az email cím a vágólapra másolva',
     copyFailed: 'Nem sikerült a másolás. A cím lent olvasható.',
     newTab: '(új lapon nyílik)',
+    more: 'A teljes leírás megjelenítése',
+    less: 'Kevesebb megjelenítése',
   },
 };
 

@@ -32,6 +32,8 @@ const LABEL_SIZES = [13, 12] as const;
       width: min(100% - 20px, 34rem); min-height: var(--tabbar-h); padding: 6px; border-radius: 26px;
       display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 2px;
     }
+    /* content scrolling under the bar must not show through the icons */
+    .tabs.glass { background: color-mix(in srgb, var(--bg-2) 92%, transparent); }
     a {
       display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 0; min-height: 52px; padding: 4px 2px;
       border-radius: 20px; color: var(--fg-2); text-decoration: none; font-size: var(--tab-fs, 12px); font-weight: 600; line-height: 1.1; text-align: center;
@@ -39,6 +41,13 @@ const LABEL_SIZES = [13, 12] as const;
     .lbl { display: block; max-width: 100%; overflow: hidden; white-space: nowrap; }
     /* labels that cannot fit at a readable size give way to the icons (still announced to screen readers) */
     .compact .lbl { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    /* in icon-only mode the current tab keeps its name next to its icon (the other tabs share what is left) */
+    @media (min-width: 360px) {
+      .compact { display: flex; }
+      .compact a { flex: 1 1 0; }
+      .compact a[aria-current] { flex: 0 0 auto; flex-direction: row; gap: 6px; padding-inline: 14px; }
+      .compact a[aria-current] .lbl { position: static; width: auto; height: auto; margin: 0; clip: auto; overflow: visible; }
+    }
     a[aria-current] { color: var(--fg); background: var(--tint-current); }
     a { transition: color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out), scale var(--dur-press) var(--ease-out); }
     @media (hover: hover) { a:not([aria-current]):hover { color: var(--fg); background: var(--tint-hover); } }

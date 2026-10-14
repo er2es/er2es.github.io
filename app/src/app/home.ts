@@ -8,6 +8,7 @@ import { initLit } from './core/lit';
 import { Seo } from './core/seo';
 import { onTripleShift } from './core/triple-shift';
 import { Egg } from './egg/egg';
+import { Footer } from './shell/footer';
 import { Pup } from './egg/pup';
 import { Palette } from './search/palette';
 import { About } from './sections/about';
@@ -24,7 +25,7 @@ import { ToastHost } from './shell/toast';
 
 @Component({
   selector: 'app-home',
-  imports: [Header, AvatarDock, TabBar, ToastHost, Egg, Pup, Hero, Profile, Experience, Skills, Projects, About, Contact, Palette],
+  imports: [Header, AvatarDock, TabBar, ToastHost, Egg, Pup, Footer, Hero, Profile, Experience, Skills, Projects, About, Contact, Palette],
   template: `
     <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
       <filter id="cv-refract" x="0" y="0" width="100%" height="100%">
@@ -44,6 +45,7 @@ import { ToastHost } from './shell/toast';
       <app-about [c]="c()" />
       <app-contact [c]="c()" />
     </main>
+    <app-footer [c]="c()" [attr.inert]="behind()" />
     <app-tabbar [attr.inert]="behind()" [c]="c()" [locale]="locale()" [active]="active()" />
     @defer (on idle) { <app-toast /> }
     @if (paletteOpen()) {

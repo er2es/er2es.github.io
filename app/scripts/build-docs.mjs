@@ -14,9 +14,10 @@ if (basename(out) !== 'docs') throw new Error(`refusing to clean ${out}`);
 // facts shown on the easter egg sheet: the real toolchain of this very build
 const counts = existsSync(join(root, 'test-counts.json')) ? JSON.parse(readFileSync(join(root, 'test-counts.json'), 'utf8')) : { unit: 0, e2e: 0 };
 const ts = JSON.parse(readFileSync(join(root, 'node_modules', 'typescript', 'package.json'), 'utf8')).version;
+const version = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version;
 writeFileSync(
   join(root, 'src', 'app', 'egg', 'build-info.ts'),
-  `/** Overwritten by scripts/build-docs.mjs on every build. */\nexport const BUILD = { date: '${new Date().toISOString().slice(0, 10)}', typescript: '${ts}', node: '${process.version}', unit: ${counts.unit}, e2e: ${counts.e2e} };\n`,
+  `/** Overwritten by scripts/build-docs.mjs on every build. */\nexport const BUILD = { date: '${new Date().toISOString().slice(0, 10)}', typescript: '${ts}', node: '${process.version}', version: '${version}', unit: ${counts.unit}, e2e: ${counts.e2e} };\n`,
 );
 
 execFileSync(

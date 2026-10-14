@@ -20,12 +20,12 @@ import { Theme } from '../core/theme';
         }
       </nav>
       <div class="ctl">
-        <button type="button" class="chip icon" aria-keyshortcuts="Control+K Meta+K" [attr.aria-label]="c().ui.palette.open" (click)="palette.emit()">
+        <button type="button" class="chip icon" aria-keyshortcuts="Control+K Meta+K" [attr.aria-label]="c().ui.palette.open" [attr.title]="c().ui.palette.open + ' (Ctrl K)'" (click)="palette.emit()">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
             <circle cx="11" cy="11" r="6.5" /><path d="M16 16l4.5 4.5" />
           </svg>
         </button>
-        <button type="button" class="chip icon" [attr.aria-label]="themeLabel()" (click)="theme.cycle($any($event.currentTarget))">
+        <button type="button" class="chip icon" [attr.aria-label]="themeLabel()" [attr.title]="themeLabel()" (click)="theme.cycle($any($event.currentTarget))">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
             @switch (theme.mode()) {
               @case ('light') {

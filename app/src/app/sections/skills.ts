@@ -23,7 +23,7 @@ interface Use { id: ItemId; job: boolean; title: string; meta: string; anchor: s
                 <dd>
                   <ul class="pills">
                     @for (s of g.items; track s.name) {
-                      <li><button type="button" class="pill" [attr.data-skill]="s.name"
+                      <li><button type="button" class="pill" [attr.data-skill]="s.name" [attr.data-n]="count(s.name)"
                           [attr.tabindex]="s.name === (focusable() ?? first()) ? 0 : -1"
                           [attr.aria-expanded]="open() === s.name" [attr.aria-controls]="open() === s.name ? 'uses-' + g.group : null"
                           (click)="toggle(s.name)" (focus)="focusable.set(s.name)">{{ s.label }}</button></li>
@@ -71,7 +71,18 @@ interface Use { id: ItemId; job: boolean; title: string; meta: string; anchor: s
       background: color-mix(in srgb, var(--fg) 7%, transparent);
       border: 1px solid color-mix(in srgb, var(--fg) 14%, transparent);
     }
-    button.pill { cursor: pointer; }
+    button.pill { cursor: pointer; position: relative; }
+    /* how many entries mention it, on hover or focus: no layout change, it sits on the corner */
+    button.pill::after {
+      content: attr(data-n); position: absolute; top: -8px; right: -5px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
+      background: var(--accent); color: var(--accent-fg); font: 600 11px / 18px var(--mono); text-align: center; pointer-events: none;
+      opacity: 0; scale: 0.6; transition: opacity var(--dur-short) var(--ease-out), scale var(--dur-short) var(--ease-spring);
+    }
+    button.pill[data-n='0']::after { display: none; }
+    @media (hover: hover) { button.pill:hover::after { opacity: 1; scale: 1; } }
+    button.pill:focus-visible::after { opacity: 1; scale: 1; }
+    @media (pointer: coarse) { .pill { padding-block: 0.6rem; } }
+    @media (prefers-reduced-motion: reduce) { button.pill::after { transition: none; } }
     @media (hover: hover) { button.pill:hover { background: color-mix(in srgb, var(--fg) 12%, transparent); } }
     button.pill[aria-expanded='true'] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
 
@@ -104,6 +115,11 @@ export class Skills {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   protected readonly x = computed(() => EXTRA[this.c().lang]);
+
+  /** How many jobs and projects mention a skill (the badge on its pill). */
+  protected count(name: string): number {
+    return usesOf(name, FACTS, this.c().items).length;
+  }
   protected readonly open = signal<string | null>(null);
   /** Roving tabindex: the one pill reachable with Tab; arrow keys move between pills. */
   protected readonly focusable = signal<string | null>(null);
