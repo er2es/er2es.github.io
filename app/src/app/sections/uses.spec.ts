@@ -1,6 +1,7 @@
 import { FACTS, SKILLS, type Fact, type ItemId, type ItemText } from '../content/model';
 import { getContent } from '../content';
-import { usesOf } from './uses';
+import { TestBed } from '@angular/core/testing';
+import { SkillLens, usesOf } from './uses';
 
 const fact = (id: string, kind: Fact['kind'], start: number, end: number, keywords: string[] = []): Fact =>
   ({ id: id as ItemId, kind, main: true, inGraph: kind === 'job', start, end, keywords });
@@ -43,5 +44,35 @@ describe('usesOf', () => {
       const all = SKILLS.flatMap((g) => g.items.map((i) => i.name));
       for (const s of all) for (const id of usesOf(s, FACTS, c.items)) expect(FACTS.some((f) => f.id === id)).toBe(true);
     }
+  });
+});
+
+describe('usesOf ordering and the lens', () => {
+  const facts = [
+    fact('a', 'job', 2010, 2012, ['PHP']),
+    fact('b', 'job', 2011, 2012, ['PHP']),
+    fact('c', 'job', 2010, 2012, ['PHP']),
+  ];
+  const items = { a: text('A'), b: text('B'), c: text('C') } as unknown as Record<ItemId, ItemText>;
+
+  it('puts the later start first when jobs end together', () => {
+    expect(usesOf('PHP', facts, items)).toEqual(['b', 'a', 'c']);
+  });
+
+  it('starts with nothing lit', () => {
+    expect(TestBed.inject(SkillLens).ids().size).toBe(0);
+  });
+});
+
+describe('usesOf with jobs of unknown dates', () => {
+  it('lists them last, in a stable order, instead of failing', () => {
+    const facts = [
+      { ...fact('x', 'job', 2010, 2012, ['PHP']), start: null, end: null },
+      { ...fact('y', 'job', 2010, 2012, ['PHP']), start: null, end: 2012 },
+      { ...fact('w', 'job', 2010, 2012, ['PHP']), start: null, end: null },
+      fact('z', 'job', 2014, 2016, ['PHP']),
+    ] as Fact[];
+    const items = { x: text('X'), y: text('Y'), w: text('W'), z: text('Z') } as unknown as Record<ItemId, ItemText>;
+    expect(usesOf('PHP', facts, items)).toEqual(['z', 'y', 'x', 'w']);
   });
 });

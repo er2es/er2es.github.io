@@ -50,3 +50,36 @@ describe('trackActive', () => {
     expect(on).not.toHaveBeenCalled();
   });
 });
+
+describe('trackActive without or with partial support', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('does nothing where there is no IntersectionObserver', () => {
+    vi.stubGlobal('IntersectionObserver', undefined);
+    const on = vi.fn();
+    const stop = trackActive(['a'], on);
+    window.dispatchEvent(new Event('scroll'));
+    expect(on).not.toHaveBeenCalled();
+    expect(stop()).toBeUndefined();
+  });
+
+  it('reports only the sections in the band, and skips ids that are not on the page', () => {
+    let callback: (entries: { isIntersecting: boolean; target: { id: string } }[]) => void = () => undefined;
+    const observed: Element[] = [];
+    vi.stubGlobal('IntersectionObserver', class {
+      constructor(cb: typeof callback) { callback = cb; }
+      observe(el: Element): void { observed.push(el); }
+      disconnect(): void {}
+    });
+    const here = document.createElement('section');
+    here.id = 'here';
+    document.body.appendChild(here);
+    const on = vi.fn();
+    const stop = trackActive(['here', 'gone'], on);
+    expect(observed).toEqual([here]);
+    callback([{ isIntersecting: false, target: { id: 'a' } }, { isIntersecting: true, target: { id: 'b' } }]);
+    expect(on.mock.calls).toEqual([['b']]);
+    stop();
+    here.remove();
+  });
+});

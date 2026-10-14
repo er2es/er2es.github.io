@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { sourceHash } from './source-hash.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const out = join(root, '..', 'docs');
@@ -43,4 +44,6 @@ for (const page of ['index.html', join('hu', 'index.html')]) {
   if (!html.includes('fetchpriority="low"')) throw new Error(`${page}: no module script to deprioritise`);
   writeFileSync(file, html);
 }
+// which sources this build came from (`npm run check:docs` compares it, so a forgotten rebuild is caught)
+writeFileSync(join(out, '.source-hash'), sourceHash() + '\n');
 console.log(`docs/ ready: ${readdirSync(out).join(', ')}`);

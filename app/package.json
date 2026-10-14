@@ -1,6 +1,6 @@
 {
   "name": "cv",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --port 4200",
@@ -9,10 +9,12 @@
     "typecheck": "ngc -p tsconfig.app.json --noEmit && ngc -p tsconfig.spec.json --noEmit && tsc -p tsconfig.e2e.json --noEmit",
     "lint": "eslint src e2e",
     "test": "ng test --no-watch",
+    "test:coverage": "ng test --no-watch --coverage --coverage-reporters=lcov --coverage-reporters=text-summary --coverage-include=\"src/app/core/**/*.ts\" --coverage-include=\"src/app/graph/**/*.ts\" --coverage-include=\"src/app/content/**/*.ts\" --coverage-include=\"src/app/search/search.ts\" --coverage-include=\"src/app/search/assistant.ts\" --coverage-include=\"src/app/sections/uses.ts\" --coverage-exclude=\"**/*.spec.ts\"",
     "check:contrast": "node scripts/check-contrast.mjs",
     "portrait": "node scripts/portrait.mjs",
     "e2e": "playwright test -c e2e/playwright.config.ts",
     "check:privacy": "node scripts/verify-privacy.mjs",
+    "check:docs": "node scripts/check-docs.mjs",
     "lighthouse": "node scripts/lighthouse-gate.mjs",
     "verify": "node scripts/verify.mjs"
   },
@@ -37,6 +39,7 @@
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.64.0",
     "@types/node": "^22.12.0",
+    "@vitest/coverage-v8": "^5.0.4",
     "angular-eslint": "^22.6.0",
     "chrome-launcher": "^1.2.2",
     "eslint": "^10.12.0",
@@ -47,5 +50,8 @@
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.71.2",
     "vitest": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=22.22.3"
   }
 }

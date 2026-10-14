@@ -49,3 +49,9 @@ describe('search', () => {
     expect(ctx).toContain('Symfony');
   });
 });
+
+describe('highlight with nothing to look for', () => {
+  it('returns the label as one plain run', () => {
+    expect(highlight('Symfony', '   ')).toEqual([{ text: 'Symfony', hit: false }]);
+  });
+});

@@ -28,6 +28,7 @@ run('npm run check:contrast');
 run('npm run portrait');
 run('npm run build');
 run('npm run check:privacy');
+run('npm run check:docs');
 
 const server = spawn(process.execPath, [join(root, 'scripts', 'serve.mjs'), port], { cwd: root, stdio: 'ignore' });
 try {

@@ -1,0 +1,15 @@
+{
+  "name": "er2es.github.io",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
+  "postCreateCommand": "cd app && npm ci && npx playwright install --with-deps chromium",
+  "forwardPorts": [4200, 4300],
+  "portsAttributes": {
+    "4200": { "label": "ng serve" },
+    "4300": { "label": "preview of docs/" }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": ["angular.ng-template", "dbaeumer.vscode-eslint", "esbenp.prettier-vscode", "ms-playwright.playwright"]
+    }
+  }
+}

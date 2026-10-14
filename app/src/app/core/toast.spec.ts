@@ -57,3 +57,42 @@ describe('copyText', () => {
     btn.remove();
   });
 });
+
+describe('copyText fallbacks', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it('uses the textarea fallback where the Clipboard API is missing, and reports what execCommand says', async () => {
+    vi.stubGlobal('navigator', { ...navigator, clipboard: undefined });
+    document.execCommand = vi.fn(() => true);
+    expect(await copyText('x')).toBe(true);
+    document.execCommand = vi.fn(() => false);
+    expect(await copyText('x')).toBe(false);
+  });
+
+  it('falls back after a refused write, and gives up quietly when nothing works', async () => {
+    vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText: () => Promise.reject(new Error('denied')) } });
+    document.execCommand = vi.fn(() => true);
+    expect(await copyText('x')).toBe(true);
+    document.execCommand = vi.fn(() => {
+      throw new Error('no');
+    });
+    expect(await copyText('x')).toBe(false);
+    (document as unknown as Record<string, unknown>)['execCommand'] = undefined;
+    expect(await copyText('x')).toBe(false);
+  });
+});
+
+describe('Toast defaults', () => {
+  it('is a plain confirmation that goes away by itself', () => {
+    vi.useFakeTimers();
+    const t = TestBed.inject(Toast);
+    t.show('hi');
+    expect(t.current()?.tone).toBe('ok');
+    vi.advanceTimersByTime(2500);
+    expect(t.current()).toBeNull();
+    vi.useRealTimers();
+  });
+});

@@ -30,3 +30,20 @@ describe('railGeometry', () => {
     expect(r.lines.some((l) => l.lane === 1)).toBe(false);
   });
 });
+
+describe('railGeometry side lanes', () => {
+  const row = (cells: GraphRow['cells']): GraphRow => ({ id: 'x', lane: 0, cells });
+
+  it('runs a through-line on a side lane, forks back to the main line, and leaves empty lanes alone', () => {
+    const r = railGeometry(row(['node', 'pass', 'fork', 'none']), 4, false, false);
+    expect(r.lines.filter((l) => l.lane === 1).length).toBe(1);
+    expect(r.curves.map((c) => c.lane)).toEqual([2]);
+    expect(r.lines.some((l) => l.lane === 3)).toBe(false);
+  });
+
+  it('starts a side line at the node of a side entry, with a curve from the main line', () => {
+    const r = railGeometry(row(['pass', 'node']), 2, false, false);
+    expect(r.curves.map((c) => c.lane)).toEqual([1]);
+    expect(r.dots.some((d) => d.lane === 1)).toBe(true);
+  });
+});

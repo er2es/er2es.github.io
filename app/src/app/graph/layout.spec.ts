@@ -46,3 +46,26 @@ describe('layoutGraph', () => {
     expect(one.rows[0].cells).toEqual(['node']);
   });
 });
+
+describe('layoutGraph ordering and lanes', () => {
+  const item = (id: string, main: boolean, start: number, end: number): GraphInput => ({ id, main, start, end });
+
+  it('orders by end, then start, then id, so the picture never depends on the input order', () => {
+    const rows = layoutGraph([item('b', true, 2010, 2014), item('c', true, 2012, 2014), item('a', true, 2012, 2014)]).rows.map((r) => r.id);
+    expect(rows).toEqual(['a', 'c', 'b']);
+  });
+
+  it('forks a side entry that began before every other entry ended into the last row', () => {
+    const { rows } = layoutGraph([item('main', true, 2010, 2020), item('side', false, 2009, 2015)]);
+    expect(rows.map((r) => r.id)).toEqual(['main', 'side']);
+    expect(rows[1].cells[0]).toBe('pass');
+  });
+
+  it('reuses a side lane once the earlier side entry has forked back', () => {
+    const l = layoutGraph([
+      item('m1', true, 2018, 2020), item('s1', false, 2018, 2019), item('m2', true, 2014, 2018),
+      item('s2', false, 2014, 2015), item('m3', true, 2010, 2014),
+    ]);
+    expect(l.laneCount).toBe(2);
+  });
+});

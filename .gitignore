@@ -2,6 +2,7 @@ node_modules/
 app/dist/
 app/.angular/
 app/test-results/
+app/coverage/
 app/playwright-report/
 app/.privacy-terms.local
 specs/

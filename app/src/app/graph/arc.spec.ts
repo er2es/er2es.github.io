@@ -42,3 +42,9 @@ describe('fromYear', () => {
     expect(fromYear('en', 2011)).toBe('from 2011');
   });
 });
+
+describe('defaults', () => {
+  it('puts a tick every four years unless told otherwise', () => {
+    expect(careerArc(jobs, []).ticks.map((t) => t.year)).toEqual([2010, 2014, 2018]);
+  });
+});

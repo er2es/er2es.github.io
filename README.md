@@ -1,5 +1,13 @@
 # er2es.github.io
 
+[![CI](https://github.com/er2es/er2es.github.io/actions/workflows/ci.yml/badge.svg)](https://github.com/er2es/er2es.github.io/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/er2es/er2es.github.io/graph/badge.svg)](https://codecov.io/gh/er2es/er2es.github.io)
+[![Angular](https://img.shields.io/badge/Angular-22-DD0031?logo=angular&logoColor=white)](https://angular.dev)
+[![Tag](https://img.shields.io/github/v/tag/er2es/er2es.github.io?label=tag)](https://github.com/er2es/er2es.github.io/tags)
+[![Release](https://img.shields.io/github/v/release/er2es/er2es.github.io)](https://github.com/er2es/er2es.github.io/releases)
+[![License: MIT](https://img.shields.io/badge/code-MIT-blue)](LICENSE)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/er2es/er2es.github.io)
+
 Personal CV site of József Szabó, in English (`/`) and Hungarian (`/hu/`). Live at <https://er2es.github.io>.
 
 ## Stack
@@ -18,7 +26,8 @@ Personal CV site of József Szabó, in English (`/`) and Hungarian (`/hu/`). Liv
 
 ## Commands
 
-Run from `app/` (Node 22.22.3 or newer):
+Run from `app/` (Node 22.22.3 or newer, see `.nvmrc`). There is also a dev container: open the repository in GitHub
+Codespaces and everything is installed.
 
 | Command | What it does |
 |---|---|
@@ -29,12 +38,28 @@ Run from `app/` (Node 22.22.3 or newer):
 | `npm run typecheck` | Type check of the app, its templates, the unit tests and the end-to-end tests |
 | `npm run lint` | ESLint (TypeScript, Angular templates and their accessibility rules) |
 | `npm test` | Unit tests |
+| `npm run test:coverage` | Unit tests with coverage of the logic layer (`core`, `graph`, `content`, search and skill matching) |
 | `npm run e2e` | End-to-end tests with an accessibility scan, both languages |
+| `npm run check:docs` | Fails if `docs/` was not built from the sources in the working tree |
 | `npm run lighthouse` | Lighthouse on `/` and `/hu/`, mobile and desktop |
-| `npm run verify` | All gates in one go: types, lint, unit, contrast, privacy, build, end-to-end, Lighthouse |
+| `npm run verify` | All gates in one go: types, lint, unit, contrast, privacy, build, docs, end-to-end, Lighthouse |
+
+## Continuous integration
+
+Every push to `main` and every pull request runs types, lint, unit tests with coverage (reported to Codecov), the
+colour-contrast check, the `docs/` check and the end-to-end tests in GitHub Actions. Coverage counts the logic layer;
+the components are exercised by the Playwright tests, which are not part of that number.
+
+GitHub Pages itself is unchanged: it serves the committed `docs/` folder. The `docs/` check is what keeps that folder
+in step with the sources.
 
 ## Release
 
 `npm run verify`, then `npm run build`, then commit `docs/` and push to `main`. GitHub Pages publishes it.
 
 `npm run portrait` and `npm run check:privacy` read local source material that is not part of this repository, so they only work on the author's machine.
+
+## License
+
+The code is MIT-licensed (`LICENSE`). The personal content of the site, meaning its texts and photographs, is not: see
+`LICENSE-CONTENT.md`.

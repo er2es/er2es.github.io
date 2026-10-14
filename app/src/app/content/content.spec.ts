@@ -83,3 +83,25 @@ describe('content', () => {
     for (const f of FACTS) expect(hu.items[f.id].points.length).toBe(en.items[f.id].points.length);
   });
 });
+
+describe('period and the small texts', () => {
+  it('has no period for an entry without dates, and a single year for a one-year entry', async () => {
+    const { FACT_BY_ID, period } = await import('./model');
+    expect(period(FACT_BY_ID['fuzzphony'])).toBe('');
+    expect(period(FACT_BY_ID['admissions-map'])).toBe('2013');
+  });
+
+  it('has the UI extras in both languages', async () => {
+    const { EXTRA, NO_USES } = await import('./extra');
+    expect(Object.keys(EXTRA.en).sort()).toEqual(Object.keys(EXTRA.hu).sort());
+    expect(NO_USES.length).toBeGreaterThan(0);
+  });
+});
+
+describe('period with half-known dates', () => {
+  it('has none unless both ends are known', () => {
+    const base = FACTS[0];
+    expect(period({ ...base, start: 2020, end: null })).toBe('');
+    expect(period({ ...base, start: null, end: 2020 })).toBe('');
+  });
+});

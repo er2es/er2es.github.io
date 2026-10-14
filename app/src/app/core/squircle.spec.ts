@@ -30,3 +30,9 @@ describe('squirclePath', () => {
     expect(pts[rightEdge + 1]).toEqual([400, 22]);
   });
 });
+
+describe('squirclePath defaults', () => {
+  it('draws smooth corners by default', () => {
+    expect(squirclePath(100, 50, 10).split(' L').length).toBeGreaterThan(40);
+  });
+});

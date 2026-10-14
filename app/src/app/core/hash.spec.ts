@@ -87,3 +87,23 @@ describe('HashFollower', () => {
     expect(writes).toEqual(['about-award']);
   });
 });
+
+describe('HashFollower edge cases', () => {
+  it('ignores a rest signal when nothing is jumping, and does not rewrite an unchanged hash', () => {
+    const { f, writes } = follower();
+    f.settled(500);
+    f.jump('skills');
+    f.jump('skills');
+    expect(writes).toEqual(['skills']);
+  });
+
+  it('shows the section in view when the pinned target is not a section of its own', () => {
+    const { f } = follower();
+    f.jump('main');
+    expect(f.section('experience', 0)).toBe('experience');
+  });
+
+  it('knows the section ids themselves', () => {
+    expect(sectionOf('experience')).toBe('experience');
+  });
+});
