@@ -1,18 +1,20 @@
 import { Component, computed, inject, input, signal, type OnInit } from '@angular/core';
 import { scrollToSection } from '../core/nav';
 import { FACTS, FACT_BY_ID, SKILLS, period, type ItemId, type ItemText, type SiteContent } from '../content/model';
-import { activeAt, careerArc, fromYear } from '../graph/arc';
-import { SKILL_TERMS, SkillLens, usesOf } from './uses';
+import { activeAt, fromYear } from '../graph/arc';
+import { careerGrid } from '../graph/grid';
+import { SkillLens, usesOf } from './uses';
 
 const JOBS = FACTS.filter((f) => f.kind === 'job').map((f) => ({ id: f.id, start: f.start!, end: f.end!, main: f.main }));
-/** The first job: not a skill family but the ground the others grew from, drawn as a trunk beside every lane. */
+/** The first job: not a skill family but the ground the others grew from, drawn as one block before the years. */
 const BASE: ItemId = 'edu-nonprofit';
 
 /**
- * The career at a glance, as a branch graph: the first job is the trunk, each skill family a branch that grows
- * out of it, one bar per job that used the family ("used in the role", not a level of skill; side jobs are thin).
- * A lane name lights its jobs in the log below (the same lens the Skills section uses), a bar (or the trunk) jumps to its entry,
- * and pointing at the time axis shows what the year looked like.
+ * The career as a contribution graph: one row per skill family, one square per year, the first job as the foundation
+ * block on the left. A square is the darker the more of that family's skills (the pills of the Skills section) the jobs of the year use ("used in
+ * the role", not a level of skill), so the picture fills in and darkens towards the present.
+ * A lane name lights its jobs in the log below (the same lens the Skills section uses) and previews on hover, a square
+ * (or the foundation) jumps to its entry, and pointing at the grid shows what that year looked like.
  * The log underneath stays the readable source, so the drawing is hidden from assistive technology.
  */
 @Component({
@@ -20,29 +22,31 @@ const BASE: ItemId = 'edu-nonprofit';
   template: `
       <div class="arc" role="group" [attr.aria-label]="c().experience.arc">
         <p class="eyebrow mono" aria-hidden="true">skills/</p>
-        @for (l of arc().lanes; track l.id; let i = $index; let last = $last) {
+        @for (l of grid().lanes; track l.id; let i = $index; let last = $last) {
           <div class="lane" [style.--i]="i">
             <button type="button" class="name" [attr.aria-pressed]="pressed(l.id)" (click)="toggle(l.id)" (pointerenter)="preview($event, l.id)" (pointerleave)="unpreview()">
               {{ c().skills.groups[l.group] }} <small class="mono">{{ from(l.since) }}</small>
             </button>
             <div class="track" aria-hidden="true" (pointermove)="scrub($event)" (pointerdown)="scrub($event)" (pointerleave)="leave()">
-              @for (t of arc().ticks; track t.year) { @if (t.left < 100) { <i class="grid" [style.left.%]="t.left"></i> } }
-              <i class="base" [class.first]="i === 0" [class.last]="last" [style.width.%]="arc().base.width" [style.--c]="arc().base.width / 2" (click)="go(base)">
-                <span class="tip"><b>{{ t(base).title }}</b>{{ t(base).org }} · {{ per(base) }}<em>{{ baseTags() }}</em></span>
-              </i>
-              @for (b of l.bars; track b.id) {
-                <i class="bar" [class.side]="!b.main" [class.dim]="dim(b.id)" [style.left.%]="b.left" [style.width.%]="b.width" [style.--c]="b.left + b.width / 2" (click)="go(b.id)">
-                  <span class="fill"></span>
-                  <span class="tip"><b>{{ t(b.id).title }}</b>{{ t(b.id).org }} · {{ per(b.id) }}@if (b.tags.length) { <em>{{ b.tags.join(' · ') }}</em> }</span>
+              <div class="cells" [style.grid-template-columns]="'repeat(' + grid().cols + ', minmax(0, 1fr))'">
+                <i class="base" [class.first]="i === 0" [class.last]="last" [style.grid-column]="'span ' + grid().baseYears" [style.--c]="(grid().baseYears / grid().cols) * 50" (click)="go(base)">
+                  <span class="tip"><b>{{ t(base).title }}</b>{{ t(base).org }} · {{ per(base) }}<em>{{ baseTags() }}</em></span>
                 </i>
-              }
-              @if (pos() !== null) { <s class="head" [style.left.%]="(pos() ?? 0) * 100"></s> }
-              <s class="now"></s>
+                @for (cell of l.cells; track cell.year) {
+                  <i class="cell" [attr.data-l]="cell.level" [class.off]="off(l.id)" [class.dim]="dim(cell.jobs)" [style.--c]="((cell.year - grid().min + 0.5) / grid().cols) * 100" (click)="goCell(cell.jobs)">
+                    <span class="fill"></span>
+                    @if (cell.jobs.length) {
+                      <span class="tip"><b>{{ cell.year }}</b>@for (j of cell.jobs; track j) { <span class="job">{{ t(j).title }} · {{ t(j).org }}</span> }@if (cell.tags.length) { <em>{{ cell.tags.join(' · ') }}</em> }</span>
+                    }
+                  </i>
+                }
+              </div>
+              @if (year() !== null) { <s class="head" [style.left.%]="headLeft()" [style.width.%]="100 / grid().cols"></s> }
             </div>
           </div>
         }
         <div class="axis mono" aria-hidden="true">
-          @for (t of arc().ticks; track t.year; let last = $last) { <span [class.end]="last" [style.left.%]="t.left">{{ t.year }}</span> }
+          @for (t of grid().ticks; track t.year; let last = $last) { <span [class.end]="last" [style.left.%]="last ? 100 : t.left">{{ t.year }}</span> }
         </div>
         <p class="readout" aria-hidden="true">{{ readout() }}</p>
       </div>
@@ -50,8 +54,10 @@ const BASE: ItemId = 'edu-nonprofit';
   styles: [`
     :host { display: block; }
     .eyebrow { margin-bottom: 0.5rem; }
-    .arc { margin-top: 1.5rem; --label: 8.5rem; --row: 46px; }
+    .arc { margin-top: 1.5rem; --label: 8.5rem; --row: 46px; --cell: 26px; }
     .lane { display: grid; grid-template-columns: var(--label) 1fr; align-items: center; gap: 0.75rem; }
+    /* each row's squares are their own layer (the entrance animation), so the row under the pointer comes to the front: its card must not sit behind the rows below */
+    .lane:hover { position: relative; z-index: 6; }
     .name {
       text-align: left; font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0.375rem 0.5rem;
       margin-inline: -0.5rem; border-radius: 10px; min-height: 36px; display: grid; line-height: 1.2;
@@ -63,30 +69,29 @@ const BASE: ItemId = 'edu-nonprofit';
     .name[aria-pressed='true'] small { color: var(--fg); }
 
     .track { position: relative; align-self: stretch; min-height: var(--row); touch-action: pan-y; cursor: crosshair; }
-    /* the thin rail every branch runs along */
-    .track::before { content: ''; position: absolute; inset: 50% 0 auto; height: 4px; translate: 0 -50%; border-radius: 2px; background: color-mix(in srgb, var(--fg) 7%, transparent); }
-    .grid { position: absolute; top: 0; bottom: 0; width: 1px; background: color-mix(in srgb, var(--fg) 7%, transparent); }
+    .cells { position: absolute; inset: 0; display: grid; align-items: center; column-gap: 3px; }
 
-    /* the trunk: one segment per lane, flush with its neighbours, so together they read as one tall bar */
-    .base {
-      position: absolute; left: 0; top: 0; bottom: 0; background: color-mix(in srgb, var(--fg) 20%, transparent); cursor: pointer;
-    }
+    /* the foundation: one block per lane, flush with its neighbours, so together they read as one tall block */
+    .base { position: relative; align-self: stretch; background: color-mix(in srgb, var(--fg) 20%, transparent); cursor: pointer; }
     .base.first { border-top-left-radius: 10px; border-top-right-radius: 10px; }
     .base.last { border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; }
 
-    .bar { position: absolute; top: calc(50% - 15px); height: 24px; cursor: pointer; transform-origin: 0 50%; font-style: normal; transition: opacity var(--dur-short) var(--ease-out); }
-    /* the coloured part is its own layer: it grows on hover, while the card inside the bar keeps its shape */
+    /* a year: empty, or one of four accent levels (how many technologies of the family its jobs list) */
+    .cell { position: relative; height: var(--cell); cursor: pointer; font-style: normal; }
+    /* the coloured part is its own layer: it fades and grows on its own, while the card inside the square stays as it is */
     .fill {
-      position: absolute; inset: 0; background: var(--accent); border-radius: 8px; box-shadow: 0 0 0 1.5px var(--bg-2);
-      transition: scale var(--dur-short) var(--ease-spring);
+      position: absolute; inset: 0; border-radius: 5px; background: color-mix(in srgb, var(--fg) 7%, transparent);
+      transition: opacity var(--dur-short) var(--ease-out), scale var(--dur-short) var(--ease-spring);
     }
-    /* a side job runs alongside a main one: a thin bar just below it */
-    .bar.side { top: calc(50% + 12px); height: 6px; }
-    .bar.side .fill { border-radius: 3px; background: color-mix(in srgb, var(--accent) 60%, transparent); box-shadow: none; }
-    .bar.dim { opacity: 0.25; }
-    @media (hover: hover) { .bar:hover { z-index: 6; } .bar:hover .fill { scale: 1 1.2; } }
+    .cell[data-l='1'] .fill { background: color-mix(in srgb, var(--accent) 36%, transparent); }
+    .cell[data-l='2'] .fill { background: color-mix(in srgb, var(--accent) 60%, transparent); }
+    .cell[data-l='3'] .fill { background: color-mix(in srgb, var(--accent) 82%, transparent); }
+    .cell[data-l='4'] .fill { background: var(--accent); }
+    .cell.off .fill { opacity: 0.5; } /* another lane is being shown */
+    .cell.dim .fill { opacity: 0.25; } /* a year or a skill is being shown, and this square's jobs are not in it */
+    @media (hover: hover) { .cell:not([data-l='0']):hover { z-index: 6; } .cell:not([data-l='0']):hover .fill { scale: 1.12; } .base:hover { z-index: 6; } }
 
-    /* what a bar is, on hover (the log below carries the same facts for everyone else) */
+    /* what a square is, on hover (the log below carries the same facts for everyone else) */
     .tip {
       display: none; position: absolute; z-index: 5; top: calc(100% + 8px); left: 50%; translate: calc(var(--c, 50) * -1%) 0;
       width: max-content; max-width: 16rem; padding: 0.5rem 0.75rem; border-radius: 12px; pointer-events: none; cursor: default;
@@ -94,36 +99,36 @@ const BASE: ItemId = 'edu-nonprofit';
       font-size: var(--t-footnote); line-height: 1.35; color: var(--fg-2); white-space: normal;
     }
     .tip b { display: block; color: var(--fg); font-weight: 600; }
+    .tip .job { display: block; }
     .tip em { display: block; margin-top: 0.125rem; font-style: normal; }
-    @media (hover: hover) { .bar:hover .tip, .base:hover .tip { display: block; } .base:hover { z-index: 6; } }
+    @media (hover: hover) { .cell:hover .tip, .base:hover .tip { display: block; } }
 
-    .head { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--accent); pointer-events: none; }
-    .now { position: absolute; right: 0; top: 0; bottom: 0; width: 1px; background: color-mix(in srgb, var(--accent) 55%, transparent); pointer-events: none; }
+    /* the year under the pointer */
+    .head { position: absolute; top: 0; bottom: 0; border-radius: 5px; background: color-mix(in srgb, var(--fg) 12%, transparent); pointer-events: none; }
 
     .axis { position: relative; height: 1.25rem; margin-left: calc(var(--label) + 0.75rem); color: var(--fg-2); font-size: var(--t-footnote); }
     .axis span { position: absolute; top: 0.25rem; translate: -50%; }
-    .axis span:first-child { translate: 0; }
     .axis span.end { translate: -100%; } /* the last year ends at the edge instead of hanging over it */
     .readout { min-height: 2.75em; margin: 0.25rem 0 0 calc(var(--label) + 0.75rem); color: var(--fg-2); font-size: var(--t-footnote); }
 
     @media (max-width: 599px) {
-      .arc { --row: 34px; }
+      .arc { --row: 34px; --cell: 22px; }
+      .fill { border-radius: 4px; }
       .lane { grid-template-columns: 1fr; gap: 0; }
       .name { grid-auto-flow: column; justify-content: space-between; align-items: baseline; min-height: 32px; }
-      .bar { top: calc(50% - 13px); height: 22px; }
-      .bar.side { top: calc(50% + 11px); height: 5px; }
+      .cells { column-gap: 2px; }
       .axis, .readout { margin-left: 0; }
       .axis span:nth-last-child(2) { display: none; } /* the year before it would touch the last one on a narrow screen */
     }
 
-    /* the branches grow out of the trunk as the chart scrolls into view (scroll-driven, transform only) */
+    /* the years fill in from the foundation towards the present as the grid scrolls into view (scroll-driven, clip only) */
     @media (prefers-reduced-motion: no-preference) {
       @supports (animation-timeline: view()) {
-        .arc .bar { animation: sprout linear both; animation-timeline: view(); animation-range: entry calc(var(--i, 0) * 7%) entry calc(55% + var(--i, 0) * 7%); }
+        .arc .cells { animation: wipe linear both; animation-timeline: view(); animation-range: entry 5% entry 75%; }
       }
     }
-    @keyframes sprout { from { transform: scaleX(0); opacity: 0; } to { transform: scaleX(1); opacity: 1; } }
-    @media (prefers-reduced-motion: reduce) { .name, .bar, .fill { transition: none; } }
+    @keyframes wipe { from { clip-path: inset(-300px 100% -300px -300px); } to { clip-path: inset(-300px); } }
+    @media (prefers-reduced-motion: reduce) { .name, .fill { transition: none; } }
   `],
 })
 export class CareerArc implements OnInit {
@@ -136,45 +141,44 @@ export class CareerArc implements OnInit {
     if (!this.lens.ids().size) this.lens.ids.set(new Set(this.ids('backend') as ItemId[]));
   }
 
-  protected readonly arc = computed(() => {
+  protected readonly grid = computed(() => {
     const items = this.c().items;
     const groups = SKILLS.filter((g) => g.group !== 'other');
-    const lanes = groups.map((g) => ({
-      id: g.group,
-      jobs: [...new Set(g.items.flatMap((s) => usesOf(s.name, FACTS, items)))].filter((id) => id !== BASE && JOBS.some((j) => j.id === id)),
-      terms: new Set(g.items.flatMap((s) => [s.name, ...(SKILL_TERMS[s.name] ?? [])]).map((t) => t.toLowerCase())),
-    }));
-    const arc = careerArc(JOBS, [...lanes, { id: BASE, jobs: [BASE] }]);
-    const base = arc.lanes.find((l) => l.id === BASE)!.bars[0];
-    const out = arc.lanes
-      .filter((l) => l.id !== BASE)
-      .map((l) => {
-        const lane = lanes.find((x) => x.id === l.id)!;
-        return {
-          ...l,
-          group: l.id as (typeof groups)[number]['group'],
-          ids: lane.jobs,
-          bars: l.bars.map((b) => ({ ...b, tags: FACT_BY_ID[b.id as ItemId].keywords.filter((k) => lane.terms.has(k.toLowerCase())) })),
-        };
-      })
-      .sort((a, b) => a.since - b.since); // branches in the order they started
-    return { ...arc, base, lanes: out };
+    const families = groups.map((g) => {
+      // which of the family's skills (the pills of the Skills section) each job uses: by its tags or by name in its text
+      const used = g.items.map((s) => ({ name: s.label?.[this.c().lang] ?? s.name, jobs: new Set<string>(usesOf(s.name, FACTS, items)) }));
+      return {
+        id: g.group,
+        jobs: [...new Set(used.flatMap((u) => [...u.jobs]))].filter((id) => id !== BASE && JOBS.some((j) => j.id === id)),
+        tagsOf: (id: string) => used.filter((u) => u.jobs.has(id)).map((u) => u.name),
+      };
+    });
+    const grid = careerGrid(JOBS, BASE, families);
+    const cols = grid.years.length;
+    return {
+      ...grid,
+      cols,
+      lanes: grid.lanes
+        .map((l) => ({ ...l, group: l.id as (typeof groups)[number]['group'], ids: families.find((f) => f.id === l.id)!.jobs }))
+        .sort((a, b) => a.since - b.since), // families in the order they began
+      ticks: grid.years.map((year, i) => ({ year, left: ((i + 0.5) / cols) * 100 })).filter((_, i, all) => i % 4 === 0 || i === all.length - 1),
+    };
   });
 
   protected readonly baseTags = computed(() => FACT_BY_ID[BASE].keywords.join(' · '));
 
-  /** Where the pointer is on the time axis (0..1), while it is scrubbing. */
-  protected readonly pos = signal<number | null>(null);
+  /** The year under the pointer, while it is scrubbing. */
+  protected readonly year = signal<number | null>(null);
+  protected readonly headLeft = computed(() => (((this.year() ?? 0) - this.grid().min) / this.grid().cols) * 100);
   private saved: ReadonlySet<ItemId> | null = null;
   private lit = '';
 
   protected readonly readout = computed(() => {
-    const p = this.pos();
-    if (p === null) return '';
-    const a = this.arc();
-    const year = Math.min(a.max, Math.floor(a.min + p * (a.max - a.min)));
+    const year = this.year();
+    if (year === null) return '';
+    const g = this.grid();
     const ids = activeAt(JOBS, year);
-    const families = a.lanes.filter((l) => ids.some((id) => l.ids.includes(id as ItemId))).map((l) => this.c().skills.groups[l.group]);
+    const families = g.lanes.filter((l) => ids.some((id) => l.ids.includes(id as ItemId))).map((l) => this.c().skills.groups[l.group]);
     const jobs = ids.map((id) => `${this.t(id).title}, ${this.t(id).org}`);
     return `${year}: ${jobs.join(' / ')}${families.length ? ` (${families.join(', ')})` : ''}`;
   });
@@ -192,24 +196,36 @@ export class CareerArc implements OnInit {
   }
 
   private ids(lane: string): string[] {
-    return this.arc().lanes.find((l) => l.id === lane)?.ids ?? [];
+    return this.grid().lanes.find((l) => l.id === lane)?.ids ?? [];
   }
 
   /** The chosen lane's jobs while the pointer rests on another lane's name (which previews that lane in the log). */
   private readonly held = signal<ReadonlySet<ItemId> | null>(null);
   /** What is actually chosen: the preview is not a choice. */
   private readonly chosen = computed(() => this.held() ?? this.lens.ids());
+  /** The lane whose jobs are exactly what the log shows right now, if any. */
+  private readonly shown = computed(() => {
+    const lit = this.lens.ids();
+    return this.grid().lanes.find((l) => lit.size === l.ids.length && l.ids.every((id) => lit.has(id as ItemId)))?.id ?? null;
+  });
 
   protected pressed(lane: string): boolean {
-    if (this.pos() !== null) return false; // the lens belongs to the scrubbing pointer for now
+    if (this.year() !== null) return false; // the lens belongs to the scrubbing pointer for now
     const mine = this.ids(lane);
     const chosen = this.chosen();
     return chosen.size === mine.length && mine.every((id) => chosen.has(id as ItemId));
   }
 
-  protected dim(id: string): boolean {
+  /** A lane fades a little while another lane is being shown. */
+  protected off(lane: string): boolean {
+    const shown = this.shown();
+    return this.lens.ids().size > 0 && shown !== null && shown !== lane;
+  }
+
+  /** A square fades more while a year or a skill is shown and none of its jobs is part of it. */
+  protected dim(jobs: readonly string[]): boolean {
     const lit = this.lens.ids();
-    return lit.size > 0 && !lit.has(id as ItemId);
+    return lit.size > 0 && this.shown() === null && !jobs.some((id) => lit.has(id as ItemId));
   }
 
   protected toggle(lane: string): void {
@@ -220,7 +236,7 @@ export class CareerArc implements OnInit {
 
   /** A mouse resting on a lane's name shows that lane in the log, without choosing it. */
   protected preview(e: PointerEvent, lane: string): void {
-    if (e.pointerType !== 'mouse' || this.pos() !== null) return;
+    if (e.pointerType !== 'mouse' || this.year() !== null) return;
     if (this.held() === null) this.held.set(this.lens.ids());
     this.lens.ids.set(new Set(this.ids(lane) as ItemId[]));
   }
@@ -236,14 +252,20 @@ export class CareerArc implements OnInit {
     scrollToSection(`job-${id}`);
   }
 
-  /** Pointing at the axis lights the jobs of that year in the log (the lens is put back afterwards). */
+  /** A square leads to the newest job of its year. */
+  protected goCell(jobs: readonly string[]): void {
+    if (jobs.length) this.go(jobs[0]);
+  }
+
+  /** Pointing at the grid lights the jobs of that year in the log (the lens is put back afterwards). */
   protected scrub(e: PointerEvent): void {
     const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
     const p = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
-    if (this.pos() === null) this.saved = this.lens.ids();
-    this.pos.set(p);
-    const a = this.arc();
-    const ids = activeAt(JOBS, Math.min(a.max, Math.floor(a.min + p * (a.max - a.min)))) as ItemId[];
+    const g = this.grid();
+    const year = g.min + Math.min(g.cols - 1, Math.floor(p * g.cols));
+    if (this.year() === null) this.saved = this.lens.ids();
+    this.year.set(year);
+    const ids = activeAt(JOBS, year) as ItemId[];
     const key = ids.join();
     if (key !== this.lit) {
       this.lit = key;
@@ -252,8 +274,8 @@ export class CareerArc implements OnInit {
   }
 
   protected leave(): void {
-    if (this.pos() === null) return;
-    this.pos.set(null);
+    if (this.year() === null) return;
+    this.year.set(null);
     this.lit = '';
     this.lens.ids.set(this.saved ?? new Set());
     this.saved = null;

@@ -1,26 +1,10 @@
-import { activeAt, careerArc, fromYear } from './arc';
+import { activeAt, fromYear } from './arc';
 
 const jobs = [
   { id: 'a', start: 2010, end: 2014, main: true },
   { id: 'b', start: 2014, end: 2018, main: true },
   { id: 'c', start: 2018, end: 2020, main: true },
 ];
-
-describe('careerArc', () => {
-  it('scales bars to the whole time axis and reports where each lane starts', () => {
-    const arc = careerArc(jobs, [{ id: 'x', jobs: ['b', 'c'] }]);
-    expect([arc.min, arc.max]).toEqual([2010, 2020]);
-    expect(arc.lanes).toEqual([
-      { id: 'x', since: 2014, bars: [{ id: 'b', left: 40, width: 40, main: true }, { id: 'c', left: 80, width: 20, main: true }] },
-    ]);
-  });
-
-  it('drops lanes without a job and puts a tick every few years', () => {
-    const arc = careerArc(jobs, [{ id: 'none', jobs: ['zzz'] }, { id: 'all', jobs: ['a'] }], 5);
-    expect(arc.lanes.map((l) => l.id)).toEqual(['all']);
-    expect(arc.ticks).toEqual([{ year: 2010, left: 0 }, { year: 2015, left: 50 }, { year: 2020, left: 100 }]);
-  });
-});
 
 describe('activeAt', () => {
   it('gives a boundary year to the job that starts there, and the last year to the job that is still running', () => {
@@ -40,11 +24,5 @@ describe('fromYear', () => {
       '2008-tól', '2011-től', '2013-tól', '2016-tól', '2020-tól', '2021-től',
     ]);
     expect(fromYear('en', 2011)).toBe('from 2011');
-  });
-});
-
-describe('defaults', () => {
-  it('puts a tick every four years unless told otherwise, and always one for the last year', () => {
-    expect(careerArc(jobs, []).ticks.map((t) => t.year)).toEqual([2010, 2014, 2018, 2020]);
   });
 });
