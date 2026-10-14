@@ -17,8 +17,8 @@ import { Email } from './email';
         <app-email [c]="c()" />
       </div>
       <picture class="portrait">
-        <source type="image/avif" srcset="/img/portrait-320.avif 320w, /img/portrait-640.avif 640w" sizes="(min-width: 800px) 320px, 240px">
-        <source type="image/webp" srcset="/img/portrait-320.webp 320w, /img/portrait-640.webp 640w" sizes="(min-width: 800px) 320px, 240px">
+        <source type="image/avif" srcset="/img/portrait-320.avif 320w, /img/portrait-480.avif 480w, /img/portrait-640.avif 640w" sizes="(min-width: 800px) 320px, 240px">
+        <source type="image/webp" srcset="/img/portrait-320.webp 320w, /img/portrait-480.webp 480w, /img/portrait-640.webp 640w" sizes="(min-width: 800px) 320px, 240px">
         <img src="/img/portrait-640.jpg" width="320" height="320" [alt]="c().hero.portraitAlt" fetchpriority="high" decoding="async">
       </picture>
     </section>

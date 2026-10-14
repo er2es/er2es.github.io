@@ -8,6 +8,11 @@
 }
 .block + .block { border-top: 1px solid var(--line); }
 .block.alt { background: var(--bg-2); }
+/*
+ * Below the fold: style, layout and paint of a section wait until it nears the viewport, which takes a large part
+ * of the first layout off the critical path on a phone. The remembered size (auto) keeps the scrollbar steady.
+ */
+#experience, #skills, #projects, #about, #contact { content-visibility: auto; contain-intrinsic-block-size: auto 900px; }
 
 .eyebrow { margin-bottom: 0.75rem; font: 500 var(--t-footnote) / 1 var(--mono); letter-spacing: 0.04em; color: var(--fg-2); }
 .lead { font-size: var(--t-title2); line-height: 1.4; }

@@ -70,6 +70,25 @@ test('language switch is an in-app navigation and keeps hreflang correct', async
   expect(await page.evaluate(() => (window as unknown as { __m?: number }).__m)).toBe(1); // no full reload
 });
 
+test('back and forward switch the language in-app, and the switch keeps the scroll position', async ({ page }) => {
+  await ready(page, '/');
+  await page.evaluate(() => ((window as unknown as { __m: number }).__m = 1));
+  await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; document.getElementById('skills')!.scrollIntoView(); });
+  const y = await page.evaluate(() => scrollY);
+  await page.getByRole('link', { name: 'Magyar' }).first().click();
+  await expect(page.locator('html')).toHaveAttribute('lang', 'hu');
+  await expect(page.locator('#skills h2')).toHaveText('Kompetenciák');
+  expect(Math.abs((await page.evaluate(() => scrollY)) - y)).toBeLessThan(400);
+  await page.goBack();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+  await expect(page.locator('#skills h2')).toHaveText('Skills');
+  await page.goForward();
+  await expect(page).toHaveURL(/\/hu\/$/);
+  await expect(page.locator('html')).toHaveAttribute('lang', 'hu');
+  expect(await page.evaluate(() => (window as unknown as { __m?: number }).__m)).toBe(1);
+});
+
 test.describe('browser language detection', () => {
   test.describe('Hungarian browser', () => {
     test.use({ locale: 'hu-HU' });
@@ -218,8 +237,8 @@ test.describe('easter egg', () => {
   });
 });
 
-test('the easter egg counts only cookies this page set, not those of other sites on the same host', async ({ page, context }) => {
-  await context.addCookies([{ name: 'other-project', value: '1', url: 'http://localhost:4300' }, { name: 'another', value: '2', url: 'http://localhost:4300' }]);
+test('the easter egg counts only cookies this page set, not those of other sites on the same host', async ({ page, context, baseURL }) => {
+  await context.addCookies([{ name: 'other-project', value: '1', url: baseURL! }, { name: 'another', value: '2', url: baseURL! }]);
   await ready(page, '/');
   await page.keyboard.press('Shift');
   await page.keyboard.press('Shift');
@@ -460,5 +479,28 @@ test('palette: empty query lists only the six sections; the placeholder is an ex
     await expect(input).toHaveAttribute('placeholder', p.lang === 'en' ? 'e.g. PHP' : 'pl. PHP');
     await expect(page.getByRole('dialog').getByRole('option')).toHaveCount(6);
     await page.keyboard.press('Escape');
+  }
+});
+
+test.describe('the portrait is never downloaded larger than it is shown', () => {
+  for (const d of [
+    { name: 'phone at 1.75x (Lighthouse mobile)', viewport: { width: 412, height: 823 }, deviceScaleFactor: 1.75, file: 'portrait-480.avif' },
+    { name: 'phone at 3x', viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, file: 'portrait-640.avif' },
+    { name: 'desktop at 1x', viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, file: 'portrait-320.avif' },
+    { name: 'desktop at 2x', viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2, file: 'portrait-640.avif' },
+  ]) {
+    test.describe(d.name, () => {
+      test.use({ viewport: d.viewport, deviceScaleFactor: d.deviceScaleFactor });
+      test(`takes ${d.file}, and the file covers the shown size`, async ({ page }) => {
+        const images: string[] = [];
+        page.on('request', (r) => { if (r.resourceType() === 'image' && /portrait-/.test(r.url())) images.push(r.url().replace(/^.*\//, '')); });
+        await ready(page, '/');
+        expect(images).toEqual([d.file]);
+        const img = page.locator('.portrait img');
+        // the chosen file is wide enough for the device pixels it covers (640 is the largest there is)
+        const [shown, file] = await img.evaluate((i: HTMLImageElement) => [i.getBoundingClientRect().width * devicePixelRatio, Number(/portrait-(\d+)/.exec(i.currentSrc)![1])]);
+        expect(file).toBeGreaterThanOrEqual(Math.min(640, Math.floor(shown)));
+      });
+    });
   }
 });

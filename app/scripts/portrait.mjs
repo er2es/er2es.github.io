@@ -12,7 +12,8 @@ if (!file) throw new Error('no .jpg portrait found in cv/');
 mkdirSync(out, { recursive: true });
 
 // sharp drops all metadata (EXIF, XMP) unless asked to keep it; .rotate() applies EXIF orientation first.
-for (const w of [320, 640]) {
+// 480w is what a typical phone needs (240 CSS px at 1.75-2x), so it never has to take the 640w file
+for (const w of [320, 480, 640]) {
   const base = sharp(join(src, file)).rotate().resize(w, w, { fit: 'cover' }).grayscale();
   await base.clone().avif({ quality: 40, effort: 6 }).toFile(join(out, `portrait-${w}.avif`));
   await base.clone().webp({ quality: 70 }).toFile(join(out, `portrait-${w}.webp`));
@@ -26,6 +27,9 @@ for (const f of readdirSync(out)) {
   if (meta.exif || meta.xmp) { console.error(`metadata left in ${f}`); bad = true; }
   console.log(`${f}  ${size} B`);
 }
-const lcp = statSync(join(out, 'portrait-640.avif')).size;
-if (lcp > 36000) { console.error(`portrait-640.avif is ${lcp} B, over the 36000 B budget: lower the AVIF quality`); bad = true; }
+// the LCP image: 640w on desktop retina, 480w on most phones
+for (const [f, max] of [['portrait-640.avif', 36000], ['portrait-480.avif', 20000]]) {
+  const size = statSync(join(out, f)).size;
+  if (size > max) { console.error(`${f} is ${size} B, over the ${max} B budget: lower the AVIF quality`); bad = true; }
+}
 process.exit(bad ? 1 : 0);
