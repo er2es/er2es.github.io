@@ -1,4 +1,5 @@
 import type { Locale } from '../content/model';
+import { jumpHash } from './hash';
 
 export const pagePath = (l: Locale): string => (l === 'hu' ? '/hu/' : '/');
 
@@ -18,7 +19,7 @@ export function scrollToSection(id: string): void {
   el.scrollIntoView({ block: 'start' }); // smoothness comes from CSS scroll-behavior, which reduced-motion turns off
   el.focus({ preventScroll: true });
   flash(el);
-  history.replaceState(null, '', `${location.pathname}#${id}`);
+  jumpHash(id);
 }
 
 function flash(el: HTMLElement): void {

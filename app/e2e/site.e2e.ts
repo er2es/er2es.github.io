@@ -504,3 +504,110 @@ test.describe('the portrait is never downloaded larger than it is shown', () => 
     });
   }
 });
+
+test.describe('URL hash follows the scroll, but only after the visitor has clicked', () => {
+  const scrollTo = async (page: Page, y: number) => {
+    await page.evaluate((yy) => window.scrollTo({ top: yy, behavior: 'instant' }), y);
+    await page.waitForTimeout(350);
+  };
+  const hash = (page: Page) => page.evaluate(() => location.hash);
+
+  test('no hash while only scrolling; after a click it follows; at the top it goes and stays away', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await ready(page, '/hu/');
+    await scrollTo(page, 1500);
+    expect(await hash(page)).toBe('');
+    await scrollTo(page, 0);
+    expect(await hash(page)).toBe('');
+
+    await page.getByRole('link', { name: 'Projektek' }).first().click();
+    await expect.poll(() => hash(page)).toBe('#projects');
+    await page.waitForTimeout(1300); // the jump has come to rest
+    await scrollTo(page, 2300);
+    expect(await hash(page)).toBe('#skills');
+    await scrollTo(page, 1100);
+    expect(await hash(page)).toBe('#experience');
+
+    await scrollTo(page, 0);
+    expect(await hash(page)).toBe('');
+    await scrollTo(page, 1800);
+    expect(await hash(page)).toBe(''); // not put back by scrolling
+
+    await page.getByRole('link', { name: 'Kapcsolat' }).first().click();
+    await expect.poll(() => hash(page)).toBe('#contact');
+  });
+
+  test('a page loaded with a hash starts following it, and keeps the exact target inside its section', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/#job-chamber');
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(1500);
+    expect(await hash(page)).toBe('#job-chamber');
+    await scrollTo(page, await page.evaluate(() => scrollY + 40)); // still inside Experience
+    expect(await hash(page)).toBe('#job-chamber');
+    await scrollTo(page, 3200);
+    expect(await hash(page)).not.toBe('#job-chamber');
+    await scrollTo(page, 0);
+    expect(await hash(page)).toBe('');
+  });
+});
+
+test.describe('bottom tab bar on phones', () => {
+  for (const [path, name] of [['/', 'About'], ['/hu/', 'Rólam']] as const) {
+    test(`${path}: all six sections are there, fitting at 360 and 390 wide`, async ({ page }) => {
+      for (const width of [360, 390]) {
+        await page.setViewportSize({ width, height: 760 });
+        await ready(page, path);
+        const nav = page.getByRole('navigation', { name: path === '/' ? 'Quick navigation' : 'Gyors navigáció' });
+        await expect(nav.getByRole('link')).toHaveCount(6);
+        await expect(nav.getByRole('link', { name })).toBeVisible(); // icon only is fine: the name is still there
+        const inside = await nav.evaluate((n) => {
+          const box = n.getBoundingClientRect();
+          return [...n.querySelectorAll('a')].every((a) => { const r = a.getBoundingClientRect(); return r.left >= box.left - 1 && r.right <= box.right + 1 && r.width >= 40; });
+        });
+        expect(inside).toBe(true);
+      }
+    });
+  }
+
+  test('jumps through the About tab like every other link', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 760 });
+    await ready(page, '/');
+    await page.getByRole('navigation', { name: 'Quick navigation' }).getByRole('link', { name: 'About' }).click();
+    await expect.poll(() => page.evaluate(() => location.hash)).toBe('#about');
+    await expect(page.getByRole('navigation', { name: 'Quick navigation' }).getByRole('link', { name: 'About' })).toHaveAttribute('aria-current', 'location');
+  });
+});
+
+test.describe('the portrait flies into the header', () => {
+  test('a copy of the portrait is in the header slot once the hero has scrolled away, and the hero one steps aside', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await ready(page, '/');
+    const ghost = page.locator('app-avatar-dock .ghost');
+    await expect(ghost).not.toHaveClass(/on/);
+    await page.evaluate(() => window.scrollTo({ top: 600, behavior: 'instant' }));
+    await expect(ghost).toHaveClass(/on/);
+    await expect(page.locator('.portrait')).toHaveClass(/docked/);
+    const [g, slot] = await page.evaluate(() => {
+      const r = (el: Element | null) => { const b = el!.getBoundingClientRect(); return [Math.round(b.x), Math.round(b.y), Math.round(b.width)]; };
+      return [r(document.querySelector('app-avatar-dock .ghost')), r(document.querySelector('.avatar-slot'))];
+    });
+    expect(Math.abs(g[0] - slot[0])).toBeLessThanOrEqual(2);
+    expect(Math.abs(g[1] - slot[1])).toBeLessThanOrEqual(2);
+    expect(Math.abs(g[2] - slot[2])).toBeLessThanOrEqual(2);
+    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+    await expect(ghost).not.toHaveClass(/on/);
+    await expect(page.locator('.portrait')).not.toHaveClass(/docked/);
+  });
+
+  test('under reduced motion it simply appears in the slot once the portrait has left', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await ready(page, '/');
+    await page.evaluate(() => window.scrollTo({ top: 120, behavior: 'instant' }));
+    await page.waitForTimeout(200);
+    await expect(page.locator('app-avatar-dock .ghost')).not.toHaveClass(/on/); // portrait still partly in view: no half-way states
+    await page.evaluate(() => window.scrollTo({ top: 700, behavior: 'instant' }));
+    await expect(page.locator('app-avatar-dock .ghost')).toHaveClass(/on/);
+  });
+});

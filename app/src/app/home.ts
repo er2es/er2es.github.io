@@ -2,6 +2,7 @@ import { Component, DestroyRef, afterNextRender, computed, inject, signal } from
 import { getContent } from './content';
 import { SECTION_IDS, type SectionId } from './content/model';
 import { trackActive } from './core/active';
+import { followSection, initHash } from './core/hash';
 import { LangSwitch } from './core/lang';
 import { initLit } from './core/lit';
 import { Seo } from './core/seo';
@@ -15,13 +16,14 @@ import { Hero } from './sections/hero';
 import { Profile } from './sections/profile';
 import { Projects } from './sections/projects';
 import { Skills } from './sections/skills';
+import { AvatarDock } from './shell/avatar-dock';
 import { Header } from './shell/header';
 import { TabBar } from './shell/tabbar';
 import { ToastHost } from './shell/toast';
 
 @Component({
   selector: 'app-home',
-  imports: [Header, TabBar, ToastHost, Egg, Hero, Profile, Experience, Skills, Projects, About, Contact, Palette],
+  imports: [Header, AvatarDock, TabBar, ToastHost, Egg, Hero, Profile, Experience, Skills, Projects, About, Contact, Palette],
   template: `
     <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
       <filter id="cv-refract" x="0" y="0" width="100%" height="100%">
@@ -31,6 +33,7 @@ import { ToastHost } from './shell/toast';
     </svg>
     <a class="skip" [attr.href]="mainHref()" (click)="skip($event)">{{ c().ui.skip }}</a>
     <app-header [c]="c()" [locale]="locale()" [active]="active()" (palette)="openPalette()" />
+    <app-avatar-dock />
     <main id="main" tabindex="-1">
       <app-hero [c]="c()" />
       <app-profile [c]="c()" />
@@ -74,7 +77,10 @@ export class Home {
     inject(Seo).apply(this.locale(), this.c());
     const destroy = inject(DestroyRef);
     afterNextRender(() => {
-      const stop = trackActive(SECTION_IDS, (id) => this.active.set(id as SectionId));
+      destroy.onDestroy(initHash());
+      const stop = trackActive(SECTION_IDS, (id) => {
+        this.active.set(followSection(id as SectionId));
+      });
       destroy.onDestroy(stop);
       destroy.onDestroy(initLit());
       destroy.onDestroy(onTripleShift(() => this.egg()));
