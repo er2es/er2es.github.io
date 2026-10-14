@@ -1,8 +1,6 @@
 import { Component, DestroyRef, ElementRef, afterNextRender, computed, inject, input, output, signal, viewChild } from '@angular/core';
-import { EMAIL, SECTION_IDS, type Locale, type SectionId, type SiteContent } from '../content/model';
-import { LangSwitch } from '../core/lang';
+import { SECTION_IDS, type Locale, type SectionId, type SiteContent } from '../content/model';
 import { scrollToSection } from '../core/nav';
-import { Theme } from '../core/theme';
 import { createCvAssistant, type CvAssistant } from './assistant';
 import { buildCvContext, buildDocs, highlight, norm, search, type SearchDoc, type Segment } from './search';
 
@@ -14,17 +12,12 @@ const ICONS = {
   projects: 'M3.5 7v11a1.5 1.5 0 0 0 1.5 1.5h14a1.5 1.5 0 0 0 1.5-1.5V9.5A1.5 1.5 0 0 0 19 8h-7l-2-2.5H5A1.5 1.5 0 0 0 3.5 7z',
   about: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4.5 20a7.5 7.5 0 0 1 15 0',
   contact: 'M3.5 6.5h17v11h-17zM4 7l8 6 8-6',
-  lang: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c2.4 2.6 3.6 5.6 3.6 9s-1.2 6.4-3.6 9c-2.4-2.6-3.6-5.6-3.6-9S9.6 5.6 12 3z',
-  theme: 'M12 4a8 8 0 1 1 0 16 8 8 0 0 1 0-16zM12 4v16M12 7h3.5M12 10.5h5M12 14h5M12 17h3.5',
   ask: 'M12 3.5l1.9 5.1 5.1 1.9-5.1 1.9L12 17.5l-1.9-5.1L5 10.5l5.1-1.9z',
 } as const;
 
 type Entry =
   | { kind: 'section'; id: SectionId; label: string }
   | { kind: 'doc'; doc: SearchDoc; label: string }
-  | { kind: 'lang'; label: string }
-  | { kind: 'theme'; label: string }
-  | { kind: 'email'; label: string }
   | { kind: 'ask'; label: string };
 
 @Component({
@@ -36,7 +29,7 @@ type Entry =
           <input #q type="text" role="combobox" aria-autocomplete="list"
             [attr.aria-expanded]="entries().length > 0 ? 'true' : 'false'" [attr.aria-controls]="entries().length ? 'pal-list' : null"
             [attr.aria-activedescendant]="entries().length ? 'pal-' + index() : null"
-            [attr.aria-label]="c().ui.palette.placeholder" [placeholder]="c().ui.palette.placeholder"
+            [attr.aria-label]="c().ui.palette.open" [placeholder]="c().ui.palette.placeholder"
             autocomplete="off" spellcheck="false" [value]="query()" (input)="onInput($event)" (keydown)="onKey($event)">
           <button type="button" class="chip" (click)="dlg.close()">{{ c().ui.palette.close }}</button>
         </div>
@@ -102,8 +95,6 @@ export class Palette {
 
   private readonly dlg = viewChild.required<ElementRef<HTMLDialogElement>>('dlg');
   private readonly q = viewChild.required<ElementRef<HTMLInputElement>>('q');
-  private readonly theme = inject(Theme);
-  private readonly lang = inject(LangSwitch);
   private readonly destroyRef = inject(DestroyRef);
 
   protected readonly query = signal('');
@@ -120,9 +111,6 @@ export class Palette {
     const q = norm(raw);
     const commands: Entry[] = [
       ...SECTION_IDS.map((id): Entry => ({ kind: 'section', id, label: ui.sections[id] })),
-      { kind: 'lang', label: ui.palette.switchLanguage },
-      { kind: 'theme', label: ui.palette.changeTheme },
-      { kind: 'email', label: ui.palette.email },
     ];
     if (!q) return commands;
     const out: Entry[] = [];
@@ -176,8 +164,7 @@ export class Palette {
     switch (e.kind) {
       case 'section': return ICONS[e.id];
       case 'doc': return ICONS[e.doc.section];
-      case 'email': return ICONS.contact;
-      default: return ICONS[e.kind];
+      case 'ask': return ICONS.ask;
     }
   }
 
@@ -198,9 +185,6 @@ export class Palette {
     switch (e.kind) {
       case 'section': close(); scrollToSection(e.id); break;
       case 'doc': close(); scrollToSection(e.doc.anchor); break;
-      case 'lang': close(); this.lang.go(this.locale() === 'en' ? 'hu' : 'en'); break;
-      case 'theme': this.theme.cycle(); break;
-      case 'email': location.href = `mailto:${EMAIL}`; break;
       case 'ask': void this.ask(); break;
     }
   }

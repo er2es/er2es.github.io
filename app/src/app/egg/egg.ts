@@ -12,7 +12,10 @@ function measure(t: SiteContent['ui']['egg']): Promise<Row[]> {
   const transferred = res.reduce((n, r) => n + (r.transferSize || 0), 0) + (nav?.transferSize ?? 0);
   const scripts = res.filter((r) => r.initiatorType === 'script' || /\.js(\?|$)/.test(r.name)).reduce((n, r) => n + (r.transferSize || 0), 0);
   const thirdParty = res.filter((r) => { try { return new URL(r.name).origin !== origin; } catch { return false; } }).length;
-  const cookies = document.cookie ? document.cookie.split(';').length : 0;
+  // cookies are shared by every site on the same host (all of localhost, for example): count only the ones this page added
+  const names = (c: string): string[] => c.split(';').map((x) => x.trim().split('=')[0]).filter(Boolean);
+  const before = new Set(names((window as unknown as { __ck?: string }).__ck ?? ''));
+  const cookies = names(document.cookie).filter((n) => !before.has(n)).length;
 
   return new Promise((resolve) => {
     let lcp: number | null = null;

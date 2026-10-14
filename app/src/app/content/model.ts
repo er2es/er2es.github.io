@@ -106,6 +106,7 @@ export const SKILLS: readonly { group: SkillGroupId; items: readonly SkillFact[]
     { name: 'CI/CD' },
     { name: 'RHEL' },
     { name: 'Bash' },
+    { name: 'PowerShell' },
     { name: 'Git' },
   ] },
   { group: 'quality', items: [
@@ -120,6 +121,7 @@ export const SKILLS: readonly { group: SkillGroupId; items: readonly SkillFact[]
     { name: 'Redis' },
     { name: 'XML' },
     { name: 'SPSS' },
+    { name: 'X.509' },
   ] },
 ];
 
@@ -148,7 +150,6 @@ export interface SiteContent {
     palette: {
       open: string; short: string; placeholder: string; empty: string; close: string;
       ask: string; thinking: string; onDevice: string; askFailed: string;
-      switchLanguage: string; changeTheme: string; email: string;
     };
   };
   hero: { name: string; role: string; location: string; status: string; cta: string; portraitAlt: string };
