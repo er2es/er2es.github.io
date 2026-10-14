@@ -70,6 +70,25 @@ test('language switch is an in-app navigation and keeps hreflang correct', async
   expect(await page.evaluate(() => (window as unknown as { __m?: number }).__m)).toBe(1); // no full reload
 });
 
+test('back and forward switch the language in-app, and the switch keeps the scroll position', async ({ page }) => {
+  await ready(page, '/');
+  await page.evaluate(() => ((window as unknown as { __m: number }).__m = 1));
+  await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; document.getElementById('skills')!.scrollIntoView(); });
+  const y = await page.evaluate(() => scrollY);
+  await page.getByRole('link', { name: 'Magyar' }).first().click();
+  await expect(page.locator('html')).toHaveAttribute('lang', 'hu');
+  await expect(page.locator('#skills h2')).toHaveText('Kompetenciák');
+  expect(Math.abs((await page.evaluate(() => scrollY)) - y)).toBeLessThan(400);
+  await page.goBack();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+  await expect(page.locator('#skills h2')).toHaveText('Skills');
+  await page.goForward();
+  await expect(page).toHaveURL(/\/hu\/$/);
+  await expect(page.locator('html')).toHaveAttribute('lang', 'hu');
+  expect(await page.evaluate(() => (window as unknown as { __m?: number }).__m)).toBe(1);
+});
+
 test.describe('browser language detection', () => {
   test.describe('Hungarian browser', () => {
     test.use({ locale: 'hu-HU' });

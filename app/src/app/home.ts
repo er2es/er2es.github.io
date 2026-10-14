@@ -1,8 +1,8 @@
-import { Component, DestroyRef, afterNextRender, inject, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { Component, DestroyRef, afterNextRender, computed, inject, signal } from '@angular/core';
 import { getContent } from './content';
-import { SECTION_IDS, type Locale, type SectionId } from './content/model';
+import { SECTION_IDS, type SectionId } from './content/model';
 import { trackActive } from './core/active';
+import { LangSwitch } from './core/lang';
 import { initLit } from './core/lit';
 import { Seo } from './core/seo';
 import { onTripleShift } from './core/triple-shift';
@@ -29,30 +29,30 @@ import { ToastHost } from './shell/toast';
         <feDisplacementMap in="SourceGraphic" in2="n" scale="14" xChannelSelector="R" yChannelSelector="G" />
       </filter>
     </svg>
-    <a class="skip" [attr.href]="mainHref" (click)="skip($event)">{{ c.ui.skip }}</a>
-    <app-header [c]="c" [locale]="locale" [active]="active()" (palette)="openPalette()" />
+    <a class="skip" [attr.href]="mainHref()" (click)="skip($event)">{{ c().ui.skip }}</a>
+    <app-header [c]="c()" [locale]="locale()" [active]="active()" (palette)="openPalette()" />
     <main id="main" tabindex="-1">
-      <app-hero [c]="c" />
-      <app-profile [c]="c" />
-      <app-experience [c]="c" />
-      <app-skills [c]="c" />
-      <app-projects [c]="c" />
-      <app-about [c]="c" />
-      <app-contact [c]="c" />
+      <app-hero [c]="c()" />
+      <app-profile [c]="c()" />
+      <app-experience [c]="c()" />
+      <app-skills [c]="c()" />
+      <app-projects [c]="c()" />
+      <app-about [c]="c()" />
+      <app-contact [c]="c()" />
     </main>
-    <app-tabbar [c]="c" [locale]="locale" [active]="active()" />
+    <app-tabbar [c]="c()" [locale]="locale()" [active]="active()" />
     @defer (on idle) { <app-toast /> }
     @if (paletteOpen()) {
       @for (g of [paletteGen()]; track g) {
         @defer (on immediate) {
-          <app-palette [c]="c" [locale]="locale" (closed)="closePalette(g)" />
+          <app-palette [c]="c()" [locale]="locale()" (closed)="closePalette(g)" />
         }
       }
     }
     @if (eggOpen()) {
       @for (g of [eggGen()]; track g) {
         @defer (on immediate) {
-          <app-egg [c]="c" (closed)="closeEgg(g)" />
+          <app-egg [c]="c()" (closed)="closeEgg(g)" />
         }
       }
     }
@@ -60,18 +60,18 @@ import { ToastHost } from './shell/toast';
   host: { '(window:keydown)': 'onKey($event)' },
 })
 export class Home {
-  readonly locale = inject(ActivatedRoute).snapshot.data['locale'] as Locale;
-  readonly c = getContent(this.locale);
+  readonly locale = inject(LangSwitch).current;
+  readonly c = computed(() => getContent(this.locale()));
   readonly active = signal<SectionId>('profile');
   readonly paletteOpen = signal(false);
   readonly eggOpen = signal(false);
   // every opening gets a fresh instance, even if the previous one has not been torn down yet
   protected readonly paletteGen = signal(0);
   protected readonly eggGen = signal(0);
-  protected readonly mainHref = `${this.locale === 'hu' ? '/hu/' : '/'}#main`;
+  protected readonly mainHref = computed(() => `${this.locale() === 'hu' ? '/hu/' : '/'}#main`);
 
   constructor() {
-    inject(Seo).apply(this.locale, this.c);
+    inject(Seo).apply(this.locale(), this.c());
     const destroy = inject(DestroyRef);
     afterNextRender(() => {
       const stop = trackActive(SECTION_IDS, (id) => this.active.set(id as SectionId));
