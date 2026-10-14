@@ -6,6 +6,37 @@ export const norm = (s: string): string => s.normalize('NFD').replace(/\p{M}/gu,
 
 const tokens = (s: string): string[] => norm(s).split(/[^\p{L}\p{N}.+#]+/u).filter(Boolean);
 
+export interface Segment { text: string; hit: boolean }
+
+/** Splits a label into plain and matched runs for the query's tokens, accent- and case-insensitively. */
+export function highlight(label: string, query: string): Segment[] {
+  const qt = tokens(query.slice(0, 200));
+  if (!qt.length) return [{ text: label, hit: false }];
+  // normalised text, and for each of its characters the index of the original character
+  let flat = '';
+  const from: number[] = [];
+  [...label].forEach((ch, i) => {
+    for (const n of norm(ch)) {
+      flat += n;
+      from.push(i);
+    }
+  });
+  const chars = [...label];
+  const hit = new Array<boolean>(chars.length).fill(false);
+  for (const q of qt) {
+    for (let at = flat.indexOf(q); at !== -1; at = flat.indexOf(q, at + q.length)) {
+      for (let k = at; k < at + q.length; k++) hit[from[k]] = true;
+    }
+  }
+  const out: Segment[] = [];
+  chars.forEach((ch, i) => {
+    const last = out[out.length - 1];
+    if (last && last.hit === hit[i]) last.text += ch;
+    else out.push({ text: ch, hit: hit[i] });
+  });
+  return out;
+}
+
 export function buildDocs(c: SiteContent): SearchDoc[] {
   const docs: SearchDoc[] = [
     { id: 'section:profile', section: 'profile', title: c.ui.sections.profile, text: c.profile.paragraphs.join(' '), anchor: 'profile' },

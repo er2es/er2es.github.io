@@ -1,8 +1,23 @@
 import { getContent } from '../content';
 import { FACTS } from '../content/model';
-import { buildDocs, norm, search, buildCvContext } from './search';
+import { buildDocs, highlight, norm, search, buildCvContext } from './search';
 
 const docs = buildDocs(getContent('en'));
+
+describe('highlight', () => {
+  const marked = (label: string, q: string) => highlight(label, q).filter((s) => s.hit).map((s) => s.text);
+
+  it('marks every token, ignoring case and accents, and keeps the original text', () => {
+    expect(marked('Szoftvertesztelő (QA)', 'teszteló qa')).toEqual(['tesztelő', 'QA']);
+    expect(highlight('PHP developer · PHP', 'php').map((s) => s.text).join('')).toBe('PHP developer · PHP');
+    expect(marked('PHP developer · PHP', 'php')).toEqual(['PHP', 'PHP']);
+  });
+
+  it('returns the label as one plain run without a query or a match', () => {
+    expect(highlight('Profile', '')).toEqual([{ text: 'Profile', hit: false }]);
+    expect(highlight('Profile', 'zzz')).toEqual([{ text: 'Profile', hit: false }]);
+  });
+});
 
 describe('search', () => {
   it('indexes every item', () => {

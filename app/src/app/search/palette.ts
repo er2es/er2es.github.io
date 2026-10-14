@@ -4,7 +4,20 @@ import { LangSwitch } from '../core/lang';
 import { scrollToSection } from '../core/nav';
 import { Theme } from '../core/theme';
 import { createCvAssistant, type CvAssistant } from './assistant';
-import { buildCvContext, buildDocs, norm, search, type SearchDoc } from './search';
+import { buildCvContext, buildDocs, highlight, norm, search, type SearchDoc, type Segment } from './search';
+
+/** One outline glyph per kind of result, so the list can be scanned by shape (24px grid, stroked). */
+const ICONS = {
+  profile: 'M7 3.5h7l4 4v13H7zM14 3.5V8h4M9.5 12.5h6M9.5 16h6',
+  experience: 'M4 8h16v11H4zM9 8V5.5h6V8',
+  skills: 'M5 12.5l4 4L19 7',
+  projects: 'M3.5 7v11a1.5 1.5 0 0 0 1.5 1.5h14a1.5 1.5 0 0 0 1.5-1.5V9.5A1.5 1.5 0 0 0 19 8h-7l-2-2.5H5A1.5 1.5 0 0 0 3.5 7z',
+  about: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4.5 20a7.5 7.5 0 0 1 15 0',
+  contact: 'M3.5 6.5h17v11h-17zM4 7l8 6 8-6',
+  lang: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c2.4 2.6 3.6 5.6 3.6 9s-1.2 6.4-3.6 9c-2.4-2.6-3.6-5.6-3.6-9S9.6 5.6 12 3z',
+  theme: 'M12 4a8 8 0 1 1 0 16 8 8 0 0 1 0-16zM12 4v16M12 7h3.5M12 10.5h5M12 14h5M12 17h3.5',
+  ask: 'M12 3.5l1.9 5.1 5.1 1.9-5.1 1.9L12 17.5l-1.9-5.1L5 10.5l5.1-1.9z',
+} as const;
 
 type Entry =
   | { kind: 'section'; id: SectionId; label: string }
@@ -29,14 +42,17 @@ type Entry =
         </div>
         <div class="answer" role="status" aria-live="polite">
           @if (answer(); as a) {
-            <p>{{ a.text }}</p>
+            <p [class.thinking]="busy()">{{ a.text }}</p>
             @if (a.note) { <p class="note">{{ a.note }}</p> }
           }
         </div>
         @if (entries().length) {
           <ul id="pal-list" class="list" role="listbox">
-            @for (e of entries(); track $index) {
-              <li role="option" [id]="'pal-' + $index" [attr.data-anchor]="anchorOf(e)" [attr.aria-selected]="$index === index()" (click)="run(e)" (pointermove)="index.set($index)">{{ e.label }}</li>
+            @for (e of entries(); track key(e)) {
+              <li role="option" [id]="'pal-' + $index" [attr.data-anchor]="anchorOf(e)" [attr.aria-selected]="$index === index()" [style.--i]="$index" (click)="run(e)" (pointermove)="index.set($index)">
+                <svg class="ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path [attr.d]="icon(e)" /></svg>
+                <span>@for (g of segments(e); track $index) { <span [class.hit]="g.hit">{{ g.text }}</span> }</span>
+              </li>
             }
           </ul>
         } @else {
@@ -55,8 +71,23 @@ type Entry =
     .field { display: flex; gap: 0.5rem; align-items: center; padding: 0.75rem 0.75rem 0.75rem 1.25rem; border-bottom: 1px solid var(--line); }
     input { flex: 1; min-width: 0; min-height: 44px; border: 0; outline: none; background: transparent; color: var(--fg); font: inherit; text-overflow: ellipsis; }
     .list { overflow: auto; padding: 0.5rem; }
-    li { padding: 0.75rem 1rem; border-radius: 14px; cursor: pointer; min-height: 44px; }
+    li { display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 1rem; border-radius: 14px; cursor: pointer; min-height: 44px; }
     li[aria-selected='true'] { background: color-mix(in srgb, var(--fg) 10%, transparent); }
+    .ico { flex: none; color: var(--fg-2); transition: color var(--dur-short) var(--ease-out); }
+    li[aria-selected='true'] .ico { color: var(--accent); }
+    .hit { font-weight: 700; text-decoration: underline 2px var(--accent); text-underline-offset: 0.2em; }
+    @media (prefers-reduced-motion: no-preference) {
+      .palette[open] { animation: pal-in var(--dur-med) var(--ease-spring); }
+      li { animation: opt-in var(--dur-short) var(--ease-out) both; animation-delay: calc(min(var(--i, 0), 8) * 18ms); }
+      .thinking {
+        color: transparent; -webkit-background-clip: text; background-clip: text;
+        background-image: linear-gradient(90deg, var(--fg) 0%, var(--fg) 35%, var(--fg-2) 50%, var(--fg) 65%, var(--fg) 100%);
+        background-size: 250% 100%; animation: shimmer 1.6s linear infinite;
+      }
+    }
+    @keyframes pal-in { from { transform: translateY(-10px) scale(0.98); } }
+    @keyframes opt-in { from { transform: translateY(6px); } }
+    @keyframes shimmer { from { background-position: 100% 0; } to { background-position: -150% 0; } }
     .answer { padding: 1rem 1.25rem; border-bottom: 1px solid var(--line); }
     .answer:empty { padding: 0; border: 0; }
     .note, .empty { color: var(--fg-2); font-size: var(--t-footnote); }
@@ -80,7 +111,7 @@ export class Palette {
   protected readonly answer = signal<{ text: string; note: string } | null>(null);
   private readonly assistant = signal<CvAssistant | null>(null);
   private readonly docs = computed(() => buildDocs(this.c()));
-  private readonly busy = signal(false);
+  protected readonly busy = signal(false);
   private gone = false;
 
   protected readonly entries = computed<Entry[]>(() => {
@@ -135,6 +166,23 @@ export class Palette {
       const entry = this.entries()[this.index()];
       if (entry) this.run(entry);
     }
+  }
+
+  protected key(e: Entry): string {
+    return `${e.kind}:${this.anchorOf(e) ?? e.label}`;
+  }
+
+  protected icon(e: Entry): string {
+    switch (e.kind) {
+      case 'section': return ICONS[e.id];
+      case 'doc': return ICONS[e.doc.section];
+      case 'email': return ICONS.contact;
+      default: return ICONS[e.kind];
+    }
+  }
+
+  protected segments(e: Entry): Segment[] {
+    return e.kind === 'ask' ? [{ text: e.label, hit: false }] : highlight(e.label, this.query());
   }
 
   protected anchorOf(e: Entry): string | null {
