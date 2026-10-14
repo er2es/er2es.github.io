@@ -745,3 +745,28 @@ test('the portrait and the name in the header lead back to the very top of the p
   await expect.poll(() => page.evaluate(() => scrollY), { timeout: 5000 }).toBe(0);
   await expect.poll(() => page.evaluate(() => location.hash)).toBe('');
 });
+
+test.describe('career arc: pointing at a lane name', () => {
+  test('previews the lane in the log without choosing it; clicking chooses it', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await ready(page, '/hu/');
+    const lit = page.locator('#experience .row.lit');
+    const backend = page.locator('.arc .name', { hasText: 'Backend' });
+    const frontend = page.locator('.arc .name', { hasText: 'Frontend' });
+    await expect(backend).toHaveAttribute('aria-pressed', 'true');
+    const backendJobs = await lit.count();
+
+    await frontend.hover();
+    await expect(lit).toHaveCount(2); // the log shows the Frontend jobs
+    await expect(backend).toHaveAttribute('aria-pressed', 'true'); // but the choice is still Backend
+    await page.mouse.move(2, 2);
+    await expect(lit).toHaveCount(backendJobs);
+
+    await frontend.hover();
+    await frontend.click();
+    await expect(frontend).toHaveAttribute('aria-pressed', 'true');
+    await page.mouse.move(2, 2);
+    await expect(lit).toHaveCount(2); // the choice stays after the pointer leaves
+    await expect(backend).toHaveAttribute('aria-pressed', 'false');
+  });
+});

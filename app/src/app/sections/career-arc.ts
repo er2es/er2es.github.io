@@ -22,7 +22,7 @@ const BASE: ItemId = 'edu-nonprofit';
         <p class="eyebrow mono" aria-hidden="true">skills/</p>
         @for (l of arc().lanes; track l.id; let i = $index; let last = $last) {
           <div class="lane" [style.--i]="i">
-            <button type="button" class="name" [attr.aria-pressed]="pressed(l.id)" (click)="toggle(l.id)">
+            <button type="button" class="name" [attr.aria-pressed]="pressed(l.id)" (click)="toggle(l.id)" (pointerenter)="preview($event, l.id)" (pointerleave)="unpreview()">
               {{ c().skills.groups[l.group] }} <small class="mono">{{ from(l.since) }}</small>
             </button>
             <div class="track" aria-hidden="true" (pointermove)="scrub($event)" (pointerdown)="scrub($event)" (pointerleave)="leave()">
@@ -192,11 +192,16 @@ export class CareerArc implements OnInit {
     return this.arc().lanes.find((l) => l.id === lane)?.ids ?? [];
   }
 
+  /** The chosen lane's jobs while the pointer rests on another lane's name (which previews that lane in the log). */
+  private readonly held = signal<ReadonlySet<ItemId> | null>(null);
+  /** What is actually chosen: the preview is not a choice. */
+  private readonly chosen = computed(() => this.held() ?? this.lens.ids());
+
   protected pressed(lane: string): boolean {
-    const mine = this.ids(lane);
-    const lit = this.lens.ids();
     if (this.pos() !== null) return false; // the lens belongs to the scrubbing pointer for now
-    return lit.size === mine.length && mine.every((id) => lit.has(id as ItemId));
+    const mine = this.ids(lane);
+    const chosen = this.chosen();
+    return chosen.size === mine.length && mine.every((id) => chosen.has(id as ItemId));
   }
 
   protected dim(id: string): boolean {
@@ -205,7 +210,23 @@ export class CareerArc implements OnInit {
   }
 
   protected toggle(lane: string): void {
-    this.lens.ids.set(this.pressed(lane) ? new Set() : new Set(this.ids(lane) as ItemId[]));
+    const next = this.pressed(lane) ? new Set<ItemId>() : new Set(this.ids(lane) as ItemId[]);
+    if (this.held() !== null) this.held.set(next); // while the pointer rests here, leaving puts this choice back
+    this.lens.ids.set(next); // and the log shows the choice at once, so a click that clears it clears the log too
+  }
+
+  /** A mouse resting on a lane's name shows that lane in the log, without choosing it. */
+  protected preview(e: PointerEvent, lane: string): void {
+    if (e.pointerType !== 'mouse' || this.pos() !== null) return;
+    if (this.held() === null) this.held.set(this.lens.ids());
+    this.lens.ids.set(new Set(this.ids(lane) as ItemId[]));
+  }
+
+  protected unpreview(): void {
+    const back = this.held();
+    if (back === null) return;
+    this.held.set(null);
+    this.lens.ids.set(back);
   }
 
   protected go(id: string): void {
