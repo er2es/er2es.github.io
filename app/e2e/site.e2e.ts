@@ -481,3 +481,26 @@ test('palette: empty query lists only the six sections; the placeholder is an ex
     await page.keyboard.press('Escape');
   }
 });
+
+test.describe('the portrait is never downloaded larger than it is shown', () => {
+  for (const d of [
+    { name: 'phone at 1.75x (Lighthouse mobile)', viewport: { width: 412, height: 823 }, deviceScaleFactor: 1.75, file: 'portrait-480.avif' },
+    { name: 'phone at 3x', viewport: { width: 390, height: 844 }, deviceScaleFactor: 3, file: 'portrait-640.avif' },
+    { name: 'desktop at 1x', viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1, file: 'portrait-320.avif' },
+    { name: 'desktop at 2x', viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2, file: 'portrait-640.avif' },
+  ]) {
+    test.describe(d.name, () => {
+      test.use({ viewport: d.viewport, deviceScaleFactor: d.deviceScaleFactor });
+      test(`takes ${d.file}, and the file covers the shown size`, async ({ page }) => {
+        const images: string[] = [];
+        page.on('request', (r) => { if (r.resourceType() === 'image' && /portrait-/.test(r.url())) images.push(r.url().replace(/^.*\//, '')); });
+        await ready(page, '/');
+        expect(images).toEqual([d.file]);
+        const img = page.locator('.portrait img');
+        // the chosen file is wide enough for the device pixels it covers (640 is the largest there is)
+        const [shown, file] = await img.evaluate((i: HTMLImageElement) => [i.getBoundingClientRect().width * devicePixelRatio, Number(/portrait-(\d+)/.exec(i.currentSrc)![1])]);
+        expect(file).toBeGreaterThanOrEqual(Math.min(640, Math.floor(shown)));
+      });
+    });
+  }
+});
