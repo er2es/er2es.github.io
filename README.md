@@ -3,9 +3,8 @@
 [![CI](https://github.com/er2es/er2es.github.io/actions/workflows/ci.yml/badge.svg)](https://github.com/er2es/er2es.github.io/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/er2es/er2es.github.io/graph/badge.svg)](https://codecov.io/gh/er2es/er2es.github.io)
 [![Angular](https://img.shields.io/badge/Angular-22-DD0031?logo=angular&logoColor=white)](https://angular.dev)
-[![Tag](https://img.shields.io/github/v/tag/er2es/er2es.github.io?label=tag)](https://github.com/er2es/er2es.github.io/tags)
-[![Release](https://img.shields.io/github/v/release/er2es/er2es.github.io)](https://github.com/er2es/er2es.github.io/releases)
 [![License: MIT](https://img.shields.io/badge/code-MIT-blue)](LICENSE)
+
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/er2es/er2es.github.io)
 
 Personal CV site of József Szabó, in English (`/`) and Hungarian (`/hu/`). Live at <https://er2es.github.io>.
@@ -15,6 +14,7 @@ Personal CV site of József Szabó, in English (`/`) and Hungarian (`/hu/`). Liv
 - Angular 22 (standalone components, signals, zoneless), TypeScript, SCSS
 - Static prerender (SSG) with hydration, no server at runtime
 - No UI library, no webfonts, no analytics, no cookies, no third-party requests
+- Strict Content Security Policy as a `<meta>` tag: scripts only from the site itself or by hash, written into the pages at build time
 - Quality gates: type check (strict TypeScript, strict Angular templates), ESLint with angular-eslint, Vitest (unit), Playwright and axe-core (end-to-end and accessibility), Lighthouse (performance gate)
 
 ## Layout

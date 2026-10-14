@@ -7,7 +7,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
 /** What the built site is made from. The generated `build-info.ts` is left out: it carries the build date. */
 const INPUT_DIRS = ['src', 'public'];
-const INPUT_FILES = ['angular.json', 'package.json', 'package-lock.json', 'test-counts.json', 'tsconfig.json', 'tsconfig.app.json', 'scripts/build-docs.mjs'];
+const INPUT_FILES = ['angular.json', 'package.json', 'package-lock.json', 'test-counts.json', 'tsconfig.json', 'tsconfig.app.json', 'scripts/build-docs.mjs', 'scripts/csp.mjs'];
 const GENERATED = new Set(['src/app/egg/build-info.ts']);
 const TEXT = /\.(ts|scss|css|html|json|txt|xml|svg|mjs)$/;
 

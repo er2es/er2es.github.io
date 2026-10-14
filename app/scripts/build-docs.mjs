@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { withCsp } from './csp.mjs';
 import { sourceHash } from './source-hash.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -42,8 +43,10 @@ for (const page of ['index.html', join('hu', 'index.html')]) {
     .replace(/<link rel="modulepreload" (?![^>]*fetchpriority)/g, '<link rel="modulepreload" fetchpriority="low" ')
     .replace(/<script src="([^"]+\.js)" type="module"(?![^>]*fetchpriority)/g, '<script src="$1" type="module" fetchpriority="low"');
   if (!html.includes('fetchpriority="low"')) throw new Error(`${page}: no module script to deprioritise`);
-  writeFileSync(file, html);
+  writeFileSync(file, withCsp(html));
 }
+const notFound = join(out, '404.html');
+writeFileSync(notFound, withCsp(readFileSync(notFound, 'utf8')));
 // which sources this build came from (`npm run check:docs` compares it, so a forgotten rebuild is caught)
 writeFileSync(join(out, '.source-hash'), sourceHash() + '\n');
 console.log(`docs/ ready: ${readdirSync(out).join(', ')}`);

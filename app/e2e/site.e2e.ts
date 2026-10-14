@@ -686,3 +686,51 @@ test.describe('career arc', () => {
     await expect.poll(() => page.evaluate(() => location.hash)).toBe('#job-edu-nonprofit');
   });
 });
+
+test.describe('content security policy', () => {
+  for (const p of PAGES) {
+    test(`${p.url}: scripts run only by hash, and nothing the site does is refused`, async ({ page }) => {
+      const refused: string[] = [];
+      await page.addInitScript(() => {
+        document.addEventListener('securitypolicyviolation', (e) => {
+          (window as unknown as { __csp: string[] }).__csp = [...((window as unknown as { __csp?: string[] }).__csp ?? []), `${e.violatedDirective} ${e.blockedURI}`];
+        });
+      });
+      page.on('console', (m) => { if (/Content Security Policy|Refused to/i.test(m.text())) refused.push(m.text()); });
+      await ready(page, p.url);
+      const policy = (await page.locator('meta[http-equiv="Content-Security-Policy"]').getAttribute('content')) ?? '';
+      expect(policy).toMatch(/script-src 'self' 'sha256-/);
+      expect(policy).not.toMatch(/script-src[^;]*unsafe-(inline|eval)/);
+      expect(policy).toContain("object-src 'none'");
+
+      // use everything that runs script: theme, palette and search, the photo scene and the sheet, the language switch
+      await page.locator('app-header button.chip.icon').nth(1).click();
+      await page.keyboard.press('Control+K');
+      await expect(page.getByRole('dialog')).toBeVisible();
+      await page.keyboard.type('php');
+      await page.keyboard.press('Escape');
+      for (let i = 0; i < 3; i++) await page.keyboard.press('Shift');
+      await expect(page.locator('app-pup .pup')).toBeVisible();
+      await page.keyboard.press('Space');
+      await expect(page.getByRole('dialog')).toBeVisible();
+      await page.keyboard.press('Escape');
+      await page.locator('app-header a[hreflang]').click();
+      await page.waitForTimeout(600);
+
+      expect(await page.evaluate(() => (window as unknown as { __csp?: string[] }).__csp ?? [])).toEqual([]);
+      expect(refused).toEqual([]);
+    });
+  }
+
+  test('a script that is not in the page at build time is refused', async ({ page }) => {
+    await ready(page, '/');
+    const ran = await page.evaluate(() => {
+      (window as unknown as { __injected?: boolean }).__injected = false;
+      const s = document.createElement('script');
+      s.textContent = 'window.__injected = true';
+      document.head.appendChild(s);
+      return (window as unknown as { __injected: boolean }).__injected;
+    });
+    expect(ran).toBe(false);
+  });
+});
