@@ -26,7 +26,7 @@ Personal CV site of József Szabó, in English (`/`) and Hungarian (`/hu/`). Liv
 
 ## Commands
 
-Run from `app/` (Node 22.22.3 or newer, see `.nvmrc`). There is also a dev container: open the repository in GitHub
+Run from `app/` (Node 24.15 or newer, see `.nvmrc`). There is also a dev container: open the repository in GitHub
 Codespaces and everything is installed.
 
 | Command | What it does |

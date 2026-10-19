@@ -1,6 +1,6 @@
 {
   "name": "er2es.github.io",
-  "image": "mcr.microsoft.com/devcontainers/javascript-node:22",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:24",
   "postCreateCommand": "cd app && npm ci && npx playwright install --with-deps chromium",
   "forwardPorts": [4200, 4300],
   "portsAttributes": {
