@@ -17,7 +17,7 @@ const ts = JSON.parse(readFileSync(join(root, 'node_modules', 'typescript', 'pac
 const version = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8')).version;
 writeFileSync(
   join(root, 'src', 'app', 'egg', 'build-info.ts'),
-  `/** Overwritten by scripts/build-docs.mjs on every build. */\nexport const BUILD = { date: '${new Date().toISOString().slice(0, 10)}', typescript: '${ts}', node: '${process.version}', version: '${version}', unit: ${counts.unit}, e2e: ${counts.e2e} };\n`,
+  `/** Overwritten by scripts/build-docs.mjs on every build. */\nexport const BUILD = { date: '${new Date().toISOString().slice(0, 10)}', typescript: '${ts}', node: '${process.version}', version: '${version}', unit: ${counts.unit}, e2e: ${counts.e2e}, coverage: ${counts.coverage ?? 0} };\n`,
 );
 
 execFileSync(

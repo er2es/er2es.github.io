@@ -18,6 +18,7 @@ export const SKILL_TERMS: Readonly<Record<string, readonly string[]>> = {
   QA: ['Selenium WebDriver'],
   'REST / SOAP API': ['API', 'REST', 'SOAP'],
   SPSS: ['IBM SPSS'],
+  'Docker / Podman': ['Docker', 'Podman'],
 };
 
 const escape = (s: string): string => s.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');

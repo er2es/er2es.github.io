@@ -23,7 +23,9 @@ const count = (text, re) => Number(re.exec(text)?.[1] ?? 0);
 
 run('npm run typecheck');
 run('npm run lint');
-const unit = count(runCapture('npm test'), /Tests\s+(\d+) passed/);
+const unitRun = runCapture('npm run test:coverage');
+const unit = count(unitRun, /Tests\s+(\d+) passed/);
+const coverage = Math.round(count(unitRun, /Statements\s*:\s*([\d.]+)%/));
 run('npm run check:contrast');
 run('npm run portrait');
 run('npm run build');
@@ -39,7 +41,7 @@ try {
   const e2e = count(runCapture('npm run e2e'), /(\d+) passed/);
   run('npm run lighthouse');
   // shown on the easter egg sheet by the next build (scripts/build-docs.mjs reads this file)
-  writeFileSync(join(root, 'test-counts.json'), JSON.stringify({ unit, e2e }) + '\n');
+  writeFileSync(join(root, 'test-counts.json'), JSON.stringify({ unit, e2e, coverage }) + '\n');
   console.log('\nverify: all gates passed');
 } finally {
   server.kill();

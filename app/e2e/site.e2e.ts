@@ -233,6 +233,10 @@ test.describe('easter egg', () => {
     const dlg = page.getByRole('dialog', { name: 'Under the hood' });
     await expect(dlg).toBeVisible();
     await expect(dlg.getByText('Third-party cookies')).toBeVisible();
+    // the build's own facts: the policy is read from the page, the version and the coverage come from the build
+    await expect(dlg.locator('dd', { hasText: /^Strict, \d+ script hashes$/ })).toHaveCount(1);
+    await expect(dlg.locator('dd', { hasText: /^v\d+\.\d+\.\d+$/ })).toHaveCount(1);
+    await expect(dlg.locator('dd', { hasText: /^\d+%$/ })).toHaveCount(1);
     await expect(dlg.locator('dd').nth(1)).toHaveText('0'); // third-party requests
     await expect(dlg.locator('dd').nth(2)).toHaveText('0'); // cookies
     const r = await new AxeBuilder({ page }).include('dialog').analyze();
@@ -608,22 +612,44 @@ test.describe('the portrait flies into the header', () => {
   });
 });
 
-test.describe('career arc', () => {
-  test('the log starts collapsed with the Backend lane lit; another lane takes over, and the lens comes back after pointing at a year', async ({ page }) => {
-    await page.setViewportSize({ width: 1280, height: 800 });
+test.describe('career graph', () => {
+  const setup = async (page: Page, width = 1280) => {
+    await page.setViewportSize({ width, height: 800 });
     await ready(page, '/hu/');
+    return {
+      lit: page.locator('#experience .row.lit'),
+      chips: page.locator('.arc .filter'),
+      lane: (name: string) => page.locator('.arc .name', { hasText: name }),
+    };
+  };
+
+  test('the log starts collapsed with the Backend family chosen; families are added and removed one by one', async ({ page }) => {
+    const { lit, chips, lane } = await setup(page);
     await expect(page.locator('#experience details[open]')).toHaveCount(0);
-    const lit = page.locator('#experience .row.lit');
-    const backend = page.locator('.arc .name', { hasText: 'Backend' });
-    const frontend = page.locator('.arc .name', { hasText: 'Frontend' });
-    await expect(backend).toHaveAttribute('aria-pressed', 'true');
+    await expect(lane('Backend')).toHaveAttribute('aria-pressed', 'true');
+    await expect(chips).toHaveCount(1);
     const backendJobs = await lit.count();
     expect(backendJobs).toBeGreaterThan(2);
-    await frontend.click();
-    await expect(frontend).toHaveAttribute('aria-pressed', 'true');
-    await expect(backend).toHaveAttribute('aria-pressed', 'false');
-    await expect(lit).toHaveCount(2); // the two jobs that used a front-end skill
-    // scrub over 2017 on the first lane: only the job of that year is lit, the lane's lens is back afterwards
+
+    await lane('Frontend').click(); // a second family joins the first
+    await expect(lane('Frontend')).toHaveAttribute('aria-pressed', 'true');
+    await expect(lane('Backend')).toHaveAttribute('aria-pressed', 'true');
+    await expect(chips).toHaveCount(2);
+
+    await lane('Backend').click(); // and the first can leave: only the two front-end jobs stay lit
+    await expect(lane('Backend')).toHaveAttribute('aria-pressed', 'false');
+    await expect(lit).toHaveCount(2);
+
+    await chips.first().click(); // a chip removes its family
+    await expect(chips).toHaveCount(0);
+    await expect(lit).toHaveCount(0);
+  });
+
+  test('pointing at a year lights that year, and the chosen families come back afterwards', async ({ page }) => {
+    const { lit, lane } = await setup(page);
+    await lane('Backend').click(); // nothing chosen
+    await lane('Frontend').click();
+    await expect(lit).toHaveCount(2);
     const track = page.locator('.arc .lane').first().locator('.track');
     await track.scrollIntoViewIfNeeded();
     const box = (await track.boundingBox())!;
@@ -633,31 +659,35 @@ test.describe('career arc', () => {
     await page.mouse.move(2, 2);
     await expect(page.locator('.arc .readout')).not.toContainText('2017');
     await expect(lit).toHaveCount(2);
-    await frontend.click();
-    await expect(lit).toHaveCount(0);
   });
 
-  test('the trunk opens the first job in the log', async ({ page }) => {
-    await page.setViewportSize({ width: 1280, height: 800 });
-    await ready(page, '/hu/');
-    await page.locator('.arc .base').first().click();
-    await expect(page.locator('#job-edu-nonprofit details')).toHaveJSProperty('open', true);
-    expect(await page.evaluate(() => location.hash)).toBe(''); // opened where it is: no new URL
-  });
-
-  test('a square opens the job of its year in the log without a hash, and a chip names the chosen lane and clears it', async ({ page }) => {
-    await page.setViewportSize({ width: 1280, height: 800 });
-    await ready(page, '/hu/');
-    const chip = page.locator('.arc .filter');
-    await expect(chip).toContainText('Backend');
+  test('nothing in the graph moves the page or the URL: not a square, not the foundation, not a family', async ({ page }) => {
+    const { lane } = await setup(page);
+    await page.locator('.arc').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(300);
+    const y = await page.evaluate(() => scrollY);
     await page.locator('.arc .lane').first().locator('.cell[data-l="4"]').last().click();
-    await expect(page.locator('#job-chamber details')).toHaveJSProperty('open', true);
+    await page.locator('.arc .base').first().click();
+    await lane('Frontend').click();
+    await page.waitForTimeout(500);
+    expect(await page.evaluate(() => scrollY)).toBe(y);
     expect(await page.evaluate(() => location.hash)).toBe('');
-    await chip.click();
-    await expect(page.locator('#experience .row.lit')).toHaveCount(0);
-    await expect(chip).toHaveCount(0);
-    await page.locator('.arc .name', { hasText: 'Frontend' }).click();
-    await expect(chip).toContainText('Frontend');
+    await expect(page.locator('#experience details[open]')).toHaveCount(0);
+  });
+
+  test.describe('on a touch screen', () => {
+    test.use({ hasTouch: true });
+
+    test('touching a square shows its year and does not scroll the page', async ({ page }) => {
+      await setup(page, 390);
+      await page.locator('.arc').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(300);
+      const y = await page.evaluate(() => scrollY);
+      const box = (await page.locator('.arc .lane').first().locator('.cell[data-l="4"]').last().boundingBox())!;
+      await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+      await expect(page.locator('.arc .readout')).toContainText('2026');
+      expect(await page.evaluate(() => scrollY)).toBe(y);
+    });
   });
 });
 
@@ -718,31 +748,6 @@ test('the portrait and the name in the header lead back to the very top of the p
   await page.locator('app-header .brand').click();
   await expect.poll(() => page.evaluate(() => scrollY), { timeout: 5000 }).toBe(0);
   await expect.poll(() => page.evaluate(() => location.hash)).toBe('');
-});
-
-test.describe('career arc: pointing at a lane name', () => {
-  test('previews the lane in the log without choosing it; clicking chooses it', async ({ page }) => {
-    await page.setViewportSize({ width: 1280, height: 800 });
-    await ready(page, '/hu/');
-    const lit = page.locator('#experience .row.lit');
-    const backend = page.locator('.arc .name', { hasText: 'Backend' });
-    const frontend = page.locator('.arc .name', { hasText: 'Frontend' });
-    await expect(backend).toHaveAttribute('aria-pressed', 'true');
-    const backendJobs = await lit.count();
-
-    await frontend.hover();
-    await expect(lit).toHaveCount(2); // the log shows the Frontend jobs
-    await expect(backend).toHaveAttribute('aria-pressed', 'true'); // but the choice is still Backend
-    await page.mouse.move(2, 2);
-    await expect(lit).toHaveCount(backendJobs);
-
-    await frontend.hover();
-    await frontend.click();
-    await expect(frontend).toHaveAttribute('aria-pressed', 'true');
-    await page.mouse.move(2, 2);
-    await expect(lit).toHaveCount(2); // the choice stays after the pointer leaves
-    await expect(backend).toHaveAttribute('aria-pressed', 'false');
-  });
 });
 
 test.describe('review fixes', () => {

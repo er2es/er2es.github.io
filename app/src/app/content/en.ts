@@ -29,6 +29,10 @@ export const en: SiteContent = {
     egg: {
       title: 'Under the hood',
       intro: 'Measured live in your browser, right now.',
+      version: 'Version',
+      coverage: 'Test coverage (logic)',
+      policy: 'Content security policy',
+      policyValue: 'Strict, {n} script hashes',
       requests: 'Requests',
       thirdParty: 'Third-party cookies',
       cookies: 'Cookies set by this page',
@@ -110,7 +114,9 @@ export const en: SiteContent = {
       points: [
         'Coordinated technical and development work on a web platform (Symfony back end, Angular front end) over a project of more than three years, including internal testing of what the external development team delivered.',
         'Fixed bugs and added features in the Symfony back end and the Angular front end, working within a GitLab CI/CD and RHEL environment.',
-        'Wrote and extended PostgreSQL triggers and stored procedures, and agreed database design and infrastructure requirements with internal colleagues.',
+        'Know X.509-based authentication flows.',
+        'Wrote and extended PostgreSQL triggers and stored procedures, set up the CI/CD process, and agreed database design and infrastructure requirements with internal colleagues.',
+        'The most recent project was a Podman-based, multi-container web application: I coordinated its development work and quality assurance and designed the PostgreSQL procedures it needed.',
         'Built the platform’s support site on my own, in Symfony and Angular.',
         'Developed web applications for partner organisations, along with REST and SOAP API endpoints.',
         'Maintained and extended the organisation’s WordPress sites and intranet, refactored legacy PHP code, and advised other development projects as a technical expert.',
@@ -163,7 +169,12 @@ export const en: SiteContent = {
     },
     fuzzphony: {
       title: 'Fuzzphony',
-      summary: 'My open-source search library for PHP and Symfony, built on PostgreSQL alone. It adds ranked full-text search that tolerates typos and ignores accents, with filters and a query language, and needs no Elasticsearch, Meilisearch or other external service. Existing tables stay as they are: the index lives in a separate table beside them.',
+      summary: 'My open-source search library for PHP and Symfony, built on PostgreSQL alone. It adds ranked full-text search that tolerates typos and ignores accents, with filters and a query language, and needs no Elasticsearch, Meilisearch or other external service. Existing tables stay as they are: the index lives in a separate table beside them. Built with an AI-agentic workflow and strict quality assurance, including mutation testing.',
+      points: [],
+    },
+    'cv-site': {
+      title: 'This CV site',
+      summary: 'The site you are reading: a bilingual CV in Angular 22, prerendered and hydrated, without third-party requests. Type check, lint, unit tests, end-to-end and accessibility tests run on every push.',
       points: [],
     },
     audit: {

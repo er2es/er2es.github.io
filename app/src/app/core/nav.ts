@@ -22,19 +22,6 @@ export function scrollToSection(id: string): void {
   jumpHash(id);
 }
 
-/**
- * Opens an entry where it already is: no new URL, no focus change, and the page moves only as far as needed to show it
- * (not at all when it is in view). The entry briefly flashes so the eye finds it.
- */
-export function revealEntry(id: string): void {
-  const el = document.getElementById(id);
-  if (!el) return;
-  const details = el.querySelector('details');
-  if (details) details.open = true;
-  el.scrollIntoView({ block: 'nearest' });
-  flash(el);
-}
-
 function flash(el: HTMLElement): void {
   el.classList.remove('flash');
   void el.offsetWidth; // restart the animation

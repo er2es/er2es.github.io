@@ -29,6 +29,10 @@ export const hu: SiteContent = {
     egg: {
       title: 'A motorháztető alatt',
       intro: 'Élőben mérve, a böngésződben, éppen most.',
+      version: 'Verzió',
+      coverage: 'Tesztlefedettség (logika)',
+      policy: 'Tartalombiztonsági irányelv',
+      policyValue: 'Szigorú, {n} szkript-hash',
       requests: 'Kérések',
       thirdParty: 'Cookie harmadik féltől',
       cookies: 'Az oldal által beállított cookie-k',
@@ -110,7 +114,9 @@ export const hu: SiteContent = {
       points: [
         'Egy több mint hároméves projektben koordináltam egy Symfony-backendre és Angular-frontendre épülő webes platform technikai és fejlesztési munkáit; a külső fejlesztőcsapat által szállított verziók belső tesztelését is én szerveztem.',
         'Hibákat javítottam és új funkciókat készítettem a Symfony-backendben és az Angular-frontendben, GitLab CI/CD-re és RHEL-re épülő környezetben.',
-        'PostgreSQL-triggereket és tárolt eljárásokat írtam és bővítettem; az adatbázis-tervezésről és az infrastruktúra-igényekről a belső kollégákkal egyeztettem.',
+        'Ismerem az X.509-alapú authentikációs folyamatokat.',
+        'PostgreSQL-triggereket és tárolt eljárásokat írtam és bővítettem, kialakítottam a CI/CD-folyamatot; az adatbázis-tervezésről és az infrastruktúra-igényekről a belső kollégákkal egyeztettem.',
+        'A legutóbbi projekt egy Podman-alapú, többkonténeres webalkalmazás volt: koordináltam a fejlesztési feladatait és a minőségbiztosítását, és kialakítottam a hozzá szükséges PostgreSQL-eljárásokat.',
         'A platform support oldalát egyedül építettem fel, Symfonyban és Angularban.',
         'Partnerszervezeteknek webalkalmazások, valamint REST és SOAP API-végpontok is kikerültek a kezem alól.',
         'Gondoztam és bővítettem a szervezet WordPress-oldalait és intranetét, refaktoráltam legacy PHP-kódot, és technikai szakértőként más fejlesztési projekteket is támogattam.',
@@ -163,7 +169,12 @@ export const hu: SiteContent = {
     },
     fuzzphony: {
       title: 'Fuzzphony',
-      summary: 'Saját, nyílt forráskódú keresőkönyvtáram PHP-hoz és Symfonyhoz, amely csak a PostgreSQL-re támaszkodik. Rangsorolt teljes szöveges keresést ad, amely elnézi az elírásokat és figyelmen kívül hagyja az ékezeteket, szűrőkkel és lekérdezőnyelvvel; Elasticsearch, Meilisearch vagy más külső szolgáltatás nem kell hozzá. A meglévő táblákhoz nem nyúl: az index mellettük, egy külön táblában él.',
+      summary: 'Saját, nyílt forráskódú keresőkönyvtáram PHP-hoz és Symfonyhoz, amely csak a PostgreSQL-re támaszkodik. Rangsorolt teljes szöveges keresést ad, amely elnézi az elírásokat és figyelmen kívül hagyja az ékezeteket, szűrőkkel és lekérdezőnyelvvel; Elasticsearch, Meilisearch vagy más külső szolgáltatás nem kell hozzá. A meglévő táblákhoz nem nyúl: az index mellettük, egy külön táblában él. AI-ügynökös (agentic) munkafolyamattal készült, erős minőségbiztosítással, mutációs teszteléssel együtt.',
+      points: [],
+    },
+    'cv-site': {
+      title: 'Ez az önéletrajz-oldal',
+      summary: 'Az oldal, amelyet olvasol: kétnyelvű önéletrajz Angular 22-ben, előrenderelve és hidratálva, harmadik felek nélkül. Típusellenőrzés, lint, unit-, end-to-end és hozzáférhetőségi tesztek futnak minden pusholáskor.',
       points: [],
     },
     audit: {

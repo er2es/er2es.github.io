@@ -19,7 +19,7 @@ export const FILES: Record<SectionId, string> = {
 
 export type ItemId =
   | 'chamber' | 'uni-med' | 'welfare' | 'uni-admin' | 'health-inst' | 'edu-authority' | 'pricing-co' | 'edu-nonprofit'
-  | 'fuzzphony' | 'sport-programme' | 'surveys' | 'gov-reporting' | 'wordpress' | 'audit' | 'admissions-map';
+  | 'fuzzphony' | 'sport-programme' | 'surveys' | 'gov-reporting' | 'wordpress' | 'audit' | 'admissions-map' | 'cv-site';
 
 export interface Fact {
   id: ItemId;
@@ -35,7 +35,7 @@ export interface Fact {
 
 export const FACTS: readonly Fact[] = [
   { id: 'chamber', kind: 'job', main: true, inGraph: true, start: 2021, end: 2026,
-    keywords: ['Symfony', 'Angular', 'PostgreSQL', 'MariaDB', 'GitLab', 'CI/CD', 'RHEL', 'Legacy PHP refactor', 'WordPress multisite', 'SASS', 'Node', 'Bootstrap 4', 'QA'] },
+    keywords: ['Symfony', 'Angular', 'PostgreSQL', 'MariaDB', 'GitLab', 'CI/CD', 'RHEL', 'Podman', 'Legacy PHP refactor', 'WordPress multisite', 'SASS', 'Node', 'Bootstrap 4', 'QA'] },
   { id: 'uni-med', kind: 'job', main: true, inGraph: true, start: 2020, end: 2021,
     keywords: ['WordPress multisite', 'SASS', 'Node', 'Bootstrap 4', 'Laravel'] },
   { id: 'uni-admin', kind: 'job', main: true, inGraph: true, start: 2016, end: 2020,
@@ -55,7 +55,9 @@ export const FACTS: readonly Fact[] = [
   { id: 'sport-programme', kind: 'project', main: false, inGraph: false, start: 2013, end: 2015,
     keywords: ['Legacy PHP', 'Bootstrap'] },
   { id: 'fuzzphony', kind: 'project', main: false, inGraph: false, start: null, end: null,
-    url: 'https://github.com/er2es/fuzzphony', keywords: ['PHP', 'Symfony', 'PostgreSQL'] },
+    url: 'https://github.com/er2es/fuzzphony', keywords: ['PHP', 'Symfony', 'PostgreSQL', 'Mutation testing'] },
+  { id: 'cv-site', kind: 'project', main: false, inGraph: false, start: 2026, end: 2026,
+    url: 'https://github.com/er2es/er2es.github.io', keywords: ['Angular', 'TypeScript', 'SCSS', 'Playwright'] },
   { id: 'gov-reporting', kind: 'project', main: false, inGraph: false, start: 2015, end: 2020,
     keywords: ['WordPress', 'PHP', 'TCPDF'] },
   { id: 'audit', kind: 'project', main: false, inGraph: false, start: 2019, end: 2021,
@@ -69,7 +71,7 @@ export const FACTS: readonly Fact[] = [
 export const FACT_BY_ID = Object.fromEntries(FACTS.map((f) => [f.id, f])) as Record<ItemId, Fact>;
 
 /** Display order of the project cards. */
-export const PROJECT_ORDER: readonly ItemId[] = ['fuzzphony', 'audit', 'gov-reporting', 'wordpress', 'sport-programme', 'surveys', 'admissions-map'];
+export const PROJECT_ORDER: readonly ItemId[] = ['fuzzphony', 'cv-site', 'audit', 'gov-reporting', 'wordpress', 'sport-programme', 'surveys', 'admissions-map'];
 
 export function period(f: Fact): string {
   if (f.start === null || f.end === null) return '';
@@ -109,6 +111,7 @@ export const SKILLS: readonly { group: SkillGroupId; items: readonly SkillFact[]
     { name: 'GitLab' },
     { name: 'CI/CD' },
     { name: 'RHEL' },
+    { name: 'Docker / Podman' },
     { name: 'Bash' },
     { name: 'PowerShell' },
     { name: 'Git' },
@@ -150,7 +153,7 @@ export interface SiteContent {
     egg: {
       title: string; intro: string; requests: string; thirdParty: string; cookies: string;
       transferred: string; scripts: string; dom: string; lcp: string; cls: string; framework: string; typescript: string;
-      rendering: string; renderingValue: string; built: string; tests: string; pagespeed: string; localStorage: string; sessionStorage: string; close: string;
+      rendering: string; renderingValue: string; built: string; tests: string; coverage: string; version: string; policy: string; policyValue: string; pagespeed: string; localStorage: string; sessionStorage: string; close: string;
     };
     palette: {
       open: string; short: string; placeholder: string; empty: string; close: string;
