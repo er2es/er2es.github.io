@@ -27,21 +27,23 @@ const BASE: ItemId = 'edu-nonprofit';
             <button type="button" class="name" [attr.aria-pressed]="pressed(l.id)" (click)="toggle(l.id)">
               {{ c().skills.groups[l.group] }} <small class="mono">{{ from(l.since) }}</small>
             </button>
-            <div class="track" aria-hidden="true" (pointermove)="scrub($event)" (pointerdown)="scrub($event)" (pointerleave)="leave($event)">
+            <div class="track" aria-hidden="true" (pointermove)="scrub($event, l.id)" (pointerdown)="scrub($event, l.id)" (pointerleave)="leave($event)">
               <div class="cells" [style.grid-template-columns]="'repeat(' + grid().cols + ', minmax(0, 1fr))'">
-                <i class="base" [class.first]="i === 0" [class.last]="last" [style.grid-column]="'span ' + grid().baseYears" [style.--c]="(grid().baseYears / grid().cols) * 50">
-                  <span class="tip"><b>{{ t(base).title }}</b>{{ t(base).org }} · {{ per(base) }}<em>{{ baseTags() }}</em></span>
-                </i>
+                <i class="base" [class.first]="i === 0" [class.last]="last" [style.grid-column]="'span ' + grid().baseYears"></i>
                 @for (cell of l.cells; track cell.year) {
-                  <i class="cell" [attr.data-l]="cell.level" [class.off]="off(l.id)" [class.dim]="dim(cell.jobs)" [style.--c]="((cell.year - grid().min + 0.5) / grid().cols) * 100">
-                    <span class="fill"></span>
-                    @if (cell.jobs.length) {
-                      <span class="tip"><b>{{ cell.year }}</b>@for (j of cell.jobs; track j) { <span class="job">{{ t(j).title }} · {{ t(j).org }}</span> }@if (cell.tags.length) { <em>{{ cell.tags.join(' · ') }}</em> }</span>
-                    }
-                  </i>
+                  <i class="cell" [attr.data-l]="cell.level" [class.off]="off(l.id)" [class.dim]="dim(cell.jobs)"><span class="fill"></span></i>
                 }
               </div>
               @if (year() !== null) { <s class="head" [style.left.%]="headLeft()" [style.width.%]="100 / grid().cols"></s> }
+              @if (tip(); as tp) {
+                @if (tp.lane === l.id) {
+                  <div class="tip" [style.--c]="tp.center">
+                    <b>{{ tp.title }}</b>
+                    @for (line of tp.lines; track line) { <span class="job">{{ line }}</span> }
+                    @if (tp.tags) { <em>{{ tp.tags }}</em> }
+                  </div>
+                }
+              }
             </div>
           </div>
         }
@@ -102,9 +104,9 @@ const BASE: ItemId = 'edu-nonprofit';
     .cell.dim .fill { opacity: 0.25; } /* a year is being pointed at, and this square's jobs are not in it */
     @media (hover: hover) { .cell:not([data-l='0']):hover { z-index: 6; } .cell:not([data-l='0']):hover .fill { scale: 1.12; } .base:hover { z-index: 6; } }
 
-    /* what a square is, on hover (the log below carries the same facts for everyone else) */
+    /* what the year under a mouse was (one card for the whole graph; the log below carries the same facts for everyone else) */
     .tip {
-      display: none; position: absolute; z-index: 5; top: calc(100% + 8px); left: 50%; translate: calc(var(--c, 50) * -1%) 0;
+      position: absolute; z-index: 5; top: calc(50% + var(--cell) / 2 + 8px); left: calc(var(--c, 50) * 1%); translate: calc(var(--c, 50) * -1%) 0;
       width: max-content; max-width: 16rem; padding: 0.5rem 0.75rem; border-radius: 12px; pointer-events: none; cursor: default;
       background: var(--bg-2); border: 1px solid var(--line); box-shadow: var(--glass-shadow);
       font-size: var(--t-footnote); line-height: 1.35; color: var(--fg-2); white-space: normal;
@@ -112,7 +114,6 @@ const BASE: ItemId = 'edu-nonprofit';
     .tip b { display: block; color: var(--fg); font-weight: 600; }
     .tip .job { display: block; }
     .tip em { display: block; margin-top: 0.125rem; font-style: normal; }
-    @media (hover: hover) { .cell:hover .tip, .base:hover .tip { display: block; } }
 
     /* the year under the pointer */
     .head { position: absolute; top: 0; bottom: 0; border-radius: 5px; background: color-mix(in srgb, var(--fg) 12%, transparent); pointer-events: none; }
@@ -157,7 +158,6 @@ export class CareerArc implements OnInit {
   readonly c = input.required<SiteContent>();
   private readonly lens = inject(SkillLens);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
-  protected readonly base = BASE;
 
   /** The skill families that are chosen (Backend to begin with): the log lights the jobs of any of them. */
   protected readonly chosen = signal<ReadonlySet<string>>(new Set(['backend']));
@@ -201,6 +201,26 @@ export class CareerArc implements OnInit {
 
   /** The year under the pointer, while it is scrubbing. */
   protected readonly year = signal<number | null>(null);
+  /** Where a mouse is pointing (a finger gets the line under the graph instead): which row, which year. */
+  private readonly hover = signal<{ lane: string; year: number } | null>(null);
+  protected readonly tip = computed(() => {
+    const h = this.hover();
+    const g = this.grid();
+    const lane = h && g.lanes.find((l) => l.id === h.lane);
+    if (!h || !lane) return null;
+    if (h.year < g.min + g.baseYears) {
+      return { lane: h.lane, center: (g.baseYears / g.cols) * 50, title: this.t(BASE).title, lines: [`${this.t(BASE).org} · ${this.per(BASE)}`], tags: this.baseTags() };
+    }
+    const cell = lane.cells.find((c) => c.year === h.year);
+    if (!cell || !cell.jobs.length) return null;
+    return {
+      lane: h.lane,
+      center: ((h.year - g.min + 0.5) / g.cols) * 100,
+      title: String(h.year),
+      lines: cell.jobs.map((j) => `${this.t(j).title} · ${this.t(j).org}`),
+      tags: cell.tags.join(' · '),
+    };
+  });
   protected readonly headLeft = computed(() => (((this.year() ?? 0) - this.grid().min) / this.grid().cols) * 100);
   private lit = '';
 
@@ -256,12 +276,13 @@ export class CareerArc implements OnInit {
   }
 
   /** Pointing at (or touching) the grid lights the jobs of that year in the log (the chosen families are put back afterwards). */
-  protected scrub(e: PointerEvent): void {
+  protected scrub(e: PointerEvent, lane: string): void {
     const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
     const p = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width));
     const g = this.grid();
     const year = g.min + Math.min(g.cols - 1, Math.floor(p * g.cols));
     this.year.set(year);
+    this.hover.set(e.pointerType === 'mouse' ? { lane, year } : null);
     const ids = activeAt(JOBS, year) as ItemId[];
     const key = ids.join();
     if (key !== this.lit) {
@@ -283,6 +304,7 @@ export class CareerArc implements OnInit {
   private dismiss(): void {
     if (this.year() === null) return;
     this.year.set(null);
+    this.hover.set(null);
     this.lit = '';
     this.lens.ids.set(this.union());
   }

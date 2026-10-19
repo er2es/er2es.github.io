@@ -31,8 +31,6 @@ export const hu: SiteContent = {
       intro: 'Élőben mérve, a böngésződben, éppen most.',
       version: 'Verzió',
       coverage: 'Tesztlefedettség, logikai réteg',
-      policy: 'Content Security Policy',
-      policyValue: 'Szigorú ({n} hash)',
       requests: 'Kérések',
       thirdParty: 'Cookie harmadik féltől',
       cookies: 'Az oldal által beállított cookie-k',

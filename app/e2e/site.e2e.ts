@@ -233,14 +233,14 @@ test.describe('easter egg', () => {
     const dlg = page.getByRole('dialog', { name: 'Under the hood' });
     await expect(dlg).toBeVisible();
     await expect(dlg.getByText('Third-party cookies')).toBeVisible();
-    // the build's own facts: the policy is read from the page, the version and the coverage come from the build
-    await expect(dlg.locator('dd', { hasText: /^Strict \(\d+ hashes\)$/ })).toHaveCount(1);
+    // the build's own facts: the version and the coverage come from the build
     await expect(dlg.locator('dd', { hasText: /^v\d+\.\d+\.\d+$/ })).toHaveCount(1);
     await expect(dlg.locator('dd', { hasText: /^\d+%$/ })).toHaveCount(1);
     await expect(dlg.locator('dd').nth(1)).toHaveText('0'); // third-party requests
     await expect(dlg.locator('dd').nth(2)).toHaveText('0'); // cookies
     const r = await new AxeBuilder({ page }).include('dialog').analyze();
     expect(r.violations).toEqual([]);
+    await expect(page.locator('app-pup .stage')).toHaveCSS('opacity', '0'); // the photo has finished stepping back
     await page.keyboard.press('Escape');
     await expect(dlg).toBeHidden();
     // while the glow fades out, the photo does not come back

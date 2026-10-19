@@ -31,8 +31,6 @@ export const en: SiteContent = {
       intro: 'Measured live in your browser, right now.',
       version: 'Version',
       coverage: 'Test coverage, logic layer',
-      policy: 'Content Security Policy',
-      policyValue: 'Strict ({n} hashes)',
       requests: 'Requests',
       thirdParty: 'Third-party cookies',
       cookies: 'Cookies set by this page',

@@ -153,7 +153,7 @@ export interface SiteContent {
     egg: {
       title: string; intro: string; requests: string; thirdParty: string; cookies: string;
       transferred: string; scripts: string; dom: string; lcp: string; cls: string; framework: string; typescript: string;
-      rendering: string; renderingValue: string; built: string; tests: string; coverage: string; version: string; policy: string; policyValue: string; pagespeed: string; localStorage: string; sessionStorage: string; close: string;
+      rendering: string; renderingValue: string; built: string; tests: string; coverage: string; version: string; pagespeed: string; localStorage: string; sessionStorage: string; close: string;
     };
     palette: {
       open: string; short: string; placeholder: string; empty: string; close: string;

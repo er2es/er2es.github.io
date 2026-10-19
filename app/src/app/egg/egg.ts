@@ -24,9 +24,6 @@ function measure(t: SiteContent['ui']['egg']): Promise<Row[]> {
   const keys = (s: () => Storage): string[] => { try { const st = s(); return Array.from({ length: st.length }, (_, i) => st.key(i) ?? '').filter(Boolean); } catch { return []; } };
   const stored = (list: string[]): string => (list.length ? `${list.length} (${list.join(', ')})` : '0');
 
-  const policy = document.querySelector('meta[http-equiv="Content-Security-Policy"]')?.getAttribute('content');
-  const hashes = policy === undefined || policy === null ? undefined : (policy.match(/'sha256-/g) ?? []).length;
-
   return new Promise((resolve) => {
     let lcp: number | null = null;
     let cls: number | null = null;
@@ -60,8 +57,6 @@ function measure(t: SiteContent['ui']['egg']): Promise<Row[]> {
         { label: t.framework, value: `Angular ${VERSION.full}` },
         { label: t.typescript, value: BUILD.typescript || '–' },
         { label: t.rendering, value: t.renderingValue },
-        // read from the page itself: the policy is the <meta> tag the build wrote, and every script it allows is a hash
-        { label: t.policy, value: hashes === undefined ? '–' : t.policyValue.replace('{n}', String(hashes)) },
         { label: t.version, value: BUILD.version ? `v${BUILD.version}` : '–' },
         ...(BUILD.unit ? [{ label: t.tests, value: `${BUILD.unit} unit · ${BUILD.e2e} e2e` }] : []),
         ...(BUILD.coverage ? [{ label: t.coverage, value: `${BUILD.coverage}%` }] : []),
