@@ -49,7 +49,6 @@ import { Email } from './email';
     /* the same line as in the Contact section: monospace, muted; only the green dot says "available" */
     .meta { color: var(--fg-2); }
     .status { gap: 0.5rem; }
-    .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
     /* the box has a definite size of its own: with a content-sized width the percentage on the image resolved to 0 until the file arrived, and the text below jumped (layout shift) */
     .portrait { order: -1; position: relative; display: block; width: min(100%, 15rem); border-radius: 2rem; }
     .portrait.docked img { visibility: hidden; }

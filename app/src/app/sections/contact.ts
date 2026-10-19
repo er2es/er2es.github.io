@@ -13,7 +13,7 @@ import { Email } from './email';
         <p class="eyebrow mono">{{ file }}</p>
         <h2 id="contact-h">{{ c().ui.sections.contact }}</h2>
         <p class="lead measure">{{ c().contact.text }}</p>
-        <p class="mode mono">{{ c().contact.workMode }}</p>
+        <p class="mode mono"><span class="dot" aria-hidden="true"></span>{{ c().contact.workMode }}</p>
         <div class="act">
           <app-email [c]="c()" />
           <div class="icons">
@@ -36,7 +36,7 @@ import { Email } from './email';
   `,
   styles: [`
     .lead { margin-top: 1.25rem; }
-    .mode { margin-top: 0.5rem; color: var(--fg-2); }
+    .mode { margin-top: 0.5rem; color: var(--fg-2); display: flex; align-items: center; gap: 0.5rem; }
     .act { margin-top: 1.5rem; display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1rem; }
     .icons { display: flex; gap: 0.5rem; }
     .icon {
