@@ -1,5 +1,4 @@
-import { Component, DestroyRef, ElementRef, afterNextRender, computed, inject, input } from '@angular/core';
-import { replayOnReturn } from '../core/replay';
+import { Component, computed, input } from '@angular/core';
 import { EXTRA } from '../content/extra';
 import { FILES, EMAIL, GITHUB_URL, LINKEDIN_URL, type SiteContent } from '../content/model';
 import { Email } from './email';
@@ -45,15 +44,6 @@ import { Email } from './email';
     }
     @media (hover: hover) { .icon:hover { background: var(--tint-hover); } }
     .icon:active { background: var(--tint-press); scale: 0.94; }
-    /* the closing chapter settles in like the hero does, each time it scrolls into view (transform only) */
-    @media (prefers-reduced-motion: no-preference) {
-      .enter .wrap > * { animation: settle 500ms var(--ease-spring) both; }
-      .enter .wrap > :nth-child(2) { animation-delay: 50ms; }
-      .enter .wrap > :nth-child(3) { animation-delay: 100ms; }
-      .enter .wrap > :nth-child(4) { animation-delay: 150ms; }
-      .enter .wrap > :nth-child(5) { animation-delay: 200ms; }
-    }
-    @keyframes settle { from { transform: translateY(14px); } }
   `],
 })
 export class Contact {
@@ -63,13 +53,4 @@ export class Contact {
   protected readonly github = GITHUB_URL;
   protected readonly linkedin = LINKEDIN_URL;
   protected readonly x = computed(() => EXTRA[this.c().lang]);
-
-  constructor() {
-    const host = inject<ElementRef<HTMLElement>>(ElementRef);
-    const destroy = inject(DestroyRef);
-    afterNextRender(() => {
-      const section = host.nativeElement.querySelector<HTMLElement>('#contact');
-      if (section) destroy.onDestroy(replayOnReturn(section, 'enter'));
-    });
-  }
 }

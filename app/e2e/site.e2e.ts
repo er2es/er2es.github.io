@@ -441,33 +441,16 @@ test('external links open in a new tab, say so, and the GitHub link carries its 
   }
 });
 
-test.describe('entrances replay at the top and the bottom', () => {
-  test('scrolling to the bottom plays the contact entrance, back to the top replays the hero', async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 900 });
-    await ready(page, '/');
-    await expect(page.locator('html')).toHaveClass(/\bsettled\b/);
-    await expect(page.locator('.stage')).not.toHaveClass(/\breplay\b/); // not again on the first load
-    await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; scrollTo(0, document.documentElement.scrollHeight); });
-    await expect(page.locator('#contact')).toHaveClass(/\benter\b/);
-    expect(await page.evaluate(() => document.getAnimations().some((a) => (a as CSSAnimation).animationName?.includes('settle') && (a.effect as KeyframeEffect).target?.closest('#contact')))).toBe(true);
-    await page.waitForTimeout(1300); // cooldown
-    await page.evaluate(() => scrollTo(0, 0));
-    await expect(page.locator('.stage')).toHaveClass(/\breplay\b/);
-    expect(await page.evaluate(() => document.getAnimations().some((a) => (a as CSSAnimation).animationName?.includes('settle') && (a.effect as KeyframeEffect).target?.closest('.hero')))).toBe(true);
-    await expect(page.locator('.stage')).not.toHaveClass(/\breplay\b/, { timeout: 3000 }); // and cleans up
-  });
-
-  test('nothing replays under reduced motion', async ({ page }) => {
-    await page.emulateMedia({ reducedMotion: 'reduce' });
-    await ready(page, '/');
-    await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
-    await page.waitForTimeout(400);
-    await page.evaluate(() => scrollTo(0, 0));
-    await page.waitForTimeout(400);
-    await expect(page.locator('.stage')).not.toHaveClass(/\breplay\b/);
-    await expect(page.locator('#contact')).not.toHaveClass(/\benter\b/);
-    expect(await page.evaluate(() => document.getAnimations().filter((a) => /settle/.test((a as CSSAnimation).animationName ?? '')).length)).toBe(0);
-  });
+test('the entrances play once: scrolling to the bottom and back to the top starts no animation', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await ready(page, '/');
+  await expect(page.locator('html')).toHaveClass(/settled/);
+  await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; scrollTo(0, document.documentElement.scrollHeight); });
+  await page.waitForTimeout(1400);
+  await page.evaluate(() => scrollTo(0, 0));
+  await page.waitForTimeout(300);
+  const running = await page.evaluate(() => document.getAnimations().map((a) => (a as CSSAnimation).animationName ?? '').filter((n) => /settle|ping/.test(n)));
+  expect(running).toEqual([]);
 });
 
 test('palette: empty query lists only the six sections; the placeholder is an example', async ({ page }) => {
