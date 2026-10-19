@@ -30,9 +30,9 @@ export const en: SiteContent = {
       title: 'Under the hood',
       intro: 'Measured live in your browser, right now.',
       version: 'Version',
-      coverage: 'Test coverage (logic)',
-      policy: 'Content security policy',
-      policyValue: 'Strict, {n} script hashes',
+      coverage: 'Test coverage, logic layer',
+      policy: 'Content Security Policy',
+      policyValue: 'Strict ({n} hashes)',
       requests: 'Requests',
       thirdParty: 'Third-party cookies',
       cookies: 'Cookies set by this page',
@@ -71,7 +71,7 @@ export const en: SiteContent = {
   },
   experience: {
     intro: 'Employers are described by type, not by name. The full CV is available by email.',
-    arc: 'Skill families over time: each bar is a job that used them',
+    arc: 'Grid of years and skill families: the darker a square, the more skills of that family I used that year.',
   },
   skills: {
     intro: 'The stack I work in, and the testing methods I brought with me from my QA years, grouped by area.',
@@ -114,9 +114,9 @@ export const en: SiteContent = {
       points: [
         'Coordinated technical and development work on a web platform (Symfony back end, Angular front end) over a project of more than three years, including internal testing of what the external development team delivered.',
         'Fixed bugs and added features in the Symfony back end and the Angular front end, working within a GitLab CI/CD and RHEL environment.',
-        'Know X.509-based authentication flows.',
-        'Wrote and extended PostgreSQL triggers and stored procedures, set up the CI/CD process, and agreed database design and infrastructure requirements with internal colleagues.',
-        'The most recent project was a Podman-based, multi-container web application: I coordinated its development work and quality assurance and designed the PostgreSQL procedures it needed.',
+        'Familiar with X.509-based authentication flows.',
+        'Wrote and extended PostgreSQL triggers and stored procedures. Set up the CI/CD process, and agreed database design and infrastructure needs with internal colleagues.',
+        'Most recently: a multi-container web application running on Podman. I coordinated its development and quality assurance, and built the PostgreSQL procedures it needed.',
         'Built the platform’s support site on my own, in Symfony and Angular.',
         'Developed web applications for partner organisations, along with REST and SOAP API endpoints.',
         'Maintained and extended the organisation’s WordPress sites and intranet, refactored legacy PHP code, and advised other development projects as a technical expert.',
@@ -169,12 +169,12 @@ export const en: SiteContent = {
     },
     fuzzphony: {
       title: 'Fuzzphony',
-      summary: 'My open-source search library for PHP and Symfony, built on PostgreSQL alone. It adds ranked full-text search that tolerates typos and ignores accents, with filters and a query language, and needs no Elasticsearch, Meilisearch or other external service. Existing tables stay as they are: the index lives in a separate table beside them. Built with an AI-agentic workflow and strict quality assurance, including mutation testing.',
+      summary: 'My open-source search library for PHP and Symfony, built on PostgreSQL alone. It adds ranked full-text search that tolerates typos and ignores accents, with filters and a query language, and needs no Elasticsearch, Meilisearch or other external service. Existing tables stay as they are: the index lives in a separate table beside them. Built with an AI-agentic workflow; mutation testing keeps its quality in check.',
       points: [],
     },
     'cv-site': {
       title: 'This CV site',
-      summary: 'The site you are reading: a bilingual CV in Angular 22, prerendered and hydrated, without third-party requests. Type check, lint, unit tests, end-to-end and accessibility tests run on every push.',
+      summary: 'This very site. Built in Angular, in English and Hungarian, with no external services and no tracking. Type check, lint, unit, end-to-end and accessibility tests run automatically on every change.',
       points: [],
     },
     audit: {

@@ -30,9 +30,9 @@ export const hu: SiteContent = {
       title: 'A motorháztető alatt',
       intro: 'Élőben mérve, a böngésződben, éppen most.',
       version: 'Verzió',
-      coverage: 'Tesztlefedettség (logika)',
-      policy: 'Tartalombiztonsági irányelv',
-      policyValue: 'Szigorú, {n} szkript-hash',
+      coverage: 'Tesztlefedettség, logikai réteg',
+      policy: 'Content Security Policy',
+      policyValue: 'Szigorú ({n} hash)',
       requests: 'Kérések',
       thirdParty: 'Cookie harmadik féltől',
       cookies: 'Az oldal által beállított cookie-k',
@@ -71,7 +71,7 @@ export const hu: SiteContent = {
   },
   experience: {
     intro: 'A munkahelyeket név nélkül, a jellegükkel írom le. A teljes önéletrajzot emailben kérheted.',
-    arc: 'Szakmai területek az időben: minden sáv egy munkahely, ahol használtam őket',
+    arc: 'Évek és szakmai területek rácsa: minél sötétebb egy négyzet, annál több kompetenciát használtam abban az évben.',
   },
   skills: {
     intro: 'A technológiák, amelyekkel dolgozom, és a tesztelési módszerek, amelyeket a QA-s évekből hoztam magammal, területek szerint.',
@@ -114,9 +114,9 @@ export const hu: SiteContent = {
       points: [
         'Egy több mint hároméves projektben koordináltam egy Symfony-backendre és Angular-frontendre épülő webes platform technikai és fejlesztési munkáit; a külső fejlesztőcsapat által szállított verziók belső tesztelését is én szerveztem.',
         'Hibákat javítottam és új funkciókat készítettem a Symfony-backendben és az Angular-frontendben, GitLab CI/CD-re és RHEL-re épülő környezetben.',
-        'Ismerem az X.509-alapú authentikációs folyamatokat.',
-        'PostgreSQL-triggereket és tárolt eljárásokat írtam és bővítettem, kialakítottam a CI/CD-folyamatot; az adatbázis-tervezésről és az infrastruktúra-igényekről a belső kollégákkal egyeztettem.',
-        'A legutóbbi projekt egy Podman-alapú, többkonténeres webalkalmazás volt: koordináltam a fejlesztési feladatait és a minőségbiztosítását, és kialakítottam a hozzá szükséges PostgreSQL-eljárásokat.',
+        'Jártas vagyok az X.509-alapú hitelesítési folyamatokban.',
+        'PostgreSQL-triggereket és tárolt eljárásokat írtam és bővítettem. Kialakítottam a CI/CD-folyamatot, az adatbázis-tervezésről és az infrastruktúra-igényekről pedig a belső kollégákkal egyeztettem.',
+        'Legutóbb egy Podmanre épülő, több konténeres webalkalmazáson dolgoztam: koordináltam a fejlesztését és a minőségbiztosítását, és kialakítottam a hozzá tartozó PostgreSQL-eljárásokat.',
         'A platform support oldalát egyedül építettem fel, Symfonyban és Angularban.',
         'Partnerszervezeteknek webalkalmazások, valamint REST és SOAP API-végpontok is kikerültek a kezem alól.',
         'Gondoztam és bővítettem a szervezet WordPress-oldalait és intranetét, refaktoráltam legacy PHP-kódot, és technikai szakértőként más fejlesztési projekteket is támogattam.',
@@ -169,12 +169,12 @@ export const hu: SiteContent = {
     },
     fuzzphony: {
       title: 'Fuzzphony',
-      summary: 'Saját, nyílt forráskódú keresőkönyvtáram PHP-hoz és Symfonyhoz, amely csak a PostgreSQL-re támaszkodik. Rangsorolt teljes szöveges keresést ad, amely elnézi az elírásokat és figyelmen kívül hagyja az ékezeteket, szűrőkkel és lekérdezőnyelvvel; Elasticsearch, Meilisearch vagy más külső szolgáltatás nem kell hozzá. A meglévő táblákhoz nem nyúl: az index mellettük, egy külön táblában él. AI-ügynökös (agentic) munkafolyamattal készült, erős minőségbiztosítással, mutációs teszteléssel együtt.',
+      summary: 'Saját, nyílt forráskódú keresőkönyvtáram PHP-hoz és Symfonyhoz, amely csak a PostgreSQL-re támaszkodik. Rangsorolt teljes szöveges keresést ad, amely elnézi az elírásokat és figyelmen kívül hagyja az ékezeteket, szűrőkkel és lekérdezőnyelvvel; Elasticsearch, Meilisearch vagy más külső szolgáltatás nem kell hozzá. A meglévő táblákhoz nem nyúl: az index mellettük, egy külön táblában él. AI-ügynökökkel támogatott (agentic) munkafolyamattal készült, a minőségét mutációs tesztelés is őrzi.',
       points: [],
     },
     'cv-site': {
       title: 'Ez az önéletrajz-oldal',
-      summary: 'Az oldal, amelyet olvasol: kétnyelvű önéletrajz Angular 22-ben, előrenderelve és hidratálva, harmadik felek nélkül. Típusellenőrzés, lint, unit-, end-to-end és hozzáférhetőségi tesztek futnak minden pusholáskor.',
+      summary: 'Ez az oldal, amit éppen nézel. Angularban készült, magyarul és angolul is olvasható, külső szolgáltatást nem tölt be, és nem követ. Minden módosításnál automatikusan lefut a típusellenőrzés, a lint, valamint a unit-, az end-to-end és a hozzáférhetőségi teszt.',
       points: [],
     },
     audit: {

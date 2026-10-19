@@ -234,7 +234,7 @@ test.describe('easter egg', () => {
     await expect(dlg).toBeVisible();
     await expect(dlg.getByText('Third-party cookies')).toBeVisible();
     // the build's own facts: the policy is read from the page, the version and the coverage come from the build
-    await expect(dlg.locator('dd', { hasText: /^Strict, \d+ script hashes$/ })).toHaveCount(1);
+    await expect(dlg.locator('dd', { hasText: /^Strict \(\d+ hashes\)$/ })).toHaveCount(1);
     await expect(dlg.locator('dd', { hasText: /^v\d+\.\d+\.\d+$/ })).toHaveCount(1);
     await expect(dlg.locator('dd', { hasText: /^\d+%$/ })).toHaveCount(1);
     await expect(dlg.locator('dd').nth(1)).toHaveText('0'); // third-party requests
