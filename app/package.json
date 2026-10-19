@@ -1,6 +1,6 @@
 {
   "name": "cv",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --port 4200",
@@ -19,7 +19,7 @@
     "verify": "node scripts/verify.mjs"
   },
   "private": true,
-  "packageManager": "npm@12.2.0",
+  "packageManager": "npm@11.19.1",
   "dependencies": {
     "@angular/common": "^22.2.0",
     "@angular/compiler": "^22.2.0",
