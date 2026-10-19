@@ -41,13 +41,6 @@ const LABEL_SIZES = [13, 12] as const;
     .lbl { display: block; max-width: 100%; overflow: hidden; white-space: nowrap; }
     /* labels that cannot fit at a readable size give way to the icons (still announced to screen readers) */
     .compact .lbl { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-    /* in icon-only mode the current tab keeps its name next to its icon (the other tabs share what is left) */
-    @media (min-width: 360px) {
-      .compact { display: flex; }
-      .compact a { flex: 1 1 0; }
-      .compact a[aria-current] { flex: 0 0 auto; flex-direction: row; gap: 6px; padding-inline: 14px; }
-      .compact a[aria-current] .lbl { position: static; width: auto; height: auto; margin: 0; clip: auto; overflow: visible; }
-    }
     a[aria-current] { color: var(--fg); background: var(--tint-current); }
     a { transition: color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out), scale var(--dur-press) var(--ease-out); }
     @media (hover: hover) { a:not([aria-current]):hover { color: var(--fg); background: var(--tint-hover); } }

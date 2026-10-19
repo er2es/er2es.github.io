@@ -2,7 +2,7 @@ import { Component, DestroyRef, afterNextRender, computed, inject, signal } from
 import { getContent } from './content';
 import { SECTION_IDS, type SectionId } from './content/model';
 import { trackActive } from './core/active';
-import { followSection, initHash } from './core/hash';
+import { initHash, shownSection } from './core/hash';
 import { LangSwitch } from './core/lang';
 import { initLit } from './core/lit';
 import { Seo } from './core/seo';
@@ -92,7 +92,7 @@ export class Home {
     afterNextRender(() => {
       destroy.onDestroy(initHash());
       const stop = trackActive(SECTION_IDS, (id) => {
-        this.active.set(followSection(id as SectionId));
+        this.active.set(shownSection(id as SectionId));
       });
       destroy.onDestroy(stop);
       destroy.onDestroy(initLit());

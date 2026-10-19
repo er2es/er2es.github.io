@@ -11,18 +11,17 @@ export function sectionOf(anchor: string): SectionId | null {
 }
 
 /**
- * Keeps the URL hash honest while the visitor scrolls.
- *  - Nobody has clicked anything and the URL carries no hash: the URL is never touched.
- *  - After an in-page jump (or a load that came with a hash) the hash follows the section in view.
- *  - At the very top of the page the hash is removed, and it stays away until the next jump.
- * The exact target of a jump (e.g. `job-chamber`) is kept while the visitor stays inside its section.
- * Pure state machine: the URL is written through `write`, so it is testable without a browser.
+ * Keeps the URL hash simple and predictable.
+ *  - Scrolling alone never touches the URL.
+ *  - An in-page jump (a menu or tab click, a search result) writes its exact target; a load that came with a hash keeps it.
+ *  - Back at the very top of the page the hash is removed, so a reload does not carry the visitor to a section they left.
+ * It also keeps the navigation's "current section" on the target of a jump near the end of the page, where a
+ * neighbour would win. Pure state machine: the URL is written through `write`, so it is testable without a browser.
  */
 /** How far the visitor has to scroll after a jump before the jump's target stops being pinned. */
 const PIN_RELEASE_PX = 24;
 
-export class HashFollower {
-  private tracking: boolean;
+export class HashKeeper {
   private jumping: boolean;
   private pinned: { id: string; section: SectionId | null } | null = null;
   private restY = 0;
@@ -31,15 +30,13 @@ export class HashFollower {
     private current: string | null,
     private readonly write: (hash: string | null) => void,
   ) {
-    this.tracking = current !== null;
-    // a load with a hash: the browser scrolls to it, and the sections passing by must not overwrite it
-    this.jumping = this.tracking;
+    // a load with a hash: the browser scrolls to it, and the sections passing by must not count
+    this.jumping = current !== null;
     if (current) this.pinned = { id: current, section: sectionOf(current) };
   }
 
   /** An in-page jump to `id` has started. */
   jump(id: string): void {
-    this.tracking = true;
     this.jumping = true;
     this.pinned = { id, section: sectionOf(id) };
     this.set(id);
@@ -53,8 +50,8 @@ export class HashFollower {
   }
 
   /**
-   * The section in view changed (the visitor is at scroll position `y`). Returns the section the UI should show as
-   * current: after a jump that is the jump's own section until the visitor scrolls on by their own hand
+   * The section in view changed (the visitor is at scroll position `y`). Returns the section the navigation should show
+   * as current: after a jump that is the jump's own section until the visitor scrolls on by their own hand
    * (a few pixels), because a target near the end of the page cannot reach the top and a neighbour would win.
    */
   section(section: SectionId, y = 0): SectionId {
@@ -64,14 +61,12 @@ export class HashFollower {
       }
       this.pinned = null;
     }
-    if (this.tracking && !this.jumping) this.set(section);
     return section;
   }
 
   /** The page has been scrolled all the way to the top. */
   top(): void {
-    if (!this.tracking || this.jumping) return;
-    this.tracking = false;
+    if (this.current === null || this.jumping) return;
     this.pinned = null;
     this.set(null);
   }
@@ -83,17 +78,17 @@ export class HashFollower {
   }
 }
 
-let follower: HashFollower | null = null;
+let keeper: HashKeeper | null = null;
 let settleTimer = 0;
 
 const writeUrl = (hash: string | null): void => {
   history.replaceState(history.state, '', `${location.pathname}${location.search}${hash ? `#${hash}` : ''}`);
 };
 
-/** Starts following the scroll for this page view. Returns a cleanup. */
+/** Starts keeping the hash for this page view. Returns a cleanup. */
 export function initHash(): () => void {
-  const f = new HashFollower(location.hash.slice(1) || null, writeUrl);
-  follower = f;
+  const f = new HashKeeper(location.hash.slice(1) || null, writeUrl);
+  keeper = f;
   const settle = (): void => {
     clearTimeout(settleTimer);
     f.settled(window.scrollY);
@@ -113,22 +108,22 @@ export function initHash(): () => void {
     window.removeEventListener('scroll', onScroll);
     window.removeEventListener('scrollend', settle);
     clearTimeout(settleTimer);
-    if (follower === f) follower = null;
+    if (keeper === f) keeper = null;
   };
 }
 
 /** Called when an in-page jump starts: writes the exact target and begins following. */
 export function jumpHash(id: string): void {
-  if (!follower) {
+  if (!keeper) {
     writeUrl(id);
     return;
   }
-  follower.jump(id);
+  keeper.jump(id);
   clearTimeout(settleTimer);
-  settleTimer = window.setTimeout(() => follower?.settled(window.scrollY), 1100);
+  settleTimer = window.setTimeout(() => keeper?.settled(window.scrollY), 1100);
 }
 
 /** Called when the section in view changes. Returns the section to show as current. */
-export function followSection(section: SectionId): SectionId {
-  return follower ? follower.section(section, window.scrollY) : section;
+export function shownSection(section: SectionId): SectionId {
+  return keeper ? keeper.section(section, window.scrollY) : section;
 }

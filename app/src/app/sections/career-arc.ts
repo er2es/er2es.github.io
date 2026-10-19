@@ -1,5 +1,6 @@
 import { Component, computed, inject, input, signal, type OnInit } from '@angular/core';
-import { scrollToSection } from '../core/nav';
+import { revealEntry } from '../core/nav';
+import { EXTRA } from '../content/extra';
 import { FACTS, FACT_BY_ID, SKILLS, period, type ItemId, type ItemText, type SiteContent } from '../content/model';
 import { activeAt, fromYear } from '../graph/arc';
 import { careerGrid } from '../graph/grid';
@@ -14,7 +15,8 @@ const BASE: ItemId = 'edu-nonprofit';
  * block on the left. A square is the darker the more of that family's skills (the pills of the Skills section) the jobs of the year use ("used in
  * the role", not a level of skill), so the picture fills in and darkens towards the present.
  * A lane name lights its jobs in the log below (the same lens the Skills section uses) and previews on hover, a square
- * (or the foundation) jumps to its entry, and pointing at the grid shows what that year looked like.
+ * (or the foundation) opens its entry in the log, a chip names the chosen lane and clears it, and pointing at the grid
+ * shows what that year looked like.
  * The log underneath stays the readable source, so the drawing is hidden from assistive technology.
  */
 @Component({
@@ -48,7 +50,16 @@ const BASE: ItemId = 'edu-nonprofit';
         <div class="axis mono" aria-hidden="true">
           @for (t of grid().ticks; track t.year; let last = $last) { <span [class.end]="last" [style.left.%]="last ? 100 : t.left">{{ t.year }}</span> }
         </div>
-        <p class="readout" aria-hidden="true">{{ readout() }}</p>
+        <div class="status">
+          <p class="readout" aria-hidden="true">{{ readout() }}</p>
+          @if (filterName(); as name) {
+            <button type="button" class="filter" [class.hide]="year() !== null" (click)="clear()">
+              {{ name }}
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18" /></svg>
+              <span class="sr-only">{{ x().clearFilter }}</span>
+            </button>
+          }
+        </div>
       </div>
   `,
   styles: [`
@@ -109,7 +120,16 @@ const BASE: ItemId = 'edu-nonprofit';
     .axis { position: relative; height: 1.25rem; margin-left: calc(var(--label) + 0.75rem); color: var(--fg-2); font-size: var(--t-footnote); }
     .axis span { position: absolute; top: 0.25rem; translate: -50%; }
     .axis span.end { translate: -100%; } /* the last year ends at the edge instead of hanging over it */
-    .readout { min-height: 2.75em; margin: 0.25rem 0 0 calc(var(--label) + 0.75rem); color: var(--fg-2); font-size: var(--t-footnote); }
+    /* the line under the grid: the year being pointed at, or else the lane that is chosen, as a chip that clears it */
+    .status { display: grid; margin: 0.25rem 0 0 calc(var(--label) + 0.75rem); min-height: 2.75em; align-content: start; }
+    .status > * { grid-area: 1 / 1; }
+    .readout { margin: 0; color: var(--fg-2); font-size: var(--t-footnote); }
+    .filter {
+      justify-self: start; align-self: start; display: inline-flex; align-items: center; gap: 0.5rem; min-height: 32px; padding: 0 0.75rem 0 0.9rem; border: 0; border-radius: 999px;
+      background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--fg); font: 500 var(--t-footnote) / 1 var(--font); cursor: pointer;
+    }
+    .filter.hide { visibility: hidden; }
+    @media (hover: hover) { .filter:hover { background: color-mix(in srgb, var(--accent) 26%, transparent); } }
 
     @media (max-width: 599px) {
       .arc { --row: 34px; --cell: 22px; }
@@ -117,7 +137,7 @@ const BASE: ItemId = 'edu-nonprofit';
       .lane { grid-template-columns: 1fr; gap: 0; }
       .name { grid-auto-flow: column; justify-content: space-between; align-items: baseline; min-height: 32px; }
       .cells { column-gap: 2px; }
-      .axis, .readout { margin-left: 0; }
+      .axis, .status { margin-left: 0; }
       .axis span:nth-last-child(2) { display: none; } /* the year before it would touch the last one on a narrow screen */
     }
 
@@ -163,6 +183,15 @@ export class CareerArc implements OnInit {
         .sort((a, b) => a.since - b.since), // families in the order they began
       ticks: grid.years.map((year, i) => ({ year, left: ((i + 0.5) / cols) * 100 })).filter((_, i, all) => i % 4 === 0 || i === all.length - 1),
     };
+  });
+
+  protected readonly x = computed(() => EXTRA[this.c().lang]);
+
+  /** The lane that is chosen (a preview is not a choice), by its name. */
+  protected readonly filterName = computed(() => {
+    const chosen = this.chosen();
+    const lane = this.grid().lanes.find((l) => chosen.size === l.ids.length && l.ids.every((id) => chosen.has(id as ItemId)));
+    return lane ? this.c().skills.groups[lane.group] : null;
   });
 
   protected readonly baseTags = computed(() => FACT_BY_ID[BASE].keywords.join(' · '));
@@ -248,11 +277,17 @@ export class CareerArc implements OnInit {
     this.lens.ids.set(back);
   }
 
+  /** The entry opens where it is, in the log below; nothing jumps. */
   protected go(id: string): void {
-    scrollToSection(`job-${id}`);
+    revealEntry(`job-${id}`);
   }
 
-  /** A square leads to the newest job of its year. */
+  protected clear(): void {
+    if (this.held() !== null) this.held.set(new Set());
+    this.lens.ids.set(new Set());
+  }
+
+  /** A square opens the newest job of its year in the log. */
   protected goCell(jobs: readonly string[]): void {
     if (jobs.length) this.go(jobs[0]);
   }

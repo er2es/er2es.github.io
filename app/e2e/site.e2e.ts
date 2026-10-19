@@ -311,57 +311,18 @@ test.describe('interaction layer', () => {
     expect(await pic.evaluate((e) => e.style.getPropertyValue('--tilt-y'))).toBe('');
   });
 
-  test('a skill opens where it was used, with the keyboard, and lights up those entries', async ({ page }) => {
+  test('the skills are plain labels: nothing to press, nothing lights up elsewhere, and a skill no entry mentions carries the line', async ({ page }) => {
     await ready(page, '/');
-    const toolbar = page.getByRole('toolbar');
-    const pills = toolbar.locator('button.pill');
-    expect(await pills.evaluateAll((bs) => bs.filter((b) => b.getAttribute('tabindex') === '0').length)).toBe(1); // one Tab stop
-    await pills.first().focus();
-    await expect(pills.first()).toHaveText('PHP');
-    await page.keyboard.press('ArrowRight');
-    await expect(page.getByRole('button', { name: 'Symfony' })).toBeFocused();
-    await page.keyboard.press('Enter');
-    await expect(page.getByRole('button', { name: 'Symfony' })).toHaveAttribute('aria-expanded', 'true');
-    const panel = page.getByRole('region', { name: 'Where I used Symfony' });
-    await expect(panel).toBeVisible();
-    await expect(panel.locator('a[href="/#job-chamber"]')).toBeVisible();
-    await expect(panel.locator('a[href="/#p-fuzzphony"]')).toBeVisible();
-    await expect(page.locator('#job-chamber')).toHaveClass(/\blit\b/);
-    await expect(page.locator('#p-fuzzphony')).toHaveClass(/\blit\b/);
-    await expect(page.locator('#job-edu-nonprofit')).not.toHaveClass(/\blit\b/);
+    await expect(page.locator('#skills button')).toHaveCount(0);
+    await expect(page.locator('#skills li.pill').first()).toHaveText('PHP');
+    await page.locator('#skills li.pill', { hasText: 'PHP' }).first().click();
+    await expect(page.locator('.row.lit, .card.lit').first()).toBeVisible(); // only the career graph's own choice (Backend) is lit
+    expect(await page.locator('#projects .card.lit').count()).toBe(0); // and never a project card
+    await expect(page.locator('#skills li.pill', { hasText: 'Redis' })).toHaveAttribute('title', "Trust me bro' :)");
+    await expect(page.locator('#skills li.pill', { hasText: 'PostgreSQL' })).not.toHaveAttribute('title', /.+/);
     const r = await new AxeBuilder({ page }).include('#skills').analyze();
     expect(r.violations).toEqual([]);
-    await page.keyboard.press('ArrowDown');
-    await expect(page.getByRole('button', { name: 'Angular' })).toBeFocused();
-    await page.keyboard.press('ArrowUp');
-    await page.keyboard.press('Escape');
-    await expect(panel).toBeHidden();
-    await expect(page.getByRole('button', { name: 'PHP' })).toBeFocused();
-    await expect(page.locator('#job-chamber')).not.toHaveClass(/\blit\b/);
-    // a link in the panel jumps to the entry and opens it
-    await page.getByRole('button', { name: 'Laravel' }).click();
-    await page.getByRole('region', { name: 'Where I used Laravel' }).locator('a[href="/#job-uni-med"]').click();
-    await expect(page).toHaveURL(/#job-uni-med$/);
-    expect(await page.locator('#job-uni-med details').evaluate((d) => (d as HTMLDetailsElement).open)).toBe(true);
   });
-
-  // the owner's line is the same, in English, on both pages
-  for (const p of [{ url: '/', none: "Trust me bro' :)", label: 'Where I used' }, { url: '/hu/', none: "Trust me bro' :)", label: 'Hol használtam:' }]) {
-    test(`${p.url}: a skill with no entry in the CV still answers, and one with entries lists them`, async ({ page }) => {
-      await ready(page, p.url);
-      const redis = page.getByRole('button', { name: 'Redis' });
-      await redis.click();
-      await expect(redis).toHaveAttribute('aria-expanded', 'true');
-      const panel = page.getByRole('region', { name: new RegExp(`^${p.label}.*Redis`) });
-      await expect(panel).toHaveText(p.none);
-      await expect(panel.getByRole('link')).toHaveCount(0);
-      await page.getByRole('button', { name: 'PostgreSQL' }).click();
-      await expect(redis).toHaveAttribute('aria-expanded', 'false');
-      const rows = page.getByRole('region', { name: /PostgreSQL/ }).getByRole('link');
-      expect(await rows.count()).toBeGreaterThan(0);
-      await expect(page.getByText(p.none)).toHaveCount(0);
-    });
-  }
 
   test('career entries: arrow keys move between them, Home and End jump', async ({ page }) => {
     await ready(page, '/');
@@ -539,7 +500,7 @@ test.describe('the portrait is never downloaded larger than it is shown', () => 
   }
 });
 
-test.describe('URL hash follows the scroll, but only after the visitor has clicked', () => {
+test.describe('the URL hash changes only when the visitor jumps, and goes at the top', () => {
   const scrollTo = async (page: Page, y: number) => {
     await page.evaluate((yy) => window.scrollTo({ top: yy, behavior: 'instant' }), y);
     await page.waitForTimeout(350);
@@ -549,10 +510,10 @@ test.describe('URL hash follows the scroll, but only after the visitor has click
   const inside = (page: Page, id: string, fraction = 0.5) =>
     page.evaluate(([i, f]) => { const r = document.getElementById(i as string)!.getBoundingClientRect(); return Math.round(scrollY + r.top + r.height * (f as number) - 200); }, [id, fraction]);
 
-  test('no hash while only scrolling; after a click it follows; at the top it goes and stays away', async ({ page }) => {
+  test('scrolling alone never writes a hash; a click writes it and scrolling on leaves it; the top removes it', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await ready(page, '/hu/');
-    await scrollTo(page, 1500);
+    await scrollTo(page, await inside(page, 'skills'));
     expect(await hash(page)).toBe('');
     await scrollTo(page, 0);
     expect(await hash(page)).toBe('');
@@ -561,9 +522,9 @@ test.describe('URL hash follows the scroll, but only after the visitor has click
     await expect.poll(() => hash(page)).toBe('#projects');
     await page.waitForTimeout(1300); // the jump has come to rest
     await scrollTo(page, await inside(page, 'skills'));
-    expect(await hash(page)).toBe('#skills');
-    await scrollTo(page, await inside(page, 'experience'));
-    expect(await hash(page)).toBe('#experience');
+    expect(await hash(page)).toBe('#projects'); // the last jump, not the section in view
+    await scrollTo(page, await inside(page, 'about'));
+    expect(await hash(page)).toBe('#projects');
 
     await scrollTo(page, 0);
     expect(await hash(page)).toBe('');
@@ -574,16 +535,14 @@ test.describe('URL hash follows the scroll, but only after the visitor has click
     await expect.poll(() => hash(page)).toBe('#contact');
   });
 
-  test('a page loaded with a hash starts following it, and keeps the exact target inside its section', async ({ page }) => {
+  test('a page loaded with a hash keeps it, and drops it once the visitor is back at the top', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/#job-chamber');
     await page.waitForLoadState('networkidle');
     await page.waitForTimeout(1500);
     expect(await hash(page)).toBe('#job-chamber');
-    await scrollTo(page, await page.evaluate(() => scrollY + 40)); // still inside Experience
-    expect(await hash(page)).toBe('#job-chamber');
     await scrollTo(page, await inside(page, 'projects'));
-    expect(await hash(page)).not.toBe('#job-chamber');
+    expect(await hash(page)).toBe('#job-chamber');
     await scrollTo(page, 0);
     expect(await hash(page)).toBe('');
   });
@@ -683,7 +642,22 @@ test.describe('career arc', () => {
     await ready(page, '/hu/');
     await page.locator('.arc .base').first().click();
     await expect(page.locator('#job-edu-nonprofit details')).toHaveJSProperty('open', true);
-    await expect.poll(() => page.evaluate(() => location.hash)).toBe('#job-edu-nonprofit');
+    expect(await page.evaluate(() => location.hash)).toBe(''); // opened where it is: no new URL
+  });
+
+  test('a square opens the job of its year in the log without a hash, and a chip names the chosen lane and clears it', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await ready(page, '/hu/');
+    const chip = page.locator('.arc .filter');
+    await expect(chip).toContainText('Backend');
+    await page.locator('.arc .lane').first().locator('.cell[data-l="4"]').last().click();
+    await expect(page.locator('#job-chamber details')).toHaveJSProperty('open', true);
+    expect(await page.evaluate(() => location.hash)).toBe('');
+    await chip.click();
+    await expect(page.locator('#experience .row.lit')).toHaveCount(0);
+    await expect(chip).toHaveCount(0);
+    await page.locator('.arc .name', { hasText: 'Frontend' }).click();
+    await expect(chip).toContainText('Frontend');
   });
 });
 
@@ -780,13 +754,16 @@ test.describe('review fixes', () => {
     for (const x of lefts) expect(x).toBeGreaterThanOrEqual(16);
   });
 
-  test('phone: the current tab keeps its name when the labels give way to icons', async ({ page }) => {
+  test('phone: the tabs stay where they are while the current section changes', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 800 });
     await ready(page, '/hu/');
-    const tabs = page.locator('app-tabbar .tabs');
-    await expect(tabs).toHaveClass(/compact/);
-    const w = await page.locator('app-tabbar a[aria-current] .lbl').evaluate((e) => e.getBoundingClientRect().width);
-    expect(w).toBeGreaterThan(20); // visible, not the 1px visually hidden label
+    const xs = () => page.evaluate(() => [...document.querySelectorAll('app-tabbar a svg')].map((e) => Math.round(e.getBoundingClientRect().left)));
+    const before = await xs();
+    for (const id of ['experience', 'projects', 'contact']) {
+      await page.evaluate((i) => { const el = document.getElementById(i)!; scrollTo({ top: el.getBoundingClientRect().top + scrollY - 70, behavior: 'instant' }); }, id);
+      await page.waitForTimeout(600);
+      expect(await xs()).toEqual(before);
+    }
   });
 
   test('the footer names the release and links to it and to the licence', async ({ page }) => {
@@ -805,10 +782,5 @@ test.describe('review fixes', () => {
     await expect(more).toHaveAttribute('aria-expanded', 'true');
     await page.setViewportSize({ width: 1280, height: 800 });
     await expect(more).toBeHidden();
-  });
-
-  test('a skill pill knows how many entries mention it', async ({ page }) => {
-    await ready(page, '/');
-    expect(Number(await page.locator('button.pill[data-skill="PHP"]').getAttribute('data-n'))).toBeGreaterThan(3);
   });
 });

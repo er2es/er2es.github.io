@@ -1,7 +1,6 @@
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, computed, input, signal } from '@angular/core';
 import { EXTRA } from '../content/extra';
 import { FACT_BY_ID, FILES, PROJECT_ORDER, period, type SiteContent } from '../content/model';
-import { SkillLens } from './uses';
 
 @Component({
   selector: 'app-projects',
@@ -13,7 +12,7 @@ import { SkillLens } from './uses';
         <p class="intro">{{ c().projects.intro }}</p>
         <ul class="cards">
           @for (id of order; track id) {
-            <li class="card reveal" [id]="'p-' + id" tabindex="-1" [class.lit]="lens.ids().has(id)">
+            <li class="card reveal" [id]="'p-' + id" tabindex="-1">
               <h3>{{ c().items[id].title }}</h3>
               @if (per(id)) { <p class="per mono">{{ per(id) }}</p> }
               <p class="sum" [id]="'sum-' + id" [class.open]="opened().has(id)">{{ c().items[id].summary }}</p>
@@ -47,9 +46,6 @@ import { SkillLens } from './uses';
     .per { color: var(--fg-2); font-size: var(--t-footnote); }
     .pts li { padding-left: 1rem; position: relative; }
     .pts li::before { content: ''; position: absolute; left: 0; top: 0.7em; width: 5px; height: 5px; border-radius: 50%; background: var(--fg-2); }
-    /* lit by a skill chosen in the Skills section */
-    .card { transition: box-shadow var(--dur-short) var(--ease-out); }
-    .card.lit { box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 70%, transparent); }
     /* on narrow screens a long description folds to a few lines, with a chevron to unfold it */
     .more { justify-self: start; margin-top: -0.25rem; width: 44px; height: 32px; display: grid; place-items: center; border: 0; border-radius: 999px; background: color-mix(in srgb, var(--fg) 8%, transparent); color: var(--fg); cursor: pointer; }
     .more svg { transition: rotate var(--dur-short) var(--ease-out); }
@@ -64,7 +60,6 @@ import { SkillLens } from './uses';
 export class Projects {
   readonly c = input.required<SiteContent>();
   protected readonly order = PROJECT_ORDER;
-  protected readonly lens = inject(SkillLens);
   protected readonly x = computed(() => EXTRA[this.c().lang]);
   protected readonly file = FILES.projects;
   protected per = (id: (typeof PROJECT_ORDER)[number]) => period(FACT_BY_ID[id]);
