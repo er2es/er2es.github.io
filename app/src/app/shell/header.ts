@@ -27,7 +27,7 @@ import { Theme } from '../core/theme';
         </button>
         <button type="button" class="chip icon" [attr.aria-label]="themeLabel()" [attr.data-tip]="themeTip()" [class.tip-off]="hint() !== null" (click)="theme.cycle($any($event.currentTarget))">
           @for (m of [theme.mode()]; track m) {
-          <svg class="mode" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <svg class="mode" [class.auto]="m === 'auto'" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
             @switch (m) {
               @case ('light') {
                 <circle cx="12" cy="12" r="4" />
@@ -104,9 +104,15 @@ import { Theme } from '../core/theme';
     @keyframes hint-in { from { opacity: 0; translate: 0 -4px; } }
     .tip-off::after { display: none; } /* the bubble says it already */
     @media (prefers-reduced-motion: no-preference) {
-      /* the icon turns into its new state (the element is new for every mode, so the animation plays on each click) */
+      /*
+       * The icon turns into its new state (the element is new for every mode, so this plays on each click). The cycle is
+       * Auto, Light, Dark and back: Light and Dark spin in one way and grow into place, and arriving back at Auto
+       * is the opposite: a half turn the other way, shrinking in from large, like winding the dial back.
+       */
       .mode { animation: mode-in 360ms var(--ease-out) both; }
+      .mode.auto { animation: mode-back 480ms var(--ease-out) both; }
       @keyframes mode-in { from { rotate: -90deg; scale: 0.6; opacity: 0.2; } }
+      @keyframes mode-back { from { rotate: 180deg; scale: 1.5; opacity: 0.2; } }
     }
     .chip.icon { width: 44px; padding: 0; justify-content: center; }
     @media (min-width: 900px) { .links { display: flex; } .ctl { margin-left: 0; } }
