@@ -315,15 +315,14 @@ test.describe('interaction layer', () => {
     expect(await pic.evaluate((e) => e.style.getPropertyValue('--tilt-y'))).toBe('');
   });
 
-  test('the skills are plain labels: nothing to press, nothing lights up elsewhere, and a skill no entry mentions carries the line', async ({ page }) => {
+  test('the skills are plain labels: nothing to press, and nothing lights up elsewhere', async ({ page }) => {
     await ready(page, '/');
     await expect(page.locator('#skills button')).toHaveCount(0);
     await expect(page.locator('#skills li.pill').first()).toHaveText('PHP');
     await page.locator('#skills li.pill', { hasText: 'PHP' }).first().click();
     await expect(page.locator('.row.lit, .card.lit').first()).toBeVisible(); // only the career graph's own choice (Backend) is lit
     expect(await page.locator('#projects .card.lit').count()).toBe(0); // and never a project card
-    await expect(page.locator('#skills li.pill', { hasText: 'Redis' })).toHaveAttribute('title', "Trust me bro' :)");
-    await expect(page.locator('#skills li.pill', { hasText: 'PostgreSQL' })).not.toHaveAttribute('title', /.+/);
+    expect(await page.locator('#skills li.pill[title]').count()).toBe(0); // no tooltips: a label is just a label
     const r = await new AxeBuilder({ page }).include('#skills').analyze();
     expect(r.violations).toEqual([]);
   });
