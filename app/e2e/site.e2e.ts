@@ -805,3 +805,17 @@ test.describe('own tooltips and the theme answer', () => {
   });
 });
 
+test.describe('skill pills on a touch screen', () => {
+  test.use({ hasTouch: true });
+
+  test('touching a pill plays its glint once and then lets go', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
+    await ready(page, '/hu/');
+    const pill = page.locator('#skills li.pill', { hasText: 'Symfony' });
+    await pill.scrollIntoViewIfNeeded();
+    await pill.tap();
+    await expect(pill).toHaveClass(/touched/);
+    expect(await pill.evaluate((e) => getComputedStyle(e, '::after').animationName)).toMatch(/glint/);
+    await expect(pill).not.toHaveClass(/touched/, { timeout: 3000 });
+  });
+});

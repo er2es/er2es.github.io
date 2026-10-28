@@ -18,7 +18,7 @@ import { FILES, SKILLS, type SiteContent } from '../content/model';
             <div class="group" [id]="'skills-' + g.group" tabindex="-1">
               <dt>{{ g.label }}</dt>
               <dd>
-                <ul class="pills">
+                <ul class="pills" (pointerdown)="glint($event)">
                   @for (s of g.items; track s.label) {
                     <li class="pill">{{ s.label }}</li>
                   }
@@ -46,7 +46,7 @@ import { FILES, SKILLS, type SiteContent } from '../content/model';
      * Hover, mouse only, and deliberately not button-like (no lift, no pointer cursor, nothing to press):
      *  - the whole row catches the light that follows the pointer (--mx / --my, set by core/lit.ts) and a thin accent
      *    line grows down its left edge;
-     *  - a pill gets one soft glint sweeping across it, and its outline warms to the accent colour.
+     *  - a pill gets one soft glint sweeping across it, and its outline warms to the accent colour; a touch does the same.
      */
     @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
       .group::before {
@@ -61,14 +61,19 @@ import { FILES, SKILLS, type SiteContent } from '../content/model';
       .group:hover::before { opacity: 1; }
       .group:hover::after { transform: scaleY(1); }
 
+      .pill:hover { border-color: color-mix(in srgb, var(--accent) 50%, transparent); background: color-mix(in srgb, var(--accent) 9%, transparent); }
+      .pill:hover::after { animation: glint 750ms var(--ease-out) both; }
+    }
+    /* the same glint on a touch screen, from the touch: the pill gets .touched for the length of the animation (glint() below) */
+    @media (prefers-reduced-motion: no-preference) {
       .pill { transition: border-color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out); }
       .pill::after {
         content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0;
         background: linear-gradient(105deg, transparent 30%, color-mix(in srgb, var(--accent) 38%, transparent) 50%, transparent 70%);
         background-size: 260% 100%; background-position: 140% 0;
       }
-      .pill:hover { border-color: color-mix(in srgb, var(--accent) 50%, transparent); background: color-mix(in srgb, var(--accent) 9%, transparent); }
-      .pill:hover::after { animation: glint 750ms var(--ease-out) both; }
+      .pill.touched { border-color: color-mix(in srgb, var(--accent) 50%, transparent); background: color-mix(in srgb, var(--accent) 9%, transparent); }
+      .pill.touched::after { animation: glint 750ms var(--ease-out) both; }
     }
     @keyframes glint { 0% { opacity: 1; background-position: 140% 0; } 100% { opacity: 1; background-position: -40% 0; } }
     @media (min-width: 800px) { .group { grid-template-columns: 14rem 1fr; gap: 1.5rem; align-items: baseline; padding-block: 1.125rem; } }
@@ -88,4 +93,15 @@ export class Skills {
       })),
     }));
   });
+
+  /** A finger on a pill plays its glint once (a mouse does it on hover, in CSS). Nothing is pressed or opened. */
+  protected glint(e: PointerEvent): void {
+    if (e.pointerType === 'mouse') return;
+    const pill = (e.target as Element).closest<HTMLElement>('.pill');
+    if (!pill) return;
+    pill.classList.remove('touched');
+    void pill.offsetWidth; // restart the animation on a repeated touch
+    pill.classList.add('touched');
+    setTimeout(() => pill.classList.remove('touched'), 800);
+  }
 }
