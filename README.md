@@ -17,13 +17,6 @@ Personal CV site of József Szabó, in English (`/`) and Hungarian (`/hu/`). Liv
 - Strict Content Security Policy as a `<meta>` tag: scripts only from the site itself or by hash, written into the pages at build time
 - Quality gates: type check (strict TypeScript, strict Angular templates), ESLint with angular-eslint, Vitest (unit), Playwright and axe-core (end-to-end and accessibility), Lighthouse (performance gate)
 
-## How it is made
-
-Built with AI assistance (Claude Code), and held to the same rules as any other code: every change is a pull request,
-and nothing is merged until the CI passes the type check, ESLint, the unit tests (100% of the logic layer), the colour
-contrast check, the check that `docs/` is built from the committed sources, and the end-to-end and accessibility tests.
-The decisions and their reasons are in [ARCHITECTURE.md](ARCHITECTURE.md).
-
 ## Layout
 
 | Path | What it is |
