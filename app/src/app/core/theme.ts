@@ -3,7 +3,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { store } from './storage';
 
 export type ThemeMode = 'auto' | 'light' | 'dark';
-const ORDER: readonly ThemeMode[] = ['auto', 'light', 'dark'];
+export const ORDER: readonly ThemeMode[] = ['auto', 'light', 'dark'];
 
 function stored(): ThemeMode {
   const v = store.get('theme');

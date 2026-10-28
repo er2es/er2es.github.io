@@ -3,7 +3,7 @@ import { SECTION_IDS, type Locale, type SectionId, type SiteContent } from '../c
 import { LangSwitch } from '../core/lang';
 import { anchorHref, inPageClick, pagePath } from '../core/nav';
 import { squirclePath } from '../core/squircle';
-import { Theme } from '../core/theme';
+import { ORDER, Theme, type ThemeMode } from '../core/theme';
 
 @Component({
   selector: 'app-header',
@@ -25,8 +25,8 @@ import { Theme } from '../core/theme';
             <circle cx="11" cy="11" r="6.5" /><path d="M16 16l4.5 4.5" />
           </svg>
         </button>
-        <button type="button" class="chip icon" [attr.aria-label]="themeLabel()" [attr.data-tip]="themeTip()" [class.tip-off]="hint() !== null" (click)="theme.cycle($any($event.currentTarget))">
-          @for (m of [theme.mode()]; track m) {
+        <button type="button" class="chip icon" [attr.aria-label]="themeLabel()" [attr.data-tip]="themeTip()" [class.tip-off]="hint() !== null" (click)="cycleTheme($event)">
+          @for (m of [icon()]; track m) {
           <svg class="mode" [class.auto]="m === 'auto'" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
             @switch (m) {
               @case ('light') {
@@ -105,14 +105,19 @@ import { Theme } from '../core/theme';
     .tip-off::after { display: none; } /* the bubble says it already */
     @media (prefers-reduced-motion: no-preference) {
       /*
-       * The icon turns into its new state (the element is new for every mode, so this plays on each click). The cycle is
-       * Auto, Light, Dark and back: Light and Dark spin in one way and grow into place, and arriving back at Auto
-       * is the opposite: a half turn the other way, shrinking in from large, like winding the dial back.
+       * The icon turns into its new state (the element is new for every mode, so this plays on each click, from the
+       * click itself: the theme is applied a beat later, inside a view transition). The cycle is Auto, Light, Dark and
+       * back: Light and Dark spin in one way and grow into place; arriving back at Auto is the opposite, a half turn
+       * the other way, shrinking in from large with a flash of the accent colour, like winding the dial back.
        */
-      .mode { animation: mode-in 360ms var(--ease-out) both; }
-      .mode.auto { animation: mode-back 480ms var(--ease-out) both; }
+      .mode { animation: mode-in 380ms var(--ease-out) both; }
+      .mode.auto { animation: mode-back 700ms cubic-bezier(0.25, 1, 0.5, 1) both; }
       @keyframes mode-in { from { rotate: -90deg; scale: 0.6; opacity: 0.2; } }
-      @keyframes mode-back { from { rotate: 180deg; scale: 1.5; opacity: 0.2; } }
+      @keyframes mode-back {
+        from { rotate: 180deg; scale: 1.7; opacity: 0.15; filter: drop-shadow(0 0 7px var(--accent)); }
+        60% { filter: drop-shadow(0 0 5px var(--accent)); }
+        to { filter: drop-shadow(0 0 0 transparent); }
+      }
     }
     .chip.icon { width: 44px; padding: 0; justify-content: center; }
     @media (min-width: 900px) { .links { display: flex; } .ctl { margin-left: 0; } }
@@ -152,6 +157,7 @@ export class Header {
         return;
       }
       untracked(() => {
+        this.icon.set(mode); // and always in step with the real theme (it can also change from elsewhere)
         this.hint.set(mode === 'auto' ? this.autoNote() : this.themeLabel());
         clearTimeout(this.hintTimer);
         this.hintTimer = setTimeout(() => this.hint.set(null), 2600);
@@ -210,6 +216,14 @@ export class Header {
 
   /** What the theme button's tooltip says: for Auto, what Auto means and what the system is using right now. */
   protected readonly themeTip = computed(() => (this.theme.mode() === 'auto' ? this.autoNote() : this.themeLabel()));
+  /** The icon shown on the theme button: it changes with the click, ahead of the theme itself. */
+  protected readonly icon = signal<ThemeMode>(this.theme.mode());
+
+  protected cycleTheme(e: Event): void {
+    this.icon.set(ORDER[(ORDER.indexOf(this.theme.mode()) + 1) % ORDER.length]);
+    this.theme.cycle(e.currentTarget as Element);
+  }
+
   /** The answer shown under the theme button for a moment after a click. */
   protected readonly hint = signal<string | null>(null);
   private hintTimer: ReturnType<typeof setTimeout> | undefined;
