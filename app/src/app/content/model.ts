@@ -35,9 +35,9 @@ export interface Fact {
 
 export const FACTS: readonly Fact[] = [
   { id: 'chamber', kind: 'job', main: true, inGraph: true, start: 2021, end: 2026,
-    keywords: ['Symfony', 'Angular', 'PostgreSQL', 'MariaDB', 'GitLab', 'CI/CD', 'RHEL', 'Podman', 'Legacy PHP refactor', 'WordPress multisite', 'SASS', 'Node', 'Bootstrap 4', 'QA'] },
+    keywords: ['Symfony', 'Angular', 'PostgreSQL', 'MariaDB', 'GitLab', 'CI/CD', 'RHEL', 'Podman', 'Legacy PHP refactor', 'WordPress multisite', 'SASS', 'Node', 'Bootstrap 4', 'QA', 'SonarQube', 'E2E testing', 'Unit testing', 'Jasmine', 'Java', 'Go', 'Postman', 'SoapUI'] },
   { id: 'uni-med', kind: 'job', main: true, inGraph: true, start: 2020, end: 2021,
-    keywords: ['WordPress multisite', 'SASS', 'Node', 'Bootstrap 4', 'Laravel'] },
+    keywords: ['WordPress multisite', 'SASS', 'Node', 'Gulp', 'Bootstrap 4', 'Laravel'] },
   { id: 'uni-admin', kind: 'job', main: true, inGraph: true, start: 2016, end: 2020,
     keywords: ['CodeIgniter', 'MySQL', 'QA', 'LimeSurvey', 'EvaSys'] },
   { id: 'edu-authority', kind: 'job', main: true, inGraph: true, start: 2012, end: 2015,
@@ -59,7 +59,7 @@ export const FACTS: readonly Fact[] = [
   { id: 'cv-site', kind: 'project', main: false, inGraph: false, start: 2026, end: 2026,
     url: 'https://github.com/er2es/er2es.github.io', keywords: ['Angular', 'TypeScript', 'SCSS', 'Playwright'] },
   { id: 'gov-reporting', kind: 'project', main: false, inGraph: false, start: 2015, end: 2020,
-    keywords: ['WordPress', 'PHP', 'TCPDF'] },
+    keywords: ['WordPress', 'PHP', 'TCPDF', 'Google Maps API'] },
   { id: 'audit', kind: 'project', main: false, inGraph: false, start: 2019, end: 2021,
     keywords: ['CodeIgniter', 'Laravel', 'Bootstrap', 'Backpack'] },
   { id: 'surveys', kind: 'project', main: false, inGraph: false, start: 2012, end: 2021,
@@ -93,6 +93,8 @@ export const SKILLS: readonly { group: SkillGroupId; items: readonly SkillFact[]
     { name: 'Laravel' },
     { name: 'WordPress' },
     { name: 'Node.js' },
+    { name: 'Java' },
+    { name: 'Go' },
   ] },
   { group: 'frontend', items: [
     { name: 'Angular' },
@@ -100,6 +102,7 @@ export const SKILLS: readonly { group: SkillGroupId; items: readonly SkillFact[]
     { name: 'JavaScript' },
     { name: 'jQuery' },
     { name: 'SCSS' },
+    { name: 'Gulp' },
     { name: 'Bootstrap' },
   ] },
   { group: 'database', items: [
@@ -121,9 +124,15 @@ export const SKILLS: readonly { group: SkillGroupId; items: readonly SkillFact[]
     { name: 'Selenium WebDriver' },
     { name: 'UAT' },
     { name: 'Exploratory testing', label: { hu: 'Felfedező tesztelés' } },
+    { name: 'E2E testing', label: { hu: 'E2E tesztelés' } },
+    { name: 'Unit testing', label: { hu: 'Unit tesztelés' } },
+    { name: 'Jasmine' },
+    { name: 'SonarQube' },
   ] },
   { group: 'other', items: [
     { name: 'REST / SOAP API' },
+    { name: 'Postman' },
+    { name: 'SoapUI' },
     { name: 'O365' },
     { name: 'Redis' },
     { name: 'XML' },

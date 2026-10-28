@@ -53,7 +53,7 @@ export const en: SiteContent = {
   },
   hero: {
     name: 'József Szabó',
-    role: 'Full-stack PHP developer · Symfony, Angular, PostgreSQL',
+    role: 'Full-stack PHP developer · Symfony, Angular, PostgreSQL · QA / tester',
     location: 'Budapest, Hungary',
     status: 'REMOTE / HYBRID',
     cta: 'Email me',
@@ -107,13 +107,15 @@ export const en: SiteContent = {
   },
   items: {
     chamber: {
-      title: 'PHP developer',
+      title: 'Lead PHP developer',
       org: 'National professional chamber',
       points: [
         'Coordinated technical and development work on a web platform (Symfony back end, Angular front end) over a project of more than three years, including internal testing of what the external development team delivered.',
         'Fixed bugs and added features in the Symfony back end and the Angular front end, working within a GitLab CI/CD and RHEL environment.',
         'Familiar with X.509-based authentication flows.',
-        'Wrote and extended PostgreSQL triggers and stored procedures. Set up the CI/CD process, and agreed database design and infrastructure needs with internal colleagues.',
+        'Wrote, extended and optimised PostgreSQL queries, triggers and stored procedures, and agreed database design and infrastructure needs with internal colleagues.',
+        'Built the CI/CD processes for a multi-container, multi-server, zero-downtime environment.',
+        'Quality assurance of the projects: QA, SonarQube, end-to-end and unit tests, user acceptance testing and CI/CD. I also maintained a legacy Java and Go microservice environment.',
         'Most recently: a multi-container web application running on Podman. I coordinated its development and quality assurance, and built the PostgreSQL procedures it needed.',
         'Built the platform’s support site on my own, in Symfony and Angular.',
         'Developed web applications for partner organisations, along with REST and SOAP API endpoints.',
@@ -126,7 +128,7 @@ export const en: SiteContent = {
       points: [
         'Developed the university’s WordPress multisite, which served more than 200 sites and about 800 administrative users.',
         'Rebuilt the home page and the news section from the ground up, on both the front end and the back end.',
-        'Built WordPress themes with SASS, Node and Bootstrap 4, as well as small Laravel applications.',
+        'Built WordPress themes with SASS, Node, Gulp and Bootstrap 4, as well as small Laravel applications.',
       ],
     },
     welfare: {
@@ -177,12 +179,12 @@ export const en: SiteContent = {
     },
     audit: {
       title: 'Audit and administration systems',
-      summary: 'Web applications for legal-compliance audits, with user and permission management. The forms are built dynamically from about 400 questions of several types, with complex validation; the system evaluates the answers and generates DOCX documents from them. A simpler audit on the same model, written in CodeIgniter, has about 300 questions and its own rules for calculation and aggregation.',
+      summary: 'Web applications for legal-compliance audits, where I worked out the business logic. The forms are built dynamically from about 400 questions of several types, with complex validation; the system evaluates the answers and generates DOCX documents from them. A simpler audit on the same model, written in CodeIgniter, has about 300 questions and its own rules for calculation and aggregation.',
       points: ['A project planning and registry system (Laravel 7, Bootstrap).', 'A registry of EU grants (Laravel 8, Backpack).'],
     },
     'gov-reporting': {
       title: 'Government indicator website',
-      summary: 'An information site on government indicators, built in WordPress, which I designed, developed and ran until 2020. I also did the technical work behind one of the indicators, the average road distance to the nearest government service point outside the capital (2015–2019), and produced the print-ready 2019 report with PHP and TCPDF.',
+      summary: 'An information site on government indicators, built in WordPress, which I designed, developed and ran until 2020. I also did the technical work behind one of the indicators, the average road distance to the nearest government service point outside the capital (2015–2019), and produced the print-ready 2019 report with PHP and TCPDF. The method and the calculation of some of the indicators are mine too, done with the Google Maps API.',
       points: [],
     },
     wordpress: {
