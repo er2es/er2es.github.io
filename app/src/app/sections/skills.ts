@@ -32,15 +32,45 @@ import { FILES, SKILLS, type SiteContent } from '../content/model';
   `,
   styles: [`
     .groups { margin-top: 1.5rem; border-top: 1px solid var(--line); }
-    .group { display: grid; gap: 0.5rem; padding: 1rem 0.5rem; border-bottom: 1px solid var(--line); scroll-margin-top: calc(var(--bar-h) + 1.25rem); outline: none; }
+    .group { position: relative; isolation: isolate; display: grid; gap: 0.5rem; padding: 1rem 0.5rem; border-bottom: 1px solid var(--line); scroll-margin-top: calc(var(--bar-h) + 1.25rem); outline: none; }
     dt { font: 600 var(--t-subhead) / 1.3 var(--font); color: var(--fg-2); }
     dd { margin: 0; }
     .pills { display: flex; flex-wrap: wrap; gap: 0.5rem; }
     .pill {
-      display: inline-block; padding: 0.4rem 0.85rem; border-radius: 999px; font: 500 var(--t-callout) / 1.2 var(--font); color: var(--fg);
+      position: relative; overflow: hidden; display: inline-block; padding: 0.4rem 0.85rem; border-radius: 999px; font: 500 var(--t-callout) / 1.2 var(--font); color: var(--fg);
       background: color-mix(in srgb, var(--fg) 7%, transparent);
       border: 1px solid color-mix(in srgb, var(--fg) 14%, transparent);
     }
+
+    /*
+     * Hover, mouse only, and deliberately not button-like (no lift, no pointer cursor, nothing to press):
+     *  - the whole row catches the light that follows the pointer (--mx / --my, set by core/lit.ts) and a thin accent
+     *    line grows down its left edge;
+     *  - a pill gets one soft glint sweeping across it, and its outline warms to the accent colour.
+     */
+    @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+      .group::before {
+        content: ''; position: absolute; inset: 0 -0.5rem; z-index: -1; border-radius: 14px; pointer-events: none; opacity: 0;
+        background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 50%), var(--lit), transparent 70%);
+        transition: opacity var(--dur-med) var(--ease-out);
+      }
+      .group::after {
+        content: ''; position: absolute; left: -0.5rem; top: 0.9rem; bottom: 0.9rem; width: 2px; border-radius: 1px; pointer-events: none;
+        background: var(--accent); transform: scaleY(0); transform-origin: top; transition: transform var(--dur-med) var(--ease-out);
+      }
+      .group:hover::before { opacity: 1; }
+      .group:hover::after { transform: scaleY(1); }
+
+      .pill { transition: border-color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out); }
+      .pill::after {
+        content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0;
+        background: linear-gradient(105deg, transparent 30%, color-mix(in srgb, var(--accent) 38%, transparent) 50%, transparent 70%);
+        background-size: 260% 100%; background-position: 140% 0;
+      }
+      .pill:hover { border-color: color-mix(in srgb, var(--accent) 50%, transparent); background: color-mix(in srgb, var(--accent) 9%, transparent); }
+      .pill:hover::after { animation: glint 750ms var(--ease-out) both; }
+    }
+    @keyframes glint { 0% { opacity: 1; background-position: 140% 0; } 100% { opacity: 1; background-position: -40% 0; } }
     @media (min-width: 800px) { .group { grid-template-columns: 14rem 1fr; gap: 1.5rem; align-items: baseline; padding-block: 1.125rem; } }
   `],
 })
