@@ -798,6 +798,9 @@ test.describe('own tooltips and the theme answer', () => {
     await expect(hint).toHaveText(/Sötét/);
     await button.click(); // dark -> auto
     await expect(hint).toContainText('a rendszered témáját követi (most: sötét)');
+    // arriving back at Auto turns the other way from Light and Dark (the cycle winds back)
+    const anim = (sel: string) => page.locator(sel).evaluate((e) => (e as SVGElement).getAnimations().map((x) => (x as CSSAnimation).animationName).join());
+    expect(await anim('app-header button[aria-label^="Téma"] svg.mode.auto')).toMatch(/mode-back/);
     await expect(hint).toHaveCount(0, { timeout: 5000 }); // and it goes away by itself
   });
 });
