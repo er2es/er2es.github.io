@@ -53,7 +53,7 @@ export const hu: SiteContent = {
   },
   hero: {
     name: 'Szabó József',
-    role: 'Full-stack PHP-fejlesztő · Symfony, Angular, PostgreSQL',
+    role: 'Full-stack PHP-fejlesztő · Symfony, Angular, PostgreSQL · QA / tesztelő',
     location: 'Budapest',
     status: 'REMOTE / HYBRID',
     cta: 'Írj nekem',
@@ -107,13 +107,15 @@ export const hu: SiteContent = {
   },
   items: {
     chamber: {
-      title: 'PHP-fejlesztő',
+      title: 'Vezető PHP-fejlesztő',
       org: 'Országos szakmai kamara',
       points: [
         'Egy több mint hároméves projektben koordináltam egy Symfony-backendre és Angular-frontendre épülő webes platform technikai és fejlesztési munkáit; a külső fejlesztőcsapat által szállított verziók belső tesztelését is én szerveztem.',
         'Hibákat javítottam és új funkciókat készítettem a Symfony-backendben és az Angular-frontendben, GitLab CI/CD-re és RHEL-re épülő környezetben.',
         'Jártas vagyok az X.509-alapú hitelesítési folyamatokban.',
-        'PostgreSQL-triggereket és tárolt eljárásokat írtam és bővítettem. Kialakítottam a CI/CD-folyamatot, az adatbázis-tervezésről és az infrastruktúra-igényekről pedig a belső kollégákkal egyeztettem.',
+        'PostgreSQL-lekérdezéseket, triggereket és tárolt eljárásokat írtam, bővítettem és optimalizáltam; az adatbázis-tervezésről és az infrastruktúra-igényekről a belső kollégákkal egyeztettem.',
+        'Kialakítottam a CI/CD-folyamatokat egy többkonténeres, több szerveres, leállás nélküli (zero downtime) környezetben.',
+        'A projektek minőségbiztosítása: QA, SonarQube, e2e és unit tesztek, felhasználói elfogadási teszt (UAT) és CI/CD. Emellett egy legacy Java és Go microservice környezetet is karbantartottam.',
         'Legutóbb egy Podmanre épülő, több konténeres webalkalmazáson dolgoztam: koordináltam a fejlesztését és a minőségbiztosítását, és kialakítottam a hozzá tartozó PostgreSQL-eljárásokat.',
         'A platform support oldalát egyedül építettem fel, Symfonyban és Angularban.',
         'Partnerszervezeteknek webalkalmazások, valamint REST és SOAP API-végpontok is kikerültek a kezem alól.',
@@ -126,7 +128,7 @@ export const hu: SiteContent = {
       points: [
         'Az egyetem WordPress multisite-rendszerén dolgoztam, amely több mint 200 oldalt és mintegy 800 adminisztrátort szolgált ki.',
         'Újraépítettem az alapoktól a kezdőlapot és a hírrovatot, frontend- és backendoldalon egyaránt.',
-        'WordPress-témákat készítettem SASS-szal, Node-dal és Bootstrap 4-gyel, emellett kisebb Laravel-alkalmazásokat is írtam.',
+        'WordPress-témákat készítettem SASS-szal, Node-dal, Gulppal és Bootstrap 4-gyel, emellett kisebb Laravel-alkalmazásokat is írtam.',
       ],
     },
     welfare: {
@@ -177,12 +179,12 @@ export const hu: SiteContent = {
     },
     audit: {
       title: 'Audit- és adminisztrációs rendszerek',
-      summary: 'Webalkalmazások jogszerűségi auditokhoz, felhasználó- és jogosultságkezeléssel. Az űrlapok dinamikusan épülnek fel mintegy 400, többféle típusú kérdésből, összetett validációval; a válaszokat a rendszer kiértékeli, és DOCX-dokumentumot generál belőlük. Ugyanerre a modellre épül egy egyszerűbb, CodeIgniterben írt audit is, körülbelül 300 kérdéssel és saját számítási, összesítési szabályokkal.',
+      summary: 'Webalkalmazások jogszerűségi auditokhoz, amelyeknek az üzleti logikáját én alakítottam ki. Az űrlapok dinamikusan épülnek fel mintegy 400, többféle típusú kérdésből, összetett validációval; a válaszokat a rendszer kiértékeli, és DOCX-dokumentumot generál belőlük. Ugyanerre a modellre épül egy egyszerűbb, CodeIgniterben írt audit is, körülbelül 300 kérdéssel és saját számítási, összesítési szabályokkal.',
       points: ['Projekttervező és -nyilvántartó rendszer (Laravel 7, Bootstrap).', 'EU-s támogatások nyilvántartása (Laravel 8, Backpack).'],
     },
     'gov-reporting': {
       title: 'Kormányzati mutatók oldala',
-      summary: 'Kormányzati mutatókat bemutató WordPress-oldal, amelyet 2020-ig én terveztem, fejlesztettem és üzemeltettem. Az egyik mutató technikai hátterén is dolgoztam: ez a fővároson kívül a legközelebbi kormányablak átlagos közúti távolságát követte 2015 és 2019 között. A 2019-es jelentés nyomdakész változatát PHP-ban, TCPDF-fel állítottam elő.',
+      summary: 'Kormányzati mutatókat bemutató WordPress-oldal, amelyet 2020-ig én terveztem, fejlesztettem és üzemeltettem. Az egyik mutató technikai hátterén is dolgoztam: ez a fővároson kívül a legközelebbi kormányablak átlagos közúti távolságát követte 2015 és 2019 között. A 2019-es jelentés nyomdakész változatát PHP-ban, TCPDF-fel állítottam elő. Egyes mutatók módszertanát és kiszámítását is én dolgoztam ki, a Google Maps API segítségével.',
       points: [],
     },
     wordpress: {
