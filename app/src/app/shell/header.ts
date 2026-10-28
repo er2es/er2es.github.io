@@ -1,4 +1,4 @@
-import { Component, DestroyRef, ElementRef, afterNextRender, computed, inject, input, output, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, afterNextRender, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
 import { SECTION_IDS, type Locale, type SectionId, type SiteContent } from '../content/model';
 import { LangSwitch } from '../core/lang';
 import { anchorHref, inPageClick, pagePath } from '../core/nav';
@@ -20,14 +20,15 @@ import { Theme } from '../core/theme';
         }
       </nav>
       <div class="ctl">
-        <button type="button" class="chip icon" aria-keyshortcuts="Control+K Meta+K" [attr.aria-label]="c().ui.palette.open" [attr.title]="c().ui.palette.open + ' (Ctrl K)'" (click)="palette.emit()">
+        <button type="button" class="chip icon" aria-keyshortcuts="Control+K Meta+K" [attr.aria-label]="c().ui.palette.open" [attr.data-tip]="c().ui.palette.open + ' (Ctrl K)'" (click)="palette.emit()">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
             <circle cx="11" cy="11" r="6.5" /><path d="M16 16l4.5 4.5" />
           </svg>
         </button>
-        <button type="button" class="chip icon" [attr.aria-label]="themeLabel()" [attr.title]="themeLabel()" (click)="theme.cycle($any($event.currentTarget))">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-            @switch (theme.mode()) {
+        <button type="button" class="chip icon" [attr.aria-label]="themeLabel()" [attr.data-tip]="themeTip()" [class.tip-off]="hint() !== null" (click)="theme.cycle($any($event.currentTarget))">
+          @for (m of [theme.mode()]; track m) {
+          <svg class="mode" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+            @switch (m) {
               @case ('light') {
                 <circle cx="12" cy="12" r="4" />
                 <path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" />
@@ -40,7 +41,14 @@ import { Theme } from '../core/theme';
               }
             }
           </svg>
+          }
         </button>
+        @if (hint(); as h) {
+          <span class="hint" role="status">
+            @if (theme.mode() === 'auto') { <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2.2" /><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" /></svg> }
+            {{ h }}
+          </span>
+        }
         <a class="chip" [attr.href]="otherHref()" [attr.lang]="other()" [attr.hreflang]="other()" (click)="switchLang($event)">{{ c().ui.otherLanguage }}</a>
       </div>
       <svg class="read" aria-hidden="true" focusable="false"><path [attr.d]="outline()" pathLength="1" /></svg>
@@ -85,7 +93,21 @@ import { Theme } from '../core/theme';
     }
     @media (hover: hover) { .links a:hover { color: var(--fg); } .links a:not([aria-current]):hover { background: var(--tint-hover); } }
     @media (prefers-reduced-motion: reduce) { .links a:active { scale: none; } }
-    .ctl { display: flex; align-items: center; margin-left: auto; }
+    .ctl { position: relative; display: flex; align-items: center; margin-left: auto; }
+    /* a click on the theme button is answered under it, in words: above all for Auto, which follows the system */
+    .hint {
+      position: absolute; z-index: 40; top: calc(100% + 14px); right: 0; width: max-content; max-width: min(16rem, 80vw); padding: 0.4rem 0.7rem; border-radius: 10px;
+      display: inline-flex; align-items: center; gap: 0.4rem; background: var(--bg-2); color: var(--fg); border: 1px solid var(--line); box-shadow: var(--glass-shadow);
+      font: 500 var(--t-footnote) / 1.3 var(--font); pointer-events: none; animation: hint-in 180ms var(--ease-out) both;
+    }
+    .hint svg { flex: none; color: var(--accent); }
+    @keyframes hint-in { from { opacity: 0; translate: 0 -4px; } }
+    .tip-off::after { display: none; } /* the bubble says it already */
+    @media (prefers-reduced-motion: no-preference) {
+      /* the icon turns into its new state (the element is new for every mode, so the animation plays on each click) */
+      .mode { animation: mode-in 360ms var(--ease-out) both; }
+      @keyframes mode-in { from { rotate: -90deg; scale: 0.6; opacity: 0.2; } }
+    }
     .chip.icon { width: 44px; padding: 0; justify-content: center; }
     @media (min-width: 900px) { .links { display: flex; } .ctl { margin-left: 0; } }
 
@@ -115,6 +137,21 @@ export class Header {
 
   constructor() {
     const destroy = inject(DestroyRef);
+    // every change of the theme after the first render is answered in words for a moment
+    let first = true;
+    effect(() => {
+      const mode = this.theme.mode();
+      if (first) {
+        first = false;
+        return;
+      }
+      untracked(() => {
+        this.hint.set(mode === 'auto' ? this.autoNote() : this.themeLabel());
+        clearTimeout(this.hintTimer);
+        this.hintTimer = setTimeout(() => this.hint.set(null), 2600);
+      });
+    });
+    destroy.onDestroy(() => clearTimeout(this.hintTimer));
     afterNextRender(() => {
       const bar = this.host.nativeElement.querySelector<HTMLElement>('.bar');
       if (!bar) return;
@@ -164,6 +201,18 @@ export class Header {
   protected readonly otherHref = computed(() => pagePath(this.other()));
   protected readonly home = computed(() => pagePath(this.locale()));
   protected readonly themeLabel = computed(() => `${this.c().ui.theme.label}: ${this.c().ui.theme[this.theme.mode()]}`);
+
+  /** What the theme button's tooltip says: for Auto, what Auto means and what the system is using right now. */
+  protected readonly themeTip = computed(() => (this.theme.mode() === 'auto' ? this.autoNote() : this.themeLabel()));
+  /** The answer shown under the theme button for a moment after a click. */
+  protected readonly hint = signal<string | null>(null);
+  private hintTimer: ReturnType<typeof setTimeout> | undefined;
+
+  private autoNote(): string {
+    const ui = this.c().ui.theme;
+    const dark = typeof matchMedia === 'function' && matchMedia('(prefers-color-scheme: dark)').matches;
+    return ui.autoNote.replace('{now}', (dark ? ui.dark : ui.light).toLowerCase());
+  }
 
   protected href(s: SectionId): string {
     return anchorHref(this.locale(), s);

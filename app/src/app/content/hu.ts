@@ -14,7 +14,7 @@ export const hu: SiteContent = {
     sections: { profile: 'Profil', experience: 'Tapasztalat', skills: 'Kompetenciák', projects: 'Projektek', about: 'Rólam', contact: 'Kapcsolat' },
     otherLanguage: 'English',
     tags: 'Címkék',
-    theme: { label: 'Téma', auto: 'Auto', light: 'Világos', dark: 'Sötét' },
+    theme: { label: 'Téma', auto: 'Auto', light: 'Világos', dark: 'Sötét', autoNote: 'Auto: a rendszered témáját követi (most: {now})' },
     palette: {
       open: 'Keresés és parancsok',
       short: 'Keresés',

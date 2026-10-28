@@ -14,7 +14,7 @@ export const en: SiteContent = {
     sections: { profile: 'Profile', experience: 'Experience', skills: 'Skills', projects: 'Projects', about: 'About', contact: 'Contact' },
     otherLanguage: 'Magyar',
     tags: 'Tags',
-    theme: { label: 'Theme', auto: 'Auto', light: 'Light', dark: 'Dark' },
+    theme: { label: 'Theme', auto: 'Auto', light: 'Light', dark: 'Dark', autoNote: 'Auto: follows your system (now {now})' },
     palette: {
       open: 'Search and commands',
       short: 'Search',
