@@ -92,9 +92,8 @@ describe('period and the small texts', () => {
   });
 
   it('has the UI extras in both languages', async () => {
-    const { EXTRA, NO_USES } = await import('./extra');
+    const { EXTRA } = await import('./extra');
     expect(Object.keys(EXTRA.en).sort()).toEqual(Object.keys(EXTRA.hu).sort());
-    expect(NO_USES.length).toBeGreaterThan(0);
   });
 });
 

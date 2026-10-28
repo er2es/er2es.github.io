@@ -1,12 +1,9 @@
 import { Component, computed, input } from '@angular/core';
-import { NO_USES } from '../content/extra';
-import { FACTS, FILES, SKILLS, type SiteContent } from '../content/model';
-import { usesOf } from './uses';
+import { FILES, SKILLS, type SiteContent } from '../content/model';
 
 /**
  * The skills, by area, as plain labels: nothing here moves the page or lights up another section. Where each skill
- * was used is told by the career graph in the Experience section; a skill that no entry mentions carries the
- * owner's own line as a tooltip.
+ * was used is told by the career graph in the Experience section.
  */
 @Component({
   selector: 'app-skills',
@@ -22,8 +19,8 @@ import { usesOf } from './uses';
               <dt>{{ g.label }}</dt>
               <dd>
                 <ul class="pills">
-                  @for (s of g.items; track s.name) {
-                    <li class="pill" [attr.title]="s.note" [attr.lang]="s.note ? 'en' : null">{{ s.label }}</li>
+                  @for (s of g.items; track s.label) {
+                    <li class="pill">{{ s.label }}</li>
                   }
                 </ul>
               </dd>
@@ -58,8 +55,6 @@ export class Skills {
       label: c.skills.groups[g.group],
       items: g.items.map((s) => ({
         label: s.label?.[c.lang] ?? s.name,
-        name: s.name,
-        note: usesOf(s.name, FACTS, c.items).length ? null : NO_USES,
       })),
     }));
   });

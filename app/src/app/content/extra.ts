@@ -36,9 +36,3 @@ export const EXTRA: Record<Locale, ExtraText> = {
     less: 'Kevesebb megjelenítése',
   },
 };
-
-/**
- * The tooltip of a skill that no job or project in the CV mentions. The owner's own line, in English, so both
- * pages show it as it is.
- */
-export const NO_USES = "Trust me bro' :)";
