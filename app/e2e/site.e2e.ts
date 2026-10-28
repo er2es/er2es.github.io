@@ -771,3 +771,34 @@ test.describe('review fixes', () => {
     await expect(more).toBeHidden();
   });
 });
+
+test.describe('own tooltips and the theme answer', () => {
+  test('a tooltip is a data attribute with no browser title, it exists only on hover, and it never widens the page', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await ready(page, '/hu/');
+    expect(await page.locator('[title]:not(svg *)').count()).toBe(0); // no native title tooltips left
+    const search = page.locator('app-header button[data-tip]').first();
+    const shown = () => search.evaluate((e) => getComputedStyle(e, '::after').display);
+    expect(await shown()).toBe('none');
+    await search.hover();
+    await expect.poll(shown).toBe('block');
+    expect(await search.evaluate((e) => getComputedStyle(e, '::after').content)).toContain('Ctrl K');
+  });
+
+  test('a click on the theme button is answered in words; Auto says what it follows and what the system uses now', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await ready(page, '/hu/');
+    const button = page.locator('app-header button[aria-label^="Téma"]');
+    const hint = page.getByRole('status').filter({ hasText: /Világos|Sötét|Auto/ });
+    await expect(hint).toHaveCount(0);
+    await button.click(); // auto -> light
+    await expect(hint).toHaveText(/Világos/);
+    await button.click(); // light -> dark
+    await expect(hint).toHaveText(/Sötét/);
+    await button.click(); // dark -> auto
+    await expect(hint).toContainText('a rendszered témáját követi (most: sötét)');
+    await expect(hint).toHaveCount(0, { timeout: 5000 }); // and it goes away by itself
+  });
+});
+

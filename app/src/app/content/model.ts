@@ -158,7 +158,7 @@ export interface SiteContent {
     sections: Record<SectionId, string>;
     otherLanguage: string;
     tags: string;
-    theme: { label: string; auto: string; light: string; dark: string };
+    theme: { label: string; auto: string; light: string; dark: string; autoNote: string };
     egg: {
       title: string; intro: string; requests: string; thirdParty: string; cookies: string;
       transferred: string; scripts: string; dom: string; lcp: string; cls: string; framework: string; typescript: string;
