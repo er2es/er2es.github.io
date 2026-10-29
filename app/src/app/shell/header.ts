@@ -4,9 +4,11 @@ import { LangSwitch } from '../core/lang';
 import { anchorHref, inPageClick, pagePath } from '../core/nav';
 import { squirclePath } from '../core/squircle';
 import { ORDER, Theme, type ThemeMode } from '../core/theme';
+import { SectionIcon } from './section-icon';
 
 @Component({
   selector: 'app-header',
+  imports: [SectionIcon],
   template: `
     <div class="edge" aria-hidden="true"></div>
     <header class="bar glass">
@@ -16,7 +18,7 @@ import { ORDER, Theme, type ThemeMode } from '../core/theme';
       </a>
       <nav class="links" [attr.aria-label]="c().ui.navLabel">
         @for (s of sections; track s) {
-          <a [attr.href]="href(s)" [attr.aria-current]="active() === s ? 'location' : null" (click)="go($event, s)">{{ c().ui.sections[s] }}</a>
+          <a [attr.href]="href(s)" [attr.aria-current]="active() === s ? 'location' : null" (click)="go($event, s)"><app-section-icon [id]="s" [size]="18" />{{ c().ui.sections[s] }}</a>
         }
       </nav>
       <div class="ctl">
@@ -76,24 +78,42 @@ import { ORDER, Theme, type ThemeMode } from '../core/theme';
     /* the portrait and the name are one link, back to the very top of the page */
     .brand { display: flex; align-items: center; gap: 0.75rem; min-width: 0; min-height: 44px; text-decoration: none; border-radius: 14px; }
     .mark { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-weight: 700; color: var(--fg); letter-spacing: -0.01em; white-space: nowrap; }
-    .links { display: none; gap: 0.25rem; margin-inline: auto; }
-    .links a { padding: 0.75rem 0.75rem; border-radius: 999px; color: var(--fg-2); text-decoration: none; font-size: var(--t-subhead); font-weight: 500; }
+    .links { display: none; margin-inline: auto; } /* no gap: the pill must not lose the pointer between two items */
+    .links a { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.75rem 0.7rem; margin-inline: 0.125rem; border-radius: 999px; color: var(--fg-2); text-decoration: none; font-size: var(--t-subhead); font-weight: 500; }
     .links a[aria-current] { color: var(--fg); background: var(--tint-current); }
-    .links a { transition: color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out), scale var(--dur-press) var(--ease-out); }
+    .links a { transition: color var(--dur-press) var(--ease-out), background-color var(--dur-short) var(--ease-out), scale var(--dur-press) var(--ease-out); }
     .links a:active { background: var(--tint-press); scale: 0.96; }
-    /* one selection pill that glides to the current section (anchor positioning; a static pill elsewhere) */
+    /* one selection pill that glides to the current section, and follows the pointer while it is over the menu
+       (anchor positioning; a static pill elsewhere) */
     @supports (anchor-name: --a) {
       .links { position: relative; isolation: isolate; }
-      .links a[aria-current] { anchor-name: --nav-current; background: none; }
+      .links a[aria-current] { anchor-name: --nav-target; background: none; }
       .links::after {
-        content: ''; position: absolute; z-index: -1; position-anchor: --nav-current; pointer-events: none;
+        content: ''; position: absolute; z-index: -1; position-anchor: --nav-target; pointer-events: none;
         top: anchor(top); bottom: anchor(bottom); left: anchor(left); right: anchor(right); border-radius: 999px;
         background: var(--tint-current);
-        transition: left var(--dur-med) var(--ease-spring), right var(--dur-med) var(--ease-spring);
+        /* quick enough to keep up with the pointer; the short delay (only on the way back to the current item) keeps the
+           pill from jumping away while the pointer crosses the edge of the menu */
+        transition: left var(--dur-short) var(--ease-spring) 90ms, right var(--dur-short) var(--ease-spring) 90ms,
+          background-color var(--dur-short) var(--ease-out), scale var(--dur-press) var(--ease-out);
       }
+      @media (hover: hover) {
+        .links:has(a:hover) a[aria-current]:not(:hover) { anchor-name: none; }
+        .links a:hover { anchor-name: --nav-target; }
+        .links:has(a:hover)::after { transition-delay: 0s; }
+        .links:has(a:not([aria-current]):hover)::after { background: var(--tint-hover); }
+      }
+      /* a press is shown on the pill, which shrinks with the label */
+      .links.links:has(a:active)::after { background: var(--tint-press); scale: 0.96; transition-delay: 0s; }
     }
-    @media (hover: hover) { .links a:hover { color: var(--fg); } .links a:not([aria-current]):hover { background: var(--tint-hover); } }
-    @media (prefers-reduced-motion: reduce) { .links a:active { scale: none; } }
+    @media (max-width: 1099px) { .links app-section-icon { display: none; } } /* the bar has no room for them between 900 and 1100 px */
+    .links a app-section-icon { transition: translate var(--dur-short) var(--ease-spring), color var(--dur-short) var(--ease-out); }
+    .links a[aria-current] app-section-icon { color: var(--accent); }
+    @media (hover: hover) and (prefers-reduced-motion: no-preference) { .links a:hover app-section-icon { translate: 0 -2px; } }
+    @media (hover: hover) { .links a:hover { color: var(--fg); } }
+    /* with the pill, an item has no background of its own (it would show as a second shape under the pill) */
+    @supports not (anchor-name: --a) { @media (hover: hover) { .links a:not([aria-current]):hover { background: var(--tint-hover); } } }
+    @media (prefers-reduced-motion: reduce) { .links a:active { scale: none; } .links.links:has(a:active)::after { scale: none; } }
     .ctl { position: relative; display: flex; align-items: center; margin-left: auto; }
     /* a click on the theme button is answered under it, in words: above all for Auto, which follows the system */
     .hint {
