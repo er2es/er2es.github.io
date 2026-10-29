@@ -92,7 +92,7 @@ export class Home {
     inject(Seo).apply(this.locale(), this.c());
     const destroy = inject(DestroyRef);
     afterNextRender(() => {
-      destroy.onDestroy(initHash());
+      destroy.onDestroy(initHash((section) => this.active.set(section)));
       destroy.onDestroy(initTips());
       const stop = trackActive(SECTION_IDS, (id) => {
         this.active.set(shownSection(id as SectionId));

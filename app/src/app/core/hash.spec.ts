@@ -1,4 +1,4 @@
-import { HashKeeper, sectionOf } from './hash';
+import { HashKeeper, initHash, jumpHash, sectionOf, shownSection } from './hash';
 
 function keeper(initial: string | null = null) {
   const writes: (string | null)[] = [];
@@ -87,5 +87,82 @@ describe('HashKeeper', () => {
     const { f } = keeper();
     f.jump('main');
     expect(f.section('experience', 0)).toBe('experience');
+  });
+});
+
+describe('jumpHash', () => {
+  afterEach(() => history.replaceState(null, '', '/'));
+
+  it('tells the menu which section a jump is for, even when nothing will scroll', () => {
+    const heard: string[] = [];
+    const stop = initHash((s) => heard.push(s));
+    jumpHash('about');
+    jumpHash('job-chamber');
+    jumpHash('main'); // not a section: nobody is told
+    expect(heard).toEqual(['about', 'experience']);
+    expect(location.hash).toBe('#main');
+    stop();
+    jumpHash('contact'); // after the cleanup nobody listens
+    expect(heard).toEqual(['about', 'experience']);
+  });
+
+  it('still writes the target when nobody has started keeping the hash', () => {
+    jumpHash('skills');
+    expect(location.hash).toBe('#skills');
+  });
+});
+
+describe('initHash in a page', () => {
+  const scrollTo = (y: number): void => {
+    Object.defineProperty(window, 'scrollY', { value: y, configurable: true });
+  };
+  afterEach(() => {
+    vi.useRealTimers();
+    scrollTo(0);
+    history.replaceState(null, '', '/');
+  });
+
+  it('removes the hash when the page is back at the top, and only then', () => {
+    jumpHash('skills'); // no keeper yet: the URL is just written
+    const stop = initHash(); // a load with a hash: the browser is scrolling to it
+    window.dispatchEvent(new Event('scrollend')); // it has come to rest
+    scrollTo(500);
+    window.dispatchEvent(new Event('scroll'));
+    expect(location.hash).toBe('#skills');
+    scrollTo(3);
+    window.dispatchEvent(new Event('scroll'));
+    expect(location.hash).toBe('');
+    stop();
+  });
+
+  it('settles on a timer where `scrollend` does not exist, for a load with a hash and for a jump', () => {
+    vi.useFakeTimers();
+    history.replaceState(null, '', '/#projects');
+    scrollTo(900);
+    const stop = initHash(); // the load arms the fallback timer
+    vi.advanceTimersByTime(1200);
+    jumpHash('contact'); // a jump arms it again, and a second jump re-arms it
+    jumpHash('about');
+    vi.advanceTimersByTime(1200);
+    scrollTo(905); // it came to rest at 900
+    expect(shownSection('about')).toBe('about');
+    expect(shownSection('contact')).toBe('about'); // the pin of the jump holds a few pixels
+    scrollTo(1100);
+    expect(shownSection('contact')).toBe('contact'); // and lets go once the visitor scrolls on
+    stop();
+  });
+
+  it('does not take the place of a newer page view when an older one is cleaned up late', () => {
+    const heard: string[] = [];
+    const old = initHash();
+    const current = initHash((section) => heard.push(section));
+    old(); // the older view goes away after the newer one has started
+    jumpHash('about');
+    expect(heard).toEqual(['about']);
+    current();
+  });
+
+  it('shows the section in view when nobody keeps the hash', () => {
+    expect(shownSection('skills')).toBe('skills');
   });
 });

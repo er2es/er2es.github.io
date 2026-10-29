@@ -85,10 +85,14 @@ const writeUrl = (hash: string | null): void => {
   history.replaceState(history.state, '', `${location.pathname}${location.search}${hash ? `#${hash}` : ''}`);
 };
 
-/** Starts keeping the hash for this page view. Returns a cleanup. */
-export function initHash(): () => void {
+/** Told which section a jump is heading for, so the menu can follow the click at once (see `jumpHash`). */
+let onJump: ((section: SectionId) => void) | null = null;
+
+/** Starts keeping the hash for this page view. `jumped` hears the section of every in-page jump. Returns a cleanup. */
+export function initHash(jumped?: (section: SectionId) => void): () => void {
   const f = new HashKeeper(location.hash.slice(1) || null, writeUrl);
   keeper = f;
+  onJump = jumped ?? null;
   const settle = (): void => {
     clearTimeout(settleTimer);
     f.settled(window.scrollY);
@@ -108,12 +112,21 @@ export function initHash(): () => void {
     window.removeEventListener('scroll', onScroll);
     window.removeEventListener('scrollend', settle);
     clearTimeout(settleTimer);
-    if (keeper === f) keeper = null;
+    if (keeper === f) {
+      keeper = null;
+      onJump = null;
+    }
   };
 }
 
-/** Called when an in-page jump starts: writes the exact target and begins following. */
+/**
+ * Called when an in-page jump starts: writes the exact target and keeps it. The menu is told at once which section the
+ * jump is for: when the target is already in view, or the page cannot scroll any further (About, with Contact below
+ * it, at the bottom of the page), nothing scrolls and the section tracking would never say anything.
+ */
 export function jumpHash(id: string): void {
+  const section = sectionOf(id);
+  if (section) onJump?.(section);
   if (!keeper) {
     writeUrl(id);
     return;

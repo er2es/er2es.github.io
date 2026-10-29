@@ -894,3 +894,28 @@ test.describe('HIG and motion polish', () => {
   });
 });
 
+test.describe('the menu follows the click', () => {
+  const current = (page: Page) => page.evaluate(() => [...document.querySelectorAll('app-header .links a')].filter((a) => a.hasAttribute('aria-current')).map((a) => a.textContent!.trim()));
+
+  test('at the bottom, where About and Contact are both in view, a click on About makes About current and a click on Contact brings Contact back', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await ready(page, '/hu/');
+    await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; scrollTo(0, document.documentElement.scrollHeight); });
+    await expect.poll(() => current(page)).toEqual(['Kapcsolat']);
+    await page.locator('app-header .links a', { hasText: 'Rólam' }).click();
+    await expect.poll(() => current(page)).toEqual(['Rólam']);
+    await page.locator('app-header .links a', { hasText: 'Kapcsolat' }).click();
+    await expect.poll(() => current(page)).toEqual(['Kapcsolat']);
+  });
+
+  test('a click on the section already at the top still makes it current at once', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await ready(page, '/hu/');
+    await page.locator('app-header .links a', { hasText: 'Projektek' }).click();
+    await expect.poll(() => current(page)).toEqual(['Projektek']);
+    await page.waitForTimeout(1300);
+    await page.locator('app-header .links a', { hasText: 'Projektek' }).click(); // the same one again: nothing to scroll
+    await expect.poll(() => current(page)).toEqual(['Projektek']);
+  });
+});
+
