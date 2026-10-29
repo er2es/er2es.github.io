@@ -3,7 +3,8 @@ import { SECTION_IDS, type Locale, type SectionId, type SiteContent } from '../c
 import { LangSwitch } from '../core/lang';
 import { anchorHref, inPageClick, pagePath } from '../core/nav';
 import { squirclePath } from '../core/squircle';
-import { ORDER, Theme, type ThemeMode } from '../core/theme';
+import { Theme, type ThemeMode } from '../core/theme';
+import { MONOGRAM } from './monogram';
 import { SectionIcon } from './section-icon';
 
 @Component({
@@ -13,7 +14,7 @@ import { SectionIcon } from './section-icon';
     <div class="edge" aria-hidden="true"></div>
     <header class="bar glass">
       <a class="brand" [attr.href]="home()" (click)="top($event)">
-        <span class="avatar-slot" aria-hidden="true"></span>
+        <span class="avatar-slot" aria-hidden="true"><svg class="sz" [attr.viewBox]="mono.box" focusable="false"><path [attr.d]="mono.d" /></svg></span>
         <span class="mark">{{ c().hero.name }}</span>
       </a>
       <nav class="links" [attr.aria-label]="c().ui.navLabel">
@@ -27,32 +28,36 @@ import { SectionIcon } from './section-icon';
             <circle cx="11" cy="11" r="6.5" /><path d="M16 16l4.5 4.5" />
           </svg>
         </button>
-        <button type="button" class="chip icon" [attr.aria-label]="themeLabel()" [attr.data-tip]="themeTip()" data-tip-align="end" [class.tip-off]="hint() !== null" (click)="cycleTheme($event)">
-          @for (m of [icon()]; track m) {
-          <svg class="mode" [class.auto]="m === 'auto'" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-            @switch (m) {
-              @case ('light') {
-                <circle cx="12" cy="12" r="4" />
-                <path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" />
-              }
-              @case ('dark') {
-                <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" />
-              }
-              @default {
-                <circle cx="12" cy="12" r="8" /><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" />
-              }
-            }
-          </svg>
+        <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -- the arrow keys are handled for the radio buttons inside, which are focusable (a roving tabindex) -->
+        <div class="theme" role="radiogroup" [attr.aria-label]="c().ui.theme.label" [style.--k]="modes.indexOf(theme.mode())" (keydown)="themeKey($event)">
+          <span class="thumb" aria-hidden="true"></span>
+          @for (m of modes; track m) {
+            <button type="button" class="seg" role="radio" [attr.aria-checked]="theme.mode() === m" [attr.tabindex]="theme.mode() === m ? 0 : -1" [attr.aria-label]="c().ui.theme[m]" [attr.data-tip]="tipOf(m)" [class.tip-off]="hint() !== null" (click)="pick($event, m)">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                @switch (m) {
+                  @case ('light') {
+                    <circle cx="12" cy="12" r="4" />
+                    <path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" />
+                  }
+                  @case ('dark') {
+                    <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" />
+                  }
+                  @default {
+                    <circle cx="12" cy="12" r="8" /><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" />
+                  }
+                }
+              </svg>
+            </button>
           }
-        </button>
+        </div>
         <span class="sr-only" role="status">{{ hint() }}</span>
-        @if (hint(); as h) {
-          <span class="hint" aria-hidden="true">
+        @for (h of hints(); track h) {
+          <span class="hint info" style="--life: 2000ms" aria-hidden="true">
             @if (theme.mode() === 'auto') { <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2.2" /><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" /></svg> }
             {{ h }}
           </span>
         }
-        <a class="chip" [attr.href]="otherHref()" [attr.lang]="other()" [attr.hreflang]="other()" (click)="switchLang($event)">{{ c().ui.otherLanguage }}</a>
+        <a class="chip" [attr.href]="otherHref()" [attr.lang]="other()" [attr.hreflang]="other()" (click)="switchLang($event)"><span aria-hidden="true">{{ other().toUpperCase() }}</span><span class="sr-only">{{ c().ui.otherLanguage }} ({{ other().toUpperCase() }})</span></a>
       </div>
       <svg class="read" aria-hidden="true" focusable="false"><path [attr.d]="outline()" pathLength="1" /></svg>
     </header>
@@ -64,7 +69,11 @@ import { SectionIcon } from './section-icon';
       display: flex; align-items: center; gap: 0.75rem; border-radius: 22px;
     }
     /* where the portrait lands (app-avatar-dock flies a copy of it here while the hero scrolls away) */
-    .avatar-slot { flex: none; width: 36px; height: 36px; border-radius: 50%; margin-left: -0.5rem; }
+    .avatar-slot { flex: none; display: grid; place-items: center; overflow: hidden; width: 36px; height: 36px; border-radius: 12px; margin-left: -0.5rem; background: var(--tint-current); transition: background-color var(--dur-short) var(--ease-out); }
+    /* the monogram holds the place until the portrait arrives, and is pushed out upwards by it (and drops back in when the portrait leaves) */
+    .sz { width: 24px; height: auto; fill: var(--fg); transition: translate var(--dur-med) var(--ease-spring), scale var(--dur-med) var(--ease-spring), opacity var(--dur-short) var(--ease-out); }
+    .avatar-slot.filled { background: transparent; }
+    .avatar-slot.filled .sz { translate: 0 -140%; scale: 0.6; opacity: 0; }
     /* scroll edge: text passing above the floating bar softens into the page instead of showing sharp */
     .edge {
       position: fixed; z-index: 19; inset: 0 0 auto; height: calc(max(10px, env(safe-area-inset-top)) + var(--bar-h) * 0.6); pointer-events: none;
@@ -76,10 +85,10 @@ import { SectionIcon } from './section-icon';
       .edge { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--bg); }
     }
     /* the portrait and the name are one link, back to the very top of the page */
-    .brand { display: flex; align-items: center; gap: 0.75rem; min-width: 0; min-height: 44px; text-decoration: none; border-radius: 14px; }
+    .brand { display: flex; align-items: center; gap: 0.75rem; min-width: 0; min-height: 44px; text-decoration: none; border-radius: 16px; }
     .mark { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-weight: 700; color: var(--fg); letter-spacing: -0.01em; white-space: nowrap; }
     .links { display: none; margin-inline: auto; } /* no gap: the pill must not lose the pointer between two items */
-    .links a { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.75rem 0.7rem; margin-inline: 0.125rem; border-radius: 999px; color: var(--fg-2); text-decoration: none; font-size: var(--t-subhead); font-weight: 500; }
+    .links a { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.75rem 0.7rem; margin-inline: 0.125rem; border-radius: 16px; color: var(--fg-2); text-decoration: none; font-size: var(--t-subhead); font-weight: 500; }
     .links a[aria-current] { color: var(--fg); background: var(--tint-current); }
     .links a { transition: color var(--dur-press) var(--ease-out), background-color var(--dur-short) var(--ease-out), scale var(--dur-press) var(--ease-out); }
     .links a:active { background: var(--tint-press); scale: 0.96; }
@@ -90,7 +99,7 @@ import { SectionIcon } from './section-icon';
       .links a[aria-current] { anchor-name: --nav-target; background: none; }
       .links::after {
         content: ''; position: absolute; z-index: -1; position-anchor: --nav-target; pointer-events: none;
-        top: anchor(top); bottom: anchor(bottom); left: anchor(left); right: anchor(right); border-radius: 999px;
+        top: anchor(top); bottom: anchor(bottom); left: anchor(left); right: anchor(right); border-radius: 16px;
         background: var(--tint-current);
         /* quick enough to keep up with the pointer; the short delay (only on the way back to the current item) keeps the
            pill from jumping away while the pointer crosses the edge of the menu */
@@ -125,22 +134,18 @@ import { SectionIcon } from './section-icon';
     @keyframes hint-in { from { opacity: 0; translate: 0 -4px; } }
     @media (prefers-reduced-motion: no-preference) { .hint { animation: hint-in var(--dur-press) var(--ease-out) both; } }
     .tip-off::after { display: none; } /* the bubble says it already */
-    @media (prefers-reduced-motion: no-preference) {
-      /*
-       * The icon turns into its new state (the element is new for every mode, so this plays on each click, from the
-       * click itself: the theme is applied a beat later, inside a view transition). The cycle is Auto, Light, Dark and
-       * back: Light and Dark spin in one way and grow into place; arriving back at Auto is the opposite, a half turn
-       * the other way, shrinking in from large with a flash of the accent colour, like winding the dial back.
-       */
-      .mode { animation: mode-in var(--dur-med) var(--ease-out) both; }
-      .mode.auto { animation: mode-back 500ms var(--ease-out) both; }
-      @keyframes mode-in { from { rotate: -90deg; scale: 0.6; opacity: 0.2; } }
-      @keyframes mode-back {
-        from { rotate: 180deg; scale: 1.7; opacity: 0.15; filter: drop-shadow(0 0 7px var(--accent)); }
-        60% { filter: drop-shadow(0 0 5px var(--accent)); }
-        to { filter: drop-shadow(0 0 0 transparent); }
-      }
+    /* the theme as three positions (Light, Auto, Dark) with one thumb that glides between them */
+    .theme { position: relative; display: inline-flex; align-items: center; height: 36px; padding: 0 2px; margin-inline: 2px; border-radius: 16px; background: var(--tint-hover); }
+    .thumb {
+      position: absolute; left: 2px; top: 2px; width: 34px; height: 32px; border-radius: 14px; pointer-events: none;
+      background: color-mix(in srgb, var(--fg) 16%, transparent); translate: calc(var(--k, 1) * 34px) 0;
+      transition: translate var(--dur-med) var(--ease-spring);
     }
+    .seg { position: relative; z-index: 1; display: grid; place-items: center; width: 34px; height: 44px; margin-block: -4px; padding: 0; border: 0; border-radius: 14px; background: none; color: var(--fg-2); cursor: pointer; transition: color var(--dur-press) var(--ease-out); }
+    .seg[aria-checked='true'] { color: var(--fg); }
+    @media (hover: hover) { .seg:hover { color: var(--fg); } }
+    /* the controls at the bar's edges take the bar's corner, less the gap they keep from it (22px - 6px), instead of a full pill */
+    .chip { border-radius: 16px; }
     .chip.icon { width: 44px; padding: 0; justify-content: center; }
     @media (min-width: 900px) { .links { display: flex; } .ctl { margin-left: 0; } }
 
@@ -163,6 +168,7 @@ export class Header {
   readonly active = input<SectionId>('profile');
   readonly palette = output<void>();
 
+  protected readonly mono = MONOGRAM;
   protected readonly theme = inject(Theme);
   /** The progress line follows the bar's own outline (squircle corners included), whatever width the bar has. */
   protected readonly outline = signal('');
@@ -179,10 +185,9 @@ export class Header {
         return;
       }
       untracked(() => {
-        this.icon.set(mode); // and always in step with the real theme (it can also change from elsewhere)
         this.hint.set(mode === 'auto' ? this.autoNote() : this.themeLabel());
         clearTimeout(this.hintTimer);
-        this.hintTimer = setTimeout(() => this.hint.set(null), 2500); // long enough to read
+        this.hintTimer = setTimeout(() => this.hint.set(null), 2000); // long enough to read; the line along the bubble's edge counts it down (--life)
       });
     });
     destroy.onDestroy(() => clearTimeout(this.hintTimer));
@@ -236,18 +241,34 @@ export class Header {
   protected readonly home = computed(() => pagePath(this.locale()));
   protected readonly themeLabel = computed(() => `${this.c().ui.theme.label}: ${this.c().ui.theme[this.theme.mode()]}`);
 
-  /** What the theme button's tooltip says: for Auto, what Auto means and what the system is using right now. */
-  protected readonly themeTip = computed(() => (this.theme.mode() === 'auto' ? this.autoNote() : this.themeLabel()));
-  /** The icon shown on the theme button: it changes with the click, ahead of the theme itself. */
-  protected readonly icon = signal<ThemeMode>(this.theme.mode());
+  /** The three positions, in the order they are laid out: Auto, the default, is in the middle. */
+  protected readonly modes: readonly ThemeMode[] = ['light', 'auto', 'dark'];
 
-  protected cycleTheme(e: Event): void {
-    this.icon.set(ORDER[(ORDER.indexOf(this.theme.mode()) + 1) % ORDER.length]);
-    this.theme.cycle(e.currentTarget as Element);
+  /** A position's tooltip: for Auto, what Auto means and what the system is using right now. */
+  protected tipOf(m: ThemeMode): string {
+    return m === 'auto' ? this.autoNote() : `${this.c().ui.theme.label}: ${this.c().ui.theme[m]}`;
+  }
+
+  protected pick(e: Event, m: ThemeMode): void {
+    if (m !== this.theme.mode()) this.theme.set(m, e.currentTarget as Element);
+  }
+
+  /** Arrow keys move the choice along the three positions (a radio group: only the chosen one is in the tab order). */
+  protected themeKey(e: KeyboardEvent): void {
+    const step = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
+    if (!step) return;
+    e.preventDefault();
+    const next = this.modes[Math.min(this.modes.length - 1, Math.max(0, this.modes.indexOf(this.theme.mode()) + step))];
+    const buttons = (e.currentTarget as HTMLElement).querySelectorAll<HTMLElement>('.seg');
+    const to = buttons[this.modes.indexOf(next)];
+    if (next !== this.theme.mode()) this.theme.set(next, to);
+    to.focus();
   }
 
   /** The answer shown under the theme button for a moment after a click. */
   protected readonly hint = signal<string | null>(null);
+  /** The bubble as a list of one, so every new answer is a new element and its countdown starts over. */
+  protected readonly hints = computed(() => { const h = this.hint(); return h ? [h] : []; });
   private hintTimer: ReturnType<typeof setTimeout> | undefined;
 
   private autoNote(): string {

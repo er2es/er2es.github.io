@@ -8,16 +8,16 @@ describe('Theme', () => {
     delete document.documentElement.dataset['theme'];
   });
 
-  it('cycles auto, light, dark, auto and mirrors it on <html>', () => {
+  it('sets light, dark and auto and mirrors it on <html>', () => {
     const theme = TestBed.inject(Theme);
     const root = TestBed.inject(DOCUMENT).documentElement;
     expect(theme.mode()).toBe('auto');
-    theme.cycle();
+    theme.set('light');
     expect(theme.mode()).toBe('light');
     expect(root.dataset['theme']).toBe('light');
-    theme.cycle();
+    theme.set('dark');
     expect(root.dataset['theme']).toBe('dark');
-    theme.cycle();
+    theme.set('auto');
     expect(theme.mode()).toBe('auto');
     expect(root.dataset['theme']).toBeUndefined();
   });

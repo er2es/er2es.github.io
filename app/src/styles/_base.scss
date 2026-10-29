@@ -107,3 +107,10 @@ html:has(app-pup .pup, dialog[open]) { overflow: hidden; }
 html.tips-off [data-tip]::after { display: none !important; }
 @keyframes tip-in { from { opacity: 0; translate: var(--tip-x) var(--tip-dy); } }
 @media (prefers-reduced-motion: reduce) { [data-tip]:hover::after, [data-tip]:focus-visible::after, [data-tip].tip-open::after { animation: none; } }
+
+/* a short-lived answer (the theme's, the copy's) counts down its life in a line along its bottom edge; `--life` is how long it stays */
+.info { overflow: hidden; }
+.info::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--accent); transform-origin: left; }
+@keyframes info-life { to { scale: 0 1; } }
+@media (prefers-reduced-motion: no-preference) { .info::after { animation: info-life var(--life, 2s) linear forwards; } }
+@media (prefers-reduced-motion: reduce) { .info::after { display: none; } }

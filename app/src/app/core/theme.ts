@@ -3,7 +3,6 @@ import { Injectable, inject, signal } from '@angular/core';
 import { store } from './storage';
 
 export type ThemeMode = 'auto' | 'light' | 'dark';
-export const ORDER: readonly ThemeMode[] = ['auto', 'light', 'dark'];
 
 function stored(): ThemeMode {
   const v = store.get('theme');
@@ -18,10 +17,6 @@ export class Theme {
   private vtSeq = 0;
 
   /** `from` is the control that asked: the new theme grows out of it as a circle (CSS in _motion.scss). */
-  cycle(from?: Element | null): void {
-    this.set(ORDER[(ORDER.indexOf(this.mode()) + 1) % ORDER.length], from);
-  }
-
   set(mode: ThemeMode, from?: Element | null): void {
     store.set('theme', mode);
     const root = this.doc.documentElement;
