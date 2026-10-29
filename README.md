@@ -22,7 +22,7 @@ Personal CV site of József Szabó, in English (`/`) and Hungarian (`/hu/`). Liv
 | Path | What it is |
 |---|---|
 | `app/` | Angular workspace: sources, tests, build and quality scripts |
-| `docs/` | The built site. GitHub Pages serves this folder (branch `main`, folder `/docs`) |
+| `docs/` | The built site, committed. The CI deploys this folder to GitHub Pages once every check has passed |
 
 ## Commands
 
@@ -50,12 +50,15 @@ Every push to `main` and every pull request runs types, lint, unit tests with co
 colour-contrast check, the `docs/` check and the end-to-end tests in GitHub Actions. Coverage counts the logic layer;
 the components are exercised by the Playwright tests, which are not part of that number.
 
-GitHub Pages itself is unchanged: it serves the committed `docs/` folder. The `docs/` check is what keeps that folder
-in step with the sources.
+The site is deployed by the same workflow: a `deploy` job that needs the checks above publishes the committed `docs/`
+folder to GitHub Pages, and only for a push to `main` (a pull request never deploys). Pages is set to deploy from
+Actions, so nothing publishes without the checks having passed. The `docs/` check is what keeps that folder in step
+with the sources.
 
 ## Release
 
-`npm run verify`, then `npm run build`, then commit `docs/` and push to `main`. GitHub Pages publishes it.
+`npm run verify`, then `npm run build`, commit `docs/` on a branch and open a pull request. When the checks are green,
+squash-merge it: the workflow on `main` runs the checks again and then deploys.
 
 `npm run portrait` and `npm run check:privacy` read local source material that is not part of this repository, so they only work on the author's machine.
 
