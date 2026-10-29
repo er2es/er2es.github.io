@@ -40,6 +40,7 @@ Codespaces and everything is installed.
 | `npm test` | Unit tests |
 | `npm run test:coverage` | Unit tests with coverage of the logic layer (`core`, `graph`, `content`, search and skill matching) |
 | `npm run e2e` | End-to-end tests with an accessibility scan, both languages |
+| `npm run check:contrast` | Fails if a text or accent colour pair of either theme falls below 7:1 (WCAG AAA), or if the dark tokens are not mirrored in `index.html` |
 | `npm run check:docs` | Fails if `docs/` was not built from the sources in the working tree |
 | `npm run lighthouse` | Lighthouse on `/` and `/hu/`, mobile and desktop |
 | `npm run verify` | All gates in one go: types, lint, unit, contrast, privacy, build, docs, end-to-end, Lighthouse |
