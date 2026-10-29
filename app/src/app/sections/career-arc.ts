@@ -73,7 +73,7 @@ const BASE: ItemId = 'edu-nonprofit';
     .lane:hover { position: relative; z-index: 6; }
     .name {
       text-align: left; font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0.375rem 0.5rem;
-      margin-inline: -0.5rem; border-radius: 10px; min-height: 36px; display: grid; line-height: 1.2;
+      margin-inline: -0.5rem; border-radius: 10px; min-height: 44px; display: grid; line-height: 1.2;
       transition: background-color var(--dur-short) var(--ease-out);
     }
     .name small { color: var(--fg-2); font-size: var(--t-footnote); }
@@ -127,9 +127,10 @@ const BASE: ItemId = 'edu-nonprofit';
     .readout { margin: 0; color: var(--fg-2); font-size: var(--t-footnote); }
     .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; align-content: start; }
     .filter {
-      display: inline-flex; align-items: center; gap: 0.5rem; min-height: 32px; padding: 0 0.75rem 0 0.9rem; border: 0; border-radius: 999px;
+      position: relative; display: inline-flex; align-items: center; gap: 0.5rem; min-height: 32px; padding: 0 0.75rem 0 0.9rem; border: 0; border-radius: 999px;
       background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--fg); font: 500 var(--t-footnote) / 1 var(--font); cursor: pointer;
     }
+    .filter::before { content: ''; position: absolute; inset: -6px 0; } /* a 32 px pill with a 44 px target */
     .filter.hide { visibility: hidden; }
     @media (hover: hover) { .filter:hover { background: color-mix(in srgb, var(--accent) 26%, transparent); } }
 
@@ -137,7 +138,7 @@ const BASE: ItemId = 'edu-nonprofit';
       .arc { --row: 34px; --cell: 22px; }
       .fill { border-radius: 4px; }
       .lane { grid-template-columns: 1fr; gap: 0; }
-      .name { grid-auto-flow: column; justify-content: space-between; align-items: baseline; min-height: 32px; }
+      .name { grid-auto-flow: column; justify-content: space-between; align-items: baseline; min-height: 44px; }
       .cells { column-gap: 2px; }
       .axis, .status { margin-left: 0; }
       .axis span:nth-last-child(2) { display: none; } /* the year before it would touch the last one on a narrow screen */

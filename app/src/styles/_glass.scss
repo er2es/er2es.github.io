@@ -30,7 +30,7 @@ html.refract .glass {
   .glass::after, .card::after {
     content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0;
     background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 50%), var(--lit), transparent 65%);
-    transition: opacity 0.3s ease;
+    transition: opacity var(--dur-short) var(--ease-out);
   }
   .glass:hover::after, .card:hover::after { opacity: 1; }
 }
@@ -39,6 +39,6 @@ html.refract .glass {
 html.sweep .glass::before {
   content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
   background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.5) 50%, transparent 65%);
-  background-size: 250% 100%; animation: sweep 1.2s ease-out both;
+  background-size: 250% 100%; animation: sweep 1200ms var(--ease-out) both;
 }
 @keyframes sweep { from { background-position: 150% 0; } to { background-position: -50% 0; } }

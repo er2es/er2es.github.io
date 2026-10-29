@@ -21,7 +21,7 @@ const REPO = 'https://github.com/er2es/er2es.github.io';
     .foot { padding-block: 1.5rem; font-size: var(--t-footnote); color: var(--fg-2); }
     .foot.block { border-top: 1px solid var(--accent); } /* the page ends on a line in the accent colour */
     .wrap { display: flex; flex-wrap: wrap; gap: 0.25rem 1.25rem; align-items: center; }
-    a { color: inherit; text-underline-offset: 0.2em; padding-block: 0.5rem; }
+    a { display: inline-flex; align-items: center; min-height: 44px; margin-inline: -0.5rem; padding-inline: 0.5rem; color: inherit; text-underline-offset: 0.2em; }
     @media (hover: hover) { a:hover { color: var(--fg); } }
     /* room for the floating tab bar on phones */
     @media (max-width: 899px) { .foot { padding-bottom: calc(var(--tabbar-h) + 2rem + env(safe-area-inset-bottom)); } }

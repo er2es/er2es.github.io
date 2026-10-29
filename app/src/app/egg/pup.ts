@@ -34,10 +34,14 @@ import { Component, input, output } from '@angular/core';
     /* the ambient light: the photo itself, far out of focus, drifting slowly */
     .bg {
       position: absolute; inset: -10%; width: 120%; height: 120%; object-fit: cover; pointer-events: none;
-      filter: blur(56px) saturate(1.6) brightness(0.8); transition: filter 700ms var(--ease-out);
+      z-index: 0; filter: blur(60px) saturate(1.65) brightness(0.8); /* a fixed blur: animating a blur is the most expensive thing a page can do */
       animation: drift 22s ease-in-out infinite alternate;
     }
-    .pup.sheet .bg { filter: blur(64px) saturate(1.7) brightness(0.55); }
+    /* the photo darkens behind the sheet through an overlay's opacity (cheap), not through the filter */
+    .pup::before { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: #000; opacity: 0; transition: opacity 700ms var(--ease-out); }
+    .pup.sheet::before { opacity: 0.31; }
+    /* nothing keeps running behind the sheet or while it fades out */
+    .pup.sheet .bg, .pup.sheet .frame, .pup.sheet .hint, .pup.sheet .hint::before, .pup.sheet .hint::after, .pup.sheet .hint svg, .pup.leave .bg, .pup.leave .frame { animation-play-state: paused; }
     .pup::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at center, transparent 35%, rgba(0, 0, 0, 0.6)); }
     @keyframes drift { to { scale: 1.1; translate: -2% 1.5%; } }
 
@@ -46,7 +50,7 @@ import { Component, input, output } from '@angular/core';
       position: relative; height: min(76vh, 41rem); aspect-ratio: 424 / 736; max-width: 88vw; overflow: hidden;
       border-radius: 30px; corner-shape: squircle;
       box-shadow: 0 50px 90px -24px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-      transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform 180ms ease-out;
+      transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform var(--dur-press) var(--ease-out);
       animation: land 1000ms var(--ease-spring) 120ms both, float 7s ease-in-out 1.1s infinite;
     }
     .stage { transition: opacity 400ms var(--ease-out), scale 400ms var(--ease-out); }
@@ -58,8 +62,8 @@ import { Component, input, output } from '@angular/core';
       background: radial-gradient(420px circle at var(--mx, 30%) var(--my, 20%), rgba(255, 255, 255, 0.55), transparent 60%);
     }
     @keyframes land {
-      from { opacity: 0; scale: 0.72; translate: 0 7vh; rotate: -6deg; filter: blur(16px); }
-      to { opacity: 1; scale: 1; translate: 0 0; rotate: 0deg; filter: blur(0); }
+      from { opacity: 0; scale: 0.72; translate: 0 7vh; rotate: -6deg; }
+      to { opacity: 1; scale: 1; translate: 0 0; rotate: 0deg; }
     }
     @keyframes float { 50% { translate: 0 -8px; } }
 
@@ -82,7 +86,7 @@ import { Component, input, output } from '@angular/core';
     @media (max-width: 899px) { .hint { bottom: calc(var(--tabbar-h, 64px) + 2.5rem + env(safe-area-inset-bottom)); } }
 
     @media (prefers-reduced-motion: reduce) {
-      .pup, .pup.leave, .bg, .frame, .hint, .hint svg { animation: none; transition: none; }
+      .pup, .pup.leave, .bg, .frame, .hint, .hint svg, .stage, .pup::before { animation: none; transition: none; }
       .hint::before, .hint::after { animation: none; }
     }
   `],

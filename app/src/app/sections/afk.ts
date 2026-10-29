@@ -10,8 +10,9 @@ import type { SiteContent } from '../content/model';
   selector: 'app-afk',
   template: `
     <p class="eyebrow mono" aria-hidden="true">afk/</p>
-    <ul class="afk" [attr.aria-label]="c().profile.hobbies.label">
-      <li data-tip-pos="top" class="tile cinema" [attr.data-tip]="c().profile.hobbies.cinema">
+    <!-- the tiles are focusable only to show their name: keyboard parity with the hover tooltip -->
+    <ul class="afk" [attr.aria-label]="c().profile.hobbies.label" (pointerdown)="reveal($event)">
+      <li data-tip-pos="top" tabindex="0" class="tile cinema" [attr.data-tip]="c().profile.hobbies.cinema">
         <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
           <rect x="7" y="20" width="34" height="21" rx="3" />
           <path d="M20 26.5l9 5-9 5z" />
@@ -19,7 +20,7 @@ import type { SiteContent } from '../content/model';
         </svg>
         <span class="sr-only">{{ c().profile.hobbies.cinema }}</span>
       </li>
-      <li data-tip-pos="top" class="tile woods" [attr.data-tip]="c().profile.hobbies.woods">
+      <li data-tip-pos="top" tabindex="0" class="tile woods" [attr.data-tip]="c().profile.hobbies.woods">
         <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
           <path d="M3 41h42" />
           <g class="tree a"><path d="M24 5l-7 12h14zM24 13l-9 15h18zM24 28v9" /></g>
@@ -28,7 +29,7 @@ import type { SiteContent } from '../content/model';
         </svg>
         <span class="sr-only">{{ c().profile.hobbies.woods }}</span>
       </li>
-      <li data-tip-pos="top" class="tile dog" [attr.data-tip]="c().profile.hobbies.dog">
+      <li data-tip-pos="top" tabindex="0" class="tile dog" [attr.data-tip]="c().profile.hobbies.dog">
         <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
           <path d="M24 26c-6 0-11 4-11 8.5 0 3.2 2.6 4.5 5.5 4.5 2 0 3.5-1 5.5-1s3.5 1 5.5 1c2.9 0 5.5-1.3 5.5-4.5C35 30 30 26 24 26z" />
           <ellipse class="toe t1" cx="11" cy="23" rx="3.2" ry="4.4" transform="rotate(-20 11 23)" />
@@ -38,14 +39,14 @@ import type { SiteContent } from '../content/model';
         </svg>
         <span class="sr-only">{{ c().profile.hobbies.dog }}</span>
       </li>
-      <li data-tip-pos="top" class="tile walk" [attr.data-tip]="c().profile.hobbies.walk">
+      <li data-tip-pos="top" tabindex="0" class="tile walk" [attr.data-tip]="c().profile.hobbies.walk">
         <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
           <g class="foot l"><ellipse cx="16" cy="12" rx="5" ry="7" /><ellipse cx="16" cy="24.5" rx="3.6" ry="3.5" /></g>
           <g class="foot r"><ellipse cx="32" cy="28" rx="5" ry="7" /><ellipse cx="32" cy="40.5" rx="3.6" ry="3.5" /></g>
         </svg>
         <span class="sr-only">{{ c().profile.hobbies.walk }}</span>
       </li>
-      <li data-tip-pos="top" class="tile pho" [attr.data-tip]="c().profile.hobbies.pho">
+      <li data-tip-pos="top" tabindex="0" class="tile pho" [attr.data-tip]="c().profile.hobbies.pho">
         <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
           <path d="M5 26h38c0 9.5-8.5 15-19 15S5 35.5 5 26z" />
           <path d="M18 44h12" />
@@ -54,7 +55,7 @@ import type { SiteContent } from '../content/model';
         </svg>
         <span class="sr-only">{{ c().profile.hobbies.pho }}</span>
       </li>
-      <li data-tip-pos="top" class="tile games" [attr.data-tip]="c().profile.hobbies.games">
+      <li data-tip-pos="top" tabindex="0" class="tile games" [attr.data-tip]="c().profile.hobbies.games">
         <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
           <g class="pad">
             <path d="M13 15h22c5.5 0 8.5 4.2 9.6 10.5l1.8 10.2c.6 3.6-1.4 6.3-4.4 6.3-2.3 0-3.9-1.3-5.5-3.8L33 34H15l-2.1 3.2c-1.6 2.5-3.2 3.8-5.5 3.8-3 0-5-2.7-4.4-6.3l1.8-10.2C4.5 19.2 7.5 15 13 15z" />
@@ -91,16 +92,16 @@ import type { SiteContent } from '../content/model';
     .b1, .b2 { transform-box: fill-box; transform-origin: center; }
     @media (hover: hover) and (prefers-reduced-motion: no-preference) {
       .cinema:hover .clap { transform: rotate(0deg); }
-      .woods:hover .tree { animation: sway 1.8s ease-in-out infinite; }
+      .woods:hover .tree { animation: sway 1.8s ease-in-out 2; }
       .woods:hover .tree.b { animation-delay: -0.6s; }
       .woods:hover .tree.c { animation-delay: -1.2s; }
       .dog:hover .toe { animation: pop 900ms var(--ease-spring) both; }
       .dog:hover .t2 { animation-delay: 90ms; }
       .dog:hover .t3 { animation-delay: 180ms; }
       .dog:hover .t4 { animation-delay: 270ms; }
-      .walk:hover .foot { animation: step 1.4s ease-in-out infinite; }
+      .walk:hover .foot { animation: step 1.4s ease-in-out 2; }
       .walk:hover .foot.r { animation-delay: 0.7s; }
-      .pho:hover .steam path { animation: rise 1.6s ease-in-out infinite; }
+      .pho:hover .steam path { animation: rise 1.6s ease-in-out 2; }
       .pho:hover .s2 { animation-delay: 0.25s; }
       .pho:hover .s3 { animation-delay: 0.5s; }
       .games:hover .pad { animation: wiggle 700ms var(--ease-spring) both; }
@@ -125,4 +126,19 @@ import type { SiteContent } from '../content/model';
 })
 export class Afk {
   readonly c = input.required<SiteContent>();
+  private openTimer: ReturnType<typeof setTimeout> | undefined;
+
+  /** A finger on a tile shows its name for a moment (a mouse gets the hover tooltip); a touch elsewhere puts it away. */
+  protected reveal(e: PointerEvent): void {
+    if (e.pointerType === 'mouse') return;
+    const host = e.currentTarget as HTMLElement;
+    const tile = (e.target as Element).closest<HTMLElement>('.tile');
+    const was = tile?.classList.contains('tip-open') ?? false;
+    host.querySelectorAll('.tip-open').forEach((t) => t.classList.remove('tip-open'));
+    clearTimeout(this.openTimer);
+    if (!tile || was) return;
+    tile.classList.add('tip-open');
+    this.openTimer = setTimeout(() => tile.classList.remove('tip-open'), 2500);
+  }
+
 }

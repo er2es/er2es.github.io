@@ -25,7 +25,7 @@ import { ORDER, Theme, type ThemeMode } from '../core/theme';
             <circle cx="11" cy="11" r="6.5" /><path d="M16 16l4.5 4.5" />
           </svg>
         </button>
-        <button type="button" class="chip icon" [attr.aria-label]="themeLabel()" [attr.data-tip]="themeTip()" [class.tip-off]="hint() !== null" (click)="cycleTheme($event)">
+        <button type="button" class="chip icon" [attr.aria-label]="themeLabel()" [attr.data-tip]="themeTip()" data-tip-align="end" [class.tip-off]="hint() !== null" (click)="cycleTheme($event)">
           @for (m of [icon()]; track m) {
           <svg class="mode" [class.auto]="m === 'auto'" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
             @switch (m) {
@@ -43,8 +43,9 @@ import { ORDER, Theme, type ThemeMode } from '../core/theme';
           </svg>
           }
         </button>
+        <span class="sr-only" role="status">{{ hint() }}</span>
         @if (hint(); as h) {
-          <span class="hint" role="status">
+          <span class="hint" aria-hidden="true">
             @if (theme.mode() === 'auto') { <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2.2" /><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor" /></svg> }
             {{ h }}
           </span>
@@ -57,7 +58,7 @@ import { ORDER, Theme, type ThemeMode } from '../core/theme';
   styles: [`
     .bar {
       position: fixed; z-index: 20; top: max(10px, env(safe-area-inset-top)); left: 50%; translate: -50% 0;
-      width: min(100% - 20px, 70rem); min-height: var(--bar-h); padding: 0 0.5rem 0 1.25rem;
+      width: min(100% - 2 * max(10px, env(safe-area-inset-left), env(safe-area-inset-right)), 70rem); min-height: var(--bar-h); padding: 0 0.5rem 0 1.25rem;
       display: flex; align-items: center; gap: 0.75rem; border-radius: 22px;
     }
     /* where the portrait lands (app-avatar-dock flies a copy of it here while the hero scrolls away) */
@@ -73,7 +74,7 @@ import { ORDER, Theme, type ThemeMode } from '../core/theme';
       .edge { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--bg); }
     }
     /* the portrait and the name are one link, back to the very top of the page */
-    .brand { display: flex; align-items: center; gap: 0.75rem; min-width: 0; text-decoration: none; border-radius: 14px; }
+    .brand { display: flex; align-items: center; gap: 0.75rem; min-width: 0; min-height: 44px; text-decoration: none; border-radius: 14px; }
     .mark { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-weight: 700; color: var(--fg); letter-spacing: -0.01em; white-space: nowrap; }
     .links { display: none; gap: 0.25rem; margin-inline: auto; }
     .links a { padding: 0.75rem 0.75rem; border-radius: 999px; color: var(--fg-2); text-decoration: none; font-size: var(--t-subhead); font-weight: 500; }
@@ -98,10 +99,11 @@ import { ORDER, Theme, type ThemeMode } from '../core/theme';
     .hint {
       position: absolute; z-index: 40; top: calc(100% + 14px); right: 0; width: max-content; max-width: min(16rem, 80vw); padding: 0.4rem 0.7rem; border-radius: 10px;
       display: inline-flex; align-items: center; gap: 0.4rem; background: var(--bg-2); color: var(--fg); border: 1px solid var(--line); box-shadow: var(--glass-shadow);
-      font: 500 var(--t-footnote) / 1.3 var(--font); pointer-events: none; animation: hint-in 180ms var(--ease-out) both;
+      font: 500 var(--t-footnote) / 1.3 var(--font); pointer-events: none;
     }
     .hint svg { flex: none; color: var(--accent); }
     @keyframes hint-in { from { opacity: 0; translate: 0 -4px; } }
+    @media (prefers-reduced-motion: no-preference) { .hint { animation: hint-in var(--dur-press) var(--ease-out) both; } }
     .tip-off::after { display: none; } /* the bubble says it already */
     @media (prefers-reduced-motion: no-preference) {
       /*
@@ -110,8 +112,8 @@ import { ORDER, Theme, type ThemeMode } from '../core/theme';
        * back: Light and Dark spin in one way and grow into place; arriving back at Auto is the opposite, a half turn
        * the other way, shrinking in from large with a flash of the accent colour, like winding the dial back.
        */
-      .mode { animation: mode-in 380ms var(--ease-out) both; }
-      .mode.auto { animation: mode-back 700ms cubic-bezier(0.25, 1, 0.5, 1) both; }
+      .mode { animation: mode-in var(--dur-med) var(--ease-out) both; }
+      .mode.auto { animation: mode-back 500ms var(--ease-out) both; }
       @keyframes mode-in { from { rotate: -90deg; scale: 0.6; opacity: 0.2; } }
       @keyframes mode-back {
         from { rotate: 180deg; scale: 1.7; opacity: 0.15; filter: drop-shadow(0 0 7px var(--accent)); }
@@ -160,7 +162,7 @@ export class Header {
         this.icon.set(mode); // and always in step with the real theme (it can also change from elsewhere)
         this.hint.set(mode === 'auto' ? this.autoNote() : this.themeLabel());
         clearTimeout(this.hintTimer);
-        this.hintTimer = setTimeout(() => this.hint.set(null), 2600);
+        this.hintTimer = setTimeout(() => this.hint.set(null), 2500); // as long as a toast
       });
     });
     destroy.onDestroy(() => clearTimeout(this.hintTimer));

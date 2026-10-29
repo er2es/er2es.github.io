@@ -75,9 +75,9 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
     summary::after {
       content: ''; position: absolute; right: 1rem; top: 1.125rem; width: 8px; height: 8px;
       border-right: 2px solid var(--fg-2); border-bottom: 2px solid var(--fg-2); rotate: 45deg;
-      transition: rotate 0.25s ease, top 0.25s ease;
+      transition: rotate var(--dur-short) var(--ease-out), translate var(--dur-short) var(--ease-out);
     }
-    details[open] > summary::after { rotate: 225deg; top: 1.375rem; }
+    details[open] > summary::after { rotate: 225deg; translate: 0 4px; }
     @media (hover: hover) { summary:hover { background: color-mix(in srgb, var(--fg) 6%, transparent); } }
     @media (prefers-reduced-motion: reduce) { summary::after { transition: none; } }
     .role { font-weight: 700; }
@@ -93,7 +93,7 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
     @media (prefers-reduced-motion: no-preference) {
       .node { transition: scale var(--dur-short) var(--ease-spring); }
       .row:is(:hover, :focus-within) .node { scale: 1.3; }
-      .row:has(details[open]) .halo { animation: ring 600ms var(--ease-out); }
+      .row:has(details[open]) .halo { animation: ring var(--dur-ring) var(--ease-out); }
     }
     @keyframes ring { from { scale: 1; opacity: 0.5; } to { scale: 2.8; opacity: 0; } }
 
@@ -117,7 +117,7 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
     /* smooth disclosure where the browser supports it (progressive enhancement) */
     @media (prefers-reduced-motion: no-preference) {
       details { interpolate-size: allow-keywords; }
-      details::details-content { block-size: 0; overflow: hidden; transition: block-size 0.35s cubic-bezier(0.22, 1, 0.36, 1), content-visibility 0.35s allow-discrete; }
+      details::details-content { block-size: 0; overflow: hidden; transition: block-size var(--dur-med) var(--ease-out), content-visibility var(--dur-med) allow-discrete; }
       details[open]::details-content { block-size: auto; }
     }
 

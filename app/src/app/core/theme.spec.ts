@@ -70,3 +70,34 @@ describe('Theme with view transitions', () => {
     expect(document.documentElement.dataset['theme']).toBe('light');
   });
 });
+
+describe('Theme: two quick changes', () => {
+  afterEach(() => {
+    delete (document as unknown as Record<string, unknown>)['startViewTransition'];
+    document.documentElement.classList.remove('theme-vt');
+    document.documentElement.removeAttribute('style');
+  });
+
+  it('lets only the newest transition clean up, so a late finish of the older one does not cut the newer one short', async () => {
+    const root = document.documentElement;
+    const finishers: (() => void)[] = [];
+    (document as unknown as Record<string, unknown>)['startViewTransition'] = (cb: () => void) => {
+      cb();
+      return { finished: new Promise<void>((resolve) => finishers.push(resolve)) };
+    };
+    const from = document.createElement('button');
+    from.getBoundingClientRect = () => ({ left: 0, top: 0, width: 10, height: 10 }) as DOMRect;
+    const theme = TestBed.inject(Theme);
+    theme.set('light', from);
+    theme.set('dark', from);
+    finishers[0](); // the first one ends late
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(root.classList.contains('theme-vt')).toBe(true); // the second one is still running
+    finishers[1]();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(root.classList.contains('theme-vt')).toBe(false);
+  });
+});
+

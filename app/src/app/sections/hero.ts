@@ -31,7 +31,7 @@ import { Email } from './email';
     .aurora i:nth-child(1) { width: 46vmax; height: 46vmax; left: -12vmax; top: -18vmax; background: radial-gradient(circle at 40% 40%, var(--aurora-a), transparent 66%); }
     .aurora i:nth-child(2) { width: 38vmax; height: 38vmax; right: -10vmax; top: -8vmax; background: radial-gradient(circle at 50% 50%, var(--aurora-b), transparent 66%); animation-duration: 90s; animation-delay: -30s; }
     .aurora i:nth-child(3) { width: 34vmax; height: 34vmax; left: 30%; bottom: -22vmax; background: radial-gradient(circle at 50% 50%, var(--aurora-c), transparent 66%); animation-duration: 80s; animation-delay: -55s; }
-    .paused .aurora i { animation-play-state: paused; }
+    .paused .aurora i { animation-play-state: paused; will-change: auto; }
     @keyframes drift { from { transform: translate3d(0, 0, 0) scale(1); } to { transform: translate3d(7vmax, 5vmax, 0) scale(1.15); } }
     @media (prefers-reduced-motion: reduce) { .aurora i { animation: none; } }
     .text { display: grid; gap: 0.75rem; justify-items: start; }
@@ -69,7 +69,7 @@ import { Email } from './email';
       :host-context(html:not(.settled)) .text > :nth-child(4) { animation-delay: 120ms; }
       :host-context(html:not(.settled)) .text > :nth-child(5) { animation-delay: 160ms; }
       :host-context(html:not(.settled)) .portrait img { animation: settle-in 520ms var(--ease-out) both; }
-      :host-context(html:not(.settled)) .dot::after { animation: ping 520ms var(--ease-out) 180ms both; }
+      :host-context(html:not(.settled)) .dot::after { animation: ping var(--dur-ring) var(--ease-out) 180ms both; }
     }
     @keyframes settle { from { transform: translateY(8px); } }
     @keyframes settle-in { from { transform: scale(0.97); } }
@@ -80,7 +80,7 @@ import { Email } from './email';
     /* the portrait leans a few degrees toward a fine pointer and catches a soft highlight (hero.ts sets the vars) */
     @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
       .portrait { transform: perspective(900px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg)); transition: transform var(--dur-med) var(--ease-spring); }
-      .portrait.tracking { transition-duration: 120ms; transition-timing-function: var(--ease-out); }
+      .portrait.tracking { transition-duration: var(--dur-press); transition-timing-function: var(--ease-out); }
       .portrait::after {
         content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0;
         background: radial-gradient(circle at var(--spec-x, 50%) var(--spec-y, 30%), rgba(255, 255, 255, 0.22), transparent 55%);

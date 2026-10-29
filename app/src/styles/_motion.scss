@@ -14,10 +14,10 @@
 }
 
 // Press feedback: controls give a little under the finger and spring back.
-.chip, .btn, .pill {
+.chip, .btn {
   transition: scale var(--dur-press) var(--ease-out), background-color var(--dur-short) var(--ease-out), box-shadow var(--dur-short) var(--ease-out);
 }
-.chip:active, .btn:active, .pill:active { scale: 0.96; transition-duration: 60ms; }
+.chip:active, .btn:active { scale: 0.96; transition-duration: 60ms; }
 
 // Theme change: the new theme grows as a circle from the button that asked for it (View Transitions, set in core/theme.ts).
 @media (prefers-reduced-motion: no-preference) {
@@ -33,6 +33,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   :root { --dur-press: 0s; --dur-short: 0s; --dur-med: 0s; }
-  .chip:active, .btn:active, .pill:active { scale: none; }
+  .chip:active, .btn:active { scale: none; }
   ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
 }

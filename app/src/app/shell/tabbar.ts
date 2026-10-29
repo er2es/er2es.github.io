@@ -46,6 +46,7 @@ const LABEL_SIZES = [13, 12] as const;
     @media (hover: hover) { a:not([aria-current]):hover { color: var(--fg); background: var(--tint-hover); } }
     a:active { background: var(--tint-press); scale: 0.95; }
     @media (prefers-reduced-motion: reduce) { a:active { scale: none; } }
+    @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) { .tabs.glass { background: var(--bg-2); } }
     /* the selection glides between tabs (anchor positioning; a static highlight elsewhere) */
     @supports (anchor-name: --a) {
       .tabs { isolation: isolate; }

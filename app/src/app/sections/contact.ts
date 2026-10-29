@@ -43,7 +43,8 @@ import { Email } from './email';
       border: 1px solid var(--line); transition: background-color var(--dur-short) var(--ease-out), scale var(--dur-press) var(--ease-out);
     }
     @media (hover: hover) { .icon:hover { background: var(--tint-hover); } }
-    .icon:active { background: var(--tint-press); scale: 0.94; }
+    .icon:active { background: var(--tint-press); scale: 0.96; }
+    @media (prefers-reduced-motion: reduce) { .icon:active { scale: none; } }
   `],
 })
 export class Contact {

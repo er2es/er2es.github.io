@@ -26,7 +26,10 @@ function flash(el: HTMLElement): void {
   el.classList.remove('flash');
   void el.offsetWidth; // restart the animation
   el.classList.add('flash');
-  setTimeout(() => el.classList.remove('flash'), 1500);
+  const done = (): void => el.classList.remove('flash');
+  el.addEventListener('animationend', done, { once: true });
+  // no animation runs under reduced motion: a timer ends the static highlight
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) setTimeout(done, 1500);
 }
 
 /** Lets modified clicks (new tab, etc.) through; handles plain clicks in-page. */
