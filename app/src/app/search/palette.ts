@@ -61,8 +61,18 @@ type Entry =
       width: min(100% - 24px, 38rem); max-height: min(70vh, 34rem); margin: 12vh auto auto; padding: 0;
       border-radius: 24px; color: var(--fg); overflow: hidden;
     }
-    .palette::backdrop { background: rgba(0, 0, 0, 0.35); }
-    .in { display: grid; max-height: inherit; }
+    /* an opaque panel: translucent glass lets the page text and glow show through the results */
+    .palette.glass { background: var(--bg-2); -webkit-backdrop-filter: none; backdrop-filter: none; }
+    .palette::backdrop { background: rgba(0, 0, 0, 0.5); }
+    /* the column may be narrower than its content: a long result must wrap, not push the Close button out of the panel */
+    .in { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr); max-height: inherit; }
+    /* phones: the whole screen, over the tab bar too; the visual viewport (dvh) shrinks with the keyboard, so the list stays reachable */
+    @media (max-width: 599px) {
+      .palette { width: 100%; max-width: none; height: 100dvh; max-height: none; margin: 0; border: 0; border-radius: 0; }
+      .in { height: 100%; }
+      .field { padding: max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right)) 0.75rem max(1.25rem, env(safe-area-inset-left)); }
+      .list { padding-bottom: max(0.5rem, env(safe-area-inset-bottom)); }
+    }
     .field { display: flex; gap: 0.5rem; align-items: center; padding: 0.75rem 0.75rem 0.75rem 1.25rem; border-bottom: 1px solid var(--line); }
     input { flex: 1; min-width: 0; min-height: 44px; border: 0; outline: none; background: transparent; color: var(--fg); font: inherit; text-overflow: ellipsis; }
     .list { overflow: auto; padding: 0.5rem; }
@@ -81,6 +91,8 @@ type Entry =
       }
     }
     @keyframes pal-in { from { transform: translateY(-10px) scale(0.98); } }
+    @keyframes sheet-in { from { transform: translateY(16px); opacity: 0; } }
+    @media (prefers-reduced-motion: no-preference) and (max-width: 599px) { .palette[open] { animation-name: sheet-in; } }
     @keyframes opt-in { from { transform: translateY(6px); } }
     @keyframes shimmer { from { background-position: 100% 0; } to { background-position: -150% 0; } }
     .answer { padding: 1rem 1.25rem; border-bottom: 1px solid var(--line); }
