@@ -949,3 +949,26 @@ test.describe('the desktop menu', () => {
   });
 });
 
+test.describe('the search on a phone', () => {
+  test('is a full-screen opaque sheet whose Close button stays inside it, even for long results', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 780 });
+    await ready(page, '/hu/');
+    await page.locator('app-header button[aria-label]').first().click();
+    const dlg = page.getByRole('dialog');
+    await expect(dlg).toBeVisible();
+    await page.keyboard.type('php');
+    await expect(dlg.getByRole('option').first()).toBeVisible();
+    await page.waitForTimeout(600); // the sheet's entrance
+    const m = await page.evaluate(() => {
+      const d = document.querySelector('dialog')!.getBoundingClientRect();
+      const b = document.querySelector('dialog .field button')!.getBoundingClientRect();
+      const bg = getComputedStyle(document.querySelector('dialog')!).backgroundColor;
+      return { w: d.width, h: d.height, vw: innerWidth, vh: innerHeight, inside: b.right <= d.right && b.left >= d.left, bg };
+    });
+    expect(m.w).toBe(m.vw);
+    expect(m.h).toBe(m.vh);
+    expect(m.inside).toBe(true);
+    expect(m.bg).not.toMatch(/rgba\(.*, 0\.\d+\)$/); // no alpha: nothing shows through
+  });
+});
+
