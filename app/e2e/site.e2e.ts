@@ -919,3 +919,33 @@ test.describe('the menu follows the click', () => {
   });
 });
 
+test.describe('the desktop menu', () => {
+  test('has an icon before each label, and its pill follows the pointer and returns to the current item', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await ready(page, '/hu/');
+    const links = page.locator('app-header .links a');
+    await expect(links.locator('svg')).toHaveCount(6);
+    const target = (i: number) => links.nth(i).evaluate((a) => getComputedStyle(a).getPropertyValue('anchor-name'));
+    await expect.poll(() => target(0)).toBe('--nav-target');
+    await links.nth(3).hover();
+    await expect.poll(() => target(3)).toBe('--nav-target');
+    await expect.poll(() => target(0)).toBe('none');
+    await page.mouse.move(600, 600);
+    await expect.poll(() => target(0)).toBe('--nav-target');
+  });
+
+  test('fits the bar at the narrowest desktop width, in both languages', async ({ page }) => {
+    for (const width of [900, 1100]) for (const path of ['/', '/hu/']) {
+      await page.setViewportSize({ width, height: 800 });
+      await ready(page, path);
+      const over = await page.evaluate(() => {
+        const bar = document.querySelector('app-header .bar')!.getBoundingClientRect();
+        const last = document.querySelector('app-header .ctl')!.getBoundingClientRect();
+        const nav = document.querySelector('app-header .links')!.getBoundingClientRect();
+        return { wide: document.documentElement.scrollWidth > innerWidth, clipped: last.right > bar.right || nav.right > last.left + 1 };
+      });
+      expect(over).toEqual({ wide: false, clipped: false });
+    }
+  });
+});
+
