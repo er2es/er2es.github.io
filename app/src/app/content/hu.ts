@@ -53,7 +53,7 @@ export const hu: SiteContent = {
   },
   hero: {
     name: 'Szabó József',
-    role: 'Full-stack PHP-fejlesztő · Symfony, Angular, PostgreSQL · QA / tesztelő',
+    role: 'Full-stack PHP-fejlesztő · Symfony, Angular, PostgreSQL · QA',
     location: 'Budapest',
     status: 'REMOTE / HYBRID',
     cta: 'Írj nekem',
