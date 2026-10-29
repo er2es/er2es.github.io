@@ -6,8 +6,9 @@ export interface ExtraText {
   clearFilter: string;
   /** Spoken after the address on the copy button. */
   copy: string;
-  /** Toasts after copying the address. */
+  /** Spoken after copying the address, and what the bubble over the button says (the short one). */
   copied: string;
+  copiedShort: string;
   copyFailed: string;
   /** Appended (visually hidden) to links that open in a new tab. */
   newTab: string;
@@ -21,6 +22,7 @@ export const EXTRA: Record<Locale, ExtraText> = {
     clearFilter: 'Clear the filter',
     copy: 'copy',
     copied: 'Email address copied to clipboard',
+    copiedShort: 'Copied',
     copyFailed: 'Could not copy. The address is shown below.',
     newTab: '(opens in a new tab)',
     more: 'Show the whole description',
@@ -30,6 +32,7 @@ export const EXTRA: Record<Locale, ExtraText> = {
     clearFilter: 'Szűrő törlése',
     copy: 'másolás',
     copied: 'Az email cím a vágólapra másolva',
+    copiedShort: 'Másolva',
     copyFailed: 'Nem sikerült a másolás. A cím lent olvasható.',
     newTab: '(új lapon nyílik)',
     more: 'A teljes leírás megjelenítése',

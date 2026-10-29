@@ -22,11 +22,10 @@ import { Skills } from './sections/skills';
 import { AvatarDock } from './shell/avatar-dock';
 import { Header } from './shell/header';
 import { TabBar } from './shell/tabbar';
-import { ToastHost } from './shell/toast';
 
 @Component({
   selector: 'app-home',
-  imports: [Header, AvatarDock, TabBar, ToastHost, Egg, Pup, Footer, Hero, Profile, Experience, Skills, Projects, About, Contact, Palette],
+  imports: [Header, AvatarDock, TabBar, Egg, Pup, Footer, Hero, Profile, Experience, Skills, Projects, About, Contact, Palette],
   template: `
     <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
       <filter id="cv-refract" x="0" y="0" width="100%" height="100%">
@@ -48,7 +47,6 @@ import { ToastHost } from './shell/toast';
     </main>
     <app-footer [c]="c()" [attr.inert]="behind()" />
     <app-tabbar [attr.inert]="behind()" [c]="c()" [locale]="locale()" [active]="active()" />
-    @defer (on idle) { <app-toast /> }
     @if (paletteOpen()) {
       @for (g of [paletteGen()]; track g) {
         @defer (on immediate) {

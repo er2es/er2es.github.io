@@ -1,29 +1,3 @@
-import { Injectable, signal } from '@angular/core';
-
-export interface ToastMessage { id: number; text: string; tone: 'ok' | 'error' }
-
-/**
- * One transient notification at a time. A new message replaces the current one and restarts the timer,
- * so repeated actions never pile up.
- */
-@Injectable({ providedIn: 'root' })
-export class Toast {
-  readonly current = signal<ToastMessage | null>(null);
-  private timer: ReturnType<typeof setTimeout> | undefined;
-  private seq = 0;
-
-  show(text: string, tone: ToastMessage['tone'] = 'ok', ms = 2500): void {
-    clearTimeout(this.timer);
-    this.current.set({ id: ++this.seq, text, tone });
-    this.timer = setTimeout(() => this.current.set(null), ms);
-  }
-
-  dismiss(): void {
-    clearTimeout(this.timer);
-    this.current.set(null);
-  }
-}
-
 /**
  * Copies text to the clipboard: the async Clipboard API first, then a hidden-textarea `execCommand('copy')`
  * fallback (focus is given back afterwards). Resolves to whether it worked.
