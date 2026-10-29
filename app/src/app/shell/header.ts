@@ -182,7 +182,7 @@ export class Header {
         this.icon.set(mode); // and always in step with the real theme (it can also change from elsewhere)
         this.hint.set(mode === 'auto' ? this.autoNote() : this.themeLabel());
         clearTimeout(this.hintTimer);
-        this.hintTimer = setTimeout(() => this.hint.set(null), 2500); // as long as a toast
+        this.hintTimer = setTimeout(() => this.hint.set(null), 2500); // long enough to read
       });
     });
     destroy.onDestroy(() => clearTimeout(this.hintTimer));

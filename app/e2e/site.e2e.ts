@@ -387,10 +387,11 @@ test.describe('interaction layer', () => {
   });
 });
 
-test.describe('email address: visible, copyable, with a toast', () => {
+test.describe('email address: visible, copyable, answered on the button', () => {
   const COPIED = { en: 'Email address copied to clipboard', hu: 'Az email cím a vágólapra másolva' };
+  const SHORT = { en: 'Copied', hu: 'Másolva' };
   for (const p of PAGES) {
-    test(`${p.url}: the address is text in the hero and contact; Enter copies it and a toast confirms`, async ({ page, context }) => {
+    test(`${p.url}: the address is text in the hero and contact; Enter copies it and a bubble under the button confirms`, async ({ page, context }) => {
       await context.grantPermissions(['clipboard-read', 'clipboard-write']);
       await ready(page, p.url);
       await expect(page.locator('.hero').getByText(EMAIL, { exact: true })).toBeVisible();
@@ -399,14 +400,20 @@ test.describe('email address: visible, copyable, with a toast', () => {
       const copy = page.locator('.hero').getByRole('button', { name: new RegExp(EMAIL.replace(/\./g, '\\.')) });
       await copy.focus();
       await page.keyboard.press('Enter');
-      const toast = page.getByRole('status').filter({ hasText: COPIED[p.lang as 'en' | 'hu'] });
-      await expect(toast).toBeVisible();
+      const heard = page.locator('.hero [role=status]');
+      const bubble = page.locator('.hero .bubble');
+      await expect(heard).toHaveText(COPIED[p.lang as 'en' | 'hu']); // a screen reader hears the sentence
+      await expect(bubble).toHaveText(SHORT[p.lang as 'en' | 'hu']); // the eye gets the short word, under the icon
+      await expect(copy.locator('.tick')).toHaveCount(1); // and the copy icon has turned into a check
       expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(EMAIL);
-      await expect(copy).toBeFocused(); // the toast never takes focus
-      // a second copy replaces the toast instead of stacking a new one
+      await expect(copy).toBeFocused(); // the answer never takes focus
+      // each button answers for itself; a second click on the same one restarts it instead of stacking
       await page.locator('#contact').getByRole('button', { name: new RegExp(EMAIL.replace(/\./g, '\\.')) }).click();
-      await expect(page.locator('app-toast [role=status]')).toHaveCount(1);
-      await expect(toast).toBeHidden({ timeout: 5000 });
+      await expect(page.locator('#contact .bubble')).toHaveCount(1);
+      await copy.click();
+      await expect(bubble).toHaveCount(1);
+      await expect(bubble).toBeHidden({ timeout: 5000 });
+      await expect(copy.locator('.tick')).toHaveCount(0);
       const r = await new AxeBuilder({ page }).include('.hero').include('#contact').analyze();
       expect(r.violations).toEqual([]);
     });
@@ -419,7 +426,7 @@ test.describe('email address: visible, copyable, with a toast', () => {
     });
     await ready(page, '/');
     await page.locator('.hero').getByRole('button', { name: /@/ }).click();
-    await expect(page.getByRole('status').filter({ hasText: 'Could not copy. The address is shown below.' })).toBeVisible();
+    await expect(page.locator('.hero .bubble.error')).toHaveText('Could not copy. The address is shown below.');
     expect(await page.evaluate(() => getSelection()?.toString())).toBe(EMAIL);
   });
 });
