@@ -27,13 +27,14 @@ html.refract .glass {
 /* light that follows the pointer (set by core/lit.ts, fine pointers only) */
 .card { position: relative; } /* glass surfaces are already fixed-position, never override a modal dialog */
 @media (hover: hover) and (pointer: fine) {
-  .glass::after, .card::after {
-    content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0;
+  /* it exists only while the pointer is over the surface, so nothing lies over the text at rest (and checkers can read the colours behind it) */
+  .glass:hover::after, .card:hover::after {
+    content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
     background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 50%), var(--lit), transparent 65%);
-    transition: opacity var(--dur-short) var(--ease-out);
+    animation: lit-in var(--dur-short) var(--ease-out) both;
   }
-  .glass:hover::after, .card:hover::after { opacity: 1; }
 }
+@keyframes lit-in { from { opacity: 0; } }
 
 /* the easter egg: one light sweep across every glass surface */
 html.sweep .glass::before {

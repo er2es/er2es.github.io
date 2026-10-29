@@ -35,4 +35,10 @@ describe('squirclePath defaults', () => {
   it('draws smooth corners by default', () => {
     expect(squirclePath(100, 50, 10).split(' L').length).toBeGreaterThan(40);
   });
+
+  it('draws a circular corner for exponent 2: the point at 45 degrees is on the arc, closer to the corner than a squircle’s', () => {
+    const at45 = (d: string) => points(d).find(([x, y]) => x > 90 && y < 10 && Math.abs(x - 90 - (10 - y)) < 0.8)!;
+    const circle = at45(squirclePath(100, 50, 10, 2, 90));
+    expect(Math.hypot(circle[0] - 90, circle[1] - 10)).toBeCloseTo(10, 0);
+  });
 });

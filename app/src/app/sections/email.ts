@@ -28,8 +28,8 @@ import { copyText } from '../core/clipboard';
           <span class="sr-only">{{ x().copy }}</span>
         </button>
         <span class="sr-only" role="status">@for (d of [done()]; track d?.id) { {{ d?.speak }} }</span>
-        @if (done(); as d) {
-          <span class="bubble" [class.error]="!d.ok" aria-hidden="true">
+        @for (d of shown(); track d.id) {
+          <span class="bubble info" [class.error]="!d.ok" [style.--life.ms]="d.ms" aria-hidden="true">
             @if (d.ok) {
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
             }
@@ -48,7 +48,7 @@ import { copyText } from '../core/clipboard';
     .addr svg { flex: none; translate: 0 -0.5px; }
     /* the same bubble as the theme button's answer, under the end of the button where the icon is (above it, it would cover the line of text over the button) */
     .bubble {
-      position: absolute; z-index: 5; right: 0; top: calc(100% + 8px); width: max-content; max-width: min(18rem, 100%); padding: 0.4rem 0.7rem; border-radius: 10px;
+      position: absolute; z-index: 5; right: 0; top: calc(100% + 8px); width: max-content; max-width: min(18rem, 100%); padding: 0.4rem 0.7rem; border-radius: var(--r-pop);
       display: inline-flex; align-items: center; gap: 0.4rem; background: var(--bg-2); color: var(--fg); border: 1px solid var(--line); box-shadow: var(--glass-shadow);
       font: 500 var(--t-footnote) / 1.3 var(--font); pointer-events: none;
     }
@@ -68,7 +68,9 @@ export class Email {
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   /** The answer to the last click: shown for a moment, and a new click gives it a new id so a repeat is announced again. */
-  protected readonly done = signal<{ id: number; ok: boolean; say: string; speak: string } | null>(null);
+  protected readonly done = signal<{ id: number; ok: boolean; say: string; speak: string; ms: number } | null>(null);
+  /** The answer as a list of one, so every click is a new bubble and its countdown starts over. */
+  protected readonly shown = computed(() => { const d = this.done(); return d ? [d] : []; });
   private timer: ReturnType<typeof setTimeout> | undefined;
   private seq = 0;
 
@@ -78,7 +80,7 @@ export class Email {
 
   private answer(ok: boolean, say: string, speak: string, ms: number): void {
     clearTimeout(this.timer);
-    this.done.set({ id: ++this.seq, ok, say, speak });
+    this.done.set({ id: ++this.seq, ok, say, speak, ms });
     this.timer = setTimeout(() => this.done.set(null), ms);
   }
 

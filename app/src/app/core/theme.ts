@@ -1,9 +1,8 @@
 import { DOCUMENT } from '@angular/common';
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { store } from './storage';
 
 export type ThemeMode = 'auto' | 'light' | 'dark';
-export const ORDER: readonly ThemeMode[] = ['auto', 'light', 'dark'];
 
 function stored(): ThemeMode {
   const v = store.get('theme');
@@ -16,10 +15,29 @@ export class Theme {
   readonly mode = signal<ThemeMode>(stored());
   /** The newest theme transition: an older one that finishes late must not clean up after it. */
   private vtSeq = 0;
+  /** What the system prefers right now (light where the browser cannot tell, as on the server). */
+  readonly systemDark = signal(false);
+  /** The theme the visitor sees: their choice, or the system's own while they have made none. */
+  readonly shown = computed<'light' | 'dark'>(() => (this.mode() === 'auto' ? this.system() : (this.mode() as 'light' | 'dark')));
+  /** The other one: the second position of the switch (Auto is the first). */
+  readonly opposite = computed<'light' | 'dark'>(() => (this.systemDark() ? 'light' : 'dark'));
+  /** Whether what is shown differs from the system's own theme, i.e. the second position is the one in effect. */
+  readonly offSystem = computed(() => this.shown() !== this.system());
+  private readonly system = computed<'light' | 'dark'>(() => (this.systemDark() ? 'dark' : 'light'));
 
-  /** `from` is the control that asked: the new theme grows out of it as a circle (CSS in _motion.scss). */
-  cycle(from?: Element | null): void {
-    this.set(ORDER[(ORDER.indexOf(this.mode()) + 1) % ORDER.length], from);
+  constructor() {
+    const query = typeof matchMedia === 'function' ? matchMedia('(prefers-color-scheme: dark)') : null;
+    if (!query) return;
+    this.systemDark.set(query.matches);
+    query.addEventListener('change', (e) => this.systemDark.set(e.matches));
+  }
+
+  /**
+   * The two-way switch: Auto follows the system (nothing is kept), the other position is the opposite of what the system
+   * prefers right now, a choice that is kept.
+   */
+  choose(position: 'auto' | 'other', from?: Element | null): void {
+    this.set(position === 'auto' ? 'auto' : this.opposite(), from);
   }
 
   set(mode: ThemeMode, from?: Element | null): void {

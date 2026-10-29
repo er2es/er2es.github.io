@@ -9,7 +9,7 @@ const smooth = (t: number): number => t * t * (3 - 2 * t);
  * from the portrait's place to the small round slot in the header (position, size and corner radius are
  * interpolated; the motion is driven by the scroll position, so it reverses when scrolling back). The real
  * portrait is hidden while the copy is away from it. One passive scroll listener, one frame at a time, and only a
- * transform per frame. Under reduced motion the copy simply appears in the slot once the portrait has left.
+ * transform per frame. The header slot holds the monogram until the portrait arrives and pushes it out (see `.filled`). Under reduced motion the copy simply appears in the slot once the portrait has left.
  */
 @Component({
   selector: 'app-avatar-dock',
@@ -17,9 +17,10 @@ const smooth = (t: number): number => t * t * (3 - 2 * t);
   styles: [`
     .ghost {
       position: fixed; z-index: 21; left: 0; top: 0; margin: 0; object-fit: cover; pointer-events: none;
-      transform-origin: 0 0; visibility: hidden; will-change: transform;
+      transform-origin: 0 0; visibility: hidden; will-change: transform; box-shadow: var(--glass-shadow);
     }
     .ghost.on { visibility: visible; }
+    @supports (corner-shape: squircle) { .ghost { corner-shape: squircle; } .ghost.arrived { corner-shape: round; } } /* a squircle like the portrait it came from, round in the header's round slot */
     /* one soft ring when the avatar has arrived in the header */
     .ghost.arrived { animation: arrive var(--dur-ring) var(--ease-out); }
     @keyframes arrive {
@@ -60,15 +61,17 @@ export class AvatarDock {
         const distance = pr.bottom + window.scrollY - sr.bottom;
         const raw = distance > 0 ? clamp01(window.scrollY / distance) : 1;
         const p = reduce.matches ? (raw >= 1 ? 1 : 0) : raw;
-        // it shrinks first (so it never lingers big over the menu), then glides the rest of the way, moving about its centre
-        const eSize = smooth(clamp01(p * 1.8));
-        const ePos = smooth(p);
+        // it shrinks first (so it never lingers big over the page), then glides the rest of the way, moving about its centre
+        const eSize = smooth(clamp01(p * 2.6));
+        // across first, up into the slot last: it passes through the empty band under the bar, not over the menu
+        const eX = smooth(clamp01(p * 1.5));
+        const eY = smooth(p) ** 2;
 
         const size = lerp(base, sr.width, eSize);
         const s = size / base;
-        const radius = lerp(parseFloat(getComputedStyle(img).borderTopLeftRadius) || 0, sr.width / 2, eSize);
-        const cx = lerp(pr.left + pr.width / 2, sr.left + sr.width / 2, ePos);
-        const cy = lerp(pr.top + pr.height / 2, sr.top + sr.height / 2, ePos);
+        const radius = lerp(parseFloat(getComputedStyle(img).borderTopLeftRadius) || 0, parseFloat(getComputedStyle(slot).borderTopLeftRadius) || sr.width / 2, eSize);
+        const cx = lerp(pr.left + pr.width / 2, sr.left + sr.width / 2, eX);
+        const cy = lerp(pr.top + pr.height / 2, sr.top + sr.height / 2, eY);
         g.style.width = g.style.height = `${base}px`;
         g.style.borderRadius = `${radius / s}px`;
         g.style.transform = `translate3d(${cx - size / 2}px, ${cy - size / 2}px, 0) scale(${s})`;
@@ -76,6 +79,7 @@ export class AvatarDock {
         const away = p > 0.001;
         g.classList.toggle('on', away);
         g.classList.toggle('arrived', p >= 0.999);
+        slot.classList.toggle('filled', p >= 0.92); // the monogram in the slot leaves just before the portrait lands
         const nextBox = img.closest<HTMLElement>('.portrait');
         if (box && box !== nextBox) box.classList.remove('docked');
         box = nextBox;

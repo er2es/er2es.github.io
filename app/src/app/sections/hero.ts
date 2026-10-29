@@ -12,7 +12,7 @@ import { Email } from './email';
       <div class="text">
         <h1 id="hero-title">{{ c().hero.name }}</h1>
         <p class="role">{{ c().hero.role }}</p>
-        <p class="meta mono"><span class="in"><span class="status"><span class="dot" aria-hidden="true"></span>{{ c().hero.status }}</span> <span class="loc">{{ c().hero.location }}</span></span></p>
+        <p class="meta"><span class="in"><span class="status"><span class="dot" aria-hidden="true"></span>{{ c().hero.status }}</span> <span class="loc">{{ c().hero.location }}</span></span></p>
         <app-email [c]="c()" />
       </div>
       <picture class="portrait">
@@ -45,13 +45,14 @@ import { Email } from './email';
     .in { display: flex; flex-wrap: wrap; align-items: center; margin-left: -1.5rem; }
     .in > span { display: inline-flex; align-items: center; position: relative; padding-left: 1.5rem; }
     .in > span::before { content: '·'; position: absolute; left: 0; width: 1.5rem; text-align: center; color: var(--fg-2); }
-    /* the same line as in the Contact section: monospace, muted; only the green dot says "available" */
-    .meta { color: var(--fg-2); }
+    /* the same line as in the Contact section: muted, in the page's own font; only the green dot says "available" */
+    .meta { color: var(--fg-2); font-size: var(--t-subhead); font-weight: 500; letter-spacing: 0.02em; }
     .status { gap: 0.5rem; }
     /* the box has a definite size of its own: with a content-sized width the percentage on the image resolved to 0 until the file arrived, and the text below jumped (layout shift) */
     .portrait { order: -1; position: relative; display: block; width: min(100%, 15rem); border-radius: 2rem; }
     .portrait.docked img { visibility: hidden; }
     .portrait img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; border-radius: inherit; }
+    @supports (corner-shape: squircle) { .portrait, .portrait img { corner-shape: squircle; } } /* like the cards beside it */
     @media (min-width: 800px) {
       .hero { grid-template-columns: 1.2fr 0.8fr; }
       .portrait { order: 0; justify-self: end; border-radius: 2.5rem; width: min(100%, 20rem); }

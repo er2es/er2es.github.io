@@ -52,13 +52,28 @@ for (const p of PAGES) {
   });
 }
 
-test('theme button cycles and sets data-theme', async ({ page }) => {
+test('the theme is a two-way switch: Auto (the system’s own, nothing kept) and its opposite (kept), with the opposite’s icon', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'light' });
   await ready(page, '/');
-  const btn = page.getByRole('button', { name: /^Theme:/ });
-  await btn.click();
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
-  await btn.click();
+  const radios = page.getByRole('radiogroup', { name: 'Theme' }).getByRole('radio');
+  const stored = () => page.evaluate(() => localStorage.getItem('cv:theme'));
+  await expect(radios).toHaveCount(2);
+  await expect(radios.nth(0)).toHaveAccessibleName('Auto');
+  await expect(radios.nth(1)).toHaveAccessibleName('Dark'); // the system is light: the other one is dark
+  await expect(radios.nth(0)).toHaveAttribute('aria-checked', 'true');
+  await radios.nth(1).click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await expect(radios.nth(1)).toHaveAttribute('aria-checked', 'true');
+  expect(await stored()).toBe('dark');
+  await radios.nth(1).press('ArrowLeft'); // back to Auto: nothing kept
+  await expect(page.locator('html')).not.toHaveAttribute('data-theme', /./);
+  await expect(radios.nth(0)).toBeFocused();
+  expect(await stored()).toBe('auto');
+  await radios.nth(0).press('ArrowRight');
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await expect(radios.nth(1)).toBeFocused();
+  await page.emulateMedia({ colorScheme: 'dark' }); // the system changes: Auto is dark now, the other one is light
+  await expect(radios.nth(1)).toHaveAccessibleName('Light');
 });
 
 test('language switch is an in-app navigation and keeps hreflang correct', async ({ page }) => {
@@ -344,19 +359,20 @@ test.describe('interaction layer', () => {
     expect(await summaries.nth(1).evaluate((s) => (s.parentElement as HTMLDetailsElement).open)).toBe(true);
   });
 
-  test('theme change starts from the theme button and cleans up after itself', async ({ page }) => {
+  test('theme change starts from the position that was chosen and cleans up after itself', async ({ page }) => {
+    await page.emulateMedia({ colorScheme: 'light' });
     await ready(page, '/');
-    const btn = page.getByRole('button', { name: /^Theme:/ });
+    const btn = page.getByRole('radio', { name: 'Dark' });
     const seen = page.evaluate(() => new Promise<string>((resolve) => {
       const root = document.documentElement;
       const mo = new MutationObserver(() => { if (root.classList.contains('theme-vt')) { mo.disconnect(); resolve(root.style.getPropertyValue('--vt-x')); } });
       mo.observe(root, { attributes: true });
     }));
-    await btn.press('Enter'); // keyboard activation still has an origin: the button itself
+    await btn.press('Enter'); // keyboard activation still has an origin: the position itself
     const x = parseFloat(await seen);
     const b = (await btn.boundingBox())!;
     expect(Math.abs(x - (b.x + b.width / 2))).toBeLessThan(2);
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
     await expect(page.locator('html')).not.toHaveClass(/theme-vt/);
     expect(await page.evaluate(() => document.documentElement.style.getPropertyValue('--vt-x'))).toBe('');
   });
@@ -381,8 +397,7 @@ test.describe('interaction layer', () => {
       const nav = document.querySelector('header nav')!;
       const cur = nav.querySelector('a[aria-current]')!.getBoundingClientRect();
       if (!CSS.supports('anchor-name: --a')) return 0;
-      const pill = getComputedStyle(nav, '::after');
-      return Math.abs(parseFloat(pill.left) + nav.getBoundingClientRect().left - cur.left);
+      return Math.abs(nav.querySelector('.sel')!.getBoundingClientRect().left - cur.left);
     })).toBeLessThan(2);
   });
 });
@@ -697,7 +712,7 @@ test.describe('content security policy', () => {
       expect(policy).toContain("object-src 'none'");
 
       // use everything that runs script: theme, palette and search, the photo scene and the sheet, the language switch
-      await page.locator('app-header button.chip.icon').nth(1).click();
+      await page.locator('app-header .theme .seg').first().click();
       await page.keyboard.press('Control+K');
       await expect(page.getByRole('dialog')).toBeVisible();
       await page.keyboard.type('php');
@@ -792,22 +807,17 @@ test.describe('own tooltips and the theme answer', () => {
     expect(await search.evaluate((e) => getComputedStyle(e, '::after').content)).toContain('Ctrl K');
   });
 
-  test('a click on the theme button is answered in words; Auto says what it follows and what the system uses now', async ({ page }) => {
+  test('a click on the theme is answered in words; going back to the system\u2019s own says what Auto follows', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.emulateMedia({ colorScheme: 'dark' });
     await ready(page, '/hu/');
-    const button = page.locator('app-header button[aria-label^="Téma"]');
-    const hint = page.getByRole('status').filter({ hasText: /Világos|Sötét|Auto/ });
+    const group = page.getByRole('radiogroup', { name: 'T\u00e9ma' });
+    const hint = page.getByRole('status').filter({ hasText: /Vil\u00e1gos|S\u00f6t\u00e9t|Auto/ });
     await expect(hint).toHaveCount(0);
-    await button.click(); // auto -> light
-    await expect(hint).toHaveText(/Világos/);
-    await button.click(); // light -> dark
-    await expect(hint).toHaveText(/Sötét/);
-    await button.click(); // dark -> auto
-    await expect(hint).toContainText('a rendszered témáját követi (most: sötét)');
-    // arriving back at Auto turns the other way from Light and Dark (the cycle winds back)
-    const anim = (sel: string) => page.locator(sel).evaluate((e) => (e as SVGElement).getAnimations().map((x) => (x as CSSAnimation).animationName).join());
-    expect(await anim('app-header button[aria-label^="Téma"] svg.mode.auto')).toMatch(/mode-back/);
+    await group.getByRole('radio', { name: 'Vil\u00e1gos' }).click();
+    await expect(hint).toHaveText(/Vil\u00e1gos/);
+    await group.getByRole('radio', { name: 'Auto' }).click(); // the system's own: Auto
+    await expect(hint).toContainText('a rendszered t\u00e9m\u00e1j\u00e1t k\u00f6veti (most: s\u00f6t\u00e9t)');
     await expect(hint).toHaveCount(0, { timeout: 5000 }); // and it goes away by itself
   });
 });
@@ -848,17 +858,16 @@ test.describe('HIG and motion polish', () => {
     await expect.poll(() => search.evaluate((e) => getComputedStyle(e, '::after').display)).toBe('block');
   });
 
-  test('the theme button tooltip lines up with its right edge, and keyboard focus shows a tooltip at once', async ({ page }) => {
+  test('keyboard focus shows a tooltip at once', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await ready(page, '/hu/');
-    const theme = page.locator('app-header button[data-tip-align="end"]');
+    const search = page.locator('app-header button[data-tip]').first();
     await page.keyboard.press('Tab');
-    await theme.focus();
+    await search.focus();
     await page.keyboard.press('Shift+Tab');
     await page.keyboard.press('Tab');
-    await expect.poll(() => theme.evaluate((e) => getComputedStyle(e, '::after').display)).toBe('block');
-    expect(await theme.evaluate((e) => getComputedStyle(e, '::after').animationDelay)).toBe('0s');
-    expect(await theme.evaluate((e) => getComputedStyle(e, '::after').right)).toBe('0px');
+    await expect.poll(() => search.evaluate((e) => getComputedStyle(e, '::after').display)).toBe('block');
+    expect(await search.evaluate((e) => getComputedStyle(e, '::after').animationDelay)).toBe('0s');
   });
 
   test('phone: the targets are at least 44 px high', async ({ page }) => {
@@ -892,11 +901,12 @@ test.describe('HIG and motion polish', () => {
 
   test('the theme answer is a live region that is always there, so it is announced', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
+    await page.emulateMedia({ colorScheme: 'dark' });
     await ready(page, '/hu/');
     const live = page.locator('app-header .ctl [role="status"]');
     await expect(live).toHaveCount(1);
     await expect(live).toHaveText('');
-    await page.locator('app-header button[aria-label^="Téma"]').click();
+    await page.getByRole('radiogroup', { name: 'Téma' }).getByRole('radio', { name: 'Világos' }).click();
     await expect(live).toContainText('Világos');
   });
 });
@@ -979,3 +989,41 @@ test.describe('the search on a phone', () => {
   });
 });
 
+test('the header holds the monogram until the portrait arrives, which pushes it out, and it returns when the portrait leaves', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await ready(page, '/hu/');
+  const slot = page.locator('app-header .avatar-slot');
+  const sz = slot.locator('svg.sz');
+  await expect(sz).toHaveCount(1);
+  await expect(slot).not.toHaveClass(/filled/);
+  await expect.poll(() => sz.evaluate((e) => getComputedStyle(e).opacity)).toBe('1');
+  await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; scrollTo(0, 1200); });
+  await expect(slot).toHaveClass(/filled/);
+  await expect.poll(() => sz.evaluate((e) => getComputedStyle(e).opacity)).toBe('0');
+  await page.evaluate(() => scrollTo(0, 0));
+  await expect(slot).not.toHaveClass(/filled/);
+  await expect.poll(() => sz.evaluate((e) => getComputedStyle(e).opacity)).toBe('1');
+});
+
+
+test('a short-lived answer counts its two seconds down in a line along its bottom edge', async ({ page, context }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await ready(page, '/hu/');
+  const life = (sel: string) => page.locator(sel).evaluate((e) => { const a = getComputedStyle(e, '::after'); return `${a.animationName} ${a.animationDuration}`; });
+  await page.locator('.hero button.addr').click();
+  await expect.poll(() => life('.hero .bubble')).toBe('info-life 2s');
+  await page.getByRole('radiogroup', { name: 'Téma' }).getByRole('radio', { name: 'Világos' }).click();
+  await expect.poll(() => life('app-header .hint')).toBe('info-life 2s');
+});
+
+test('text meets the enhanced (AAA) contrast of 7:1, in both themes and both languages', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  for (const p of PAGES) for (const scheme of ['light', 'dark'] as const) {
+    await page.emulateMedia({ colorScheme: scheme });
+    await ready(page, p.url);
+    const r = await new AxeBuilder({ page }).withRules(['color-contrast-enhanced']).analyze();
+    expect(r.violations.map((v) => v.nodes.map((n) => n.target.join(' ')))).toEqual([]);
+  }
+});
