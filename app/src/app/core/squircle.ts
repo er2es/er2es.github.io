@@ -1,16 +1,15 @@
 /**
- * The outline of a rounded box whose corners are squircles (superellipse, exponent 4: what `corner-shape: squircle`
- * draws), as an SVG path that starts at the bottom-left corner and runs clockwise, like the header's progress line.
+ * The outline of a rounded box whose corners are superellipses (exponent 4 by default: what `corner-shape: squircle`
+ * draws; 2 is the plain circular corner of `border-radius`), as an SVG path that starts at the bottom-left corner and runs clockwise, like the header's progress line.
  */
-export function squirclePath(w: number, h: number, r: number, steps = 14): string {
+export function squirclePath(w: number, h: number, r: number, exponent = 4, steps = 14): string {
   const corner = (cx: number, cy: number, sx: number, sy: number, from: number): string => {
     let d = '';
     for (let i = 1; i <= steps; i++) {
       const t = from + (i / steps) * (Math.PI / 2);
       const c = Math.cos(t);
       const s = Math.sin(t);
-      // exponent 4: |cos|^(2/4) = sqrt(|cos|)
-      d += ` L${(cx + sx * r * Math.sqrt(Math.abs(c))).toFixed(2)} ${(cy + sy * r * Math.sqrt(Math.abs(s))).toFixed(2)}`;
+      d += ` L${(cx + sx * r * Math.abs(c) ** (2 / exponent)).toFixed(2)} ${(cy + sy * r * Math.abs(s) ** (2 / exponent)).toFixed(2)}`;
     }
     return d;
   };

@@ -17,6 +17,7 @@ const LABEL_SIZES = [13, 12] as const;
           <span class="lbl">{{ c().ui.sections[s] }}</span>
         </a>
       }
+      <span class="sel" aria-hidden="true"></span>
     </nav>
   `,
   styles: [`
@@ -31,6 +32,7 @@ const LABEL_SIZES = [13, 12] as const;
       display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 0; min-height: 52px; padding: 4px 2px;
       border-radius: 20px; color: var(--fg-2); text-decoration: none; font-size: var(--tab-fs, 12px); font-weight: 600; line-height: 1.1; text-align: center;
     }
+    .sel { display: none; }
     .lbl { display: block; max-width: 100%; overflow: hidden; white-space: nowrap; }
     /* labels that cannot fit at a readable size give way to the icons (still announced to screen readers) */
     .compact .lbl { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -44,13 +46,13 @@ const LABEL_SIZES = [13, 12] as const;
     @supports (anchor-name: --a) {
       .tabs { isolation: isolate; }
       a[aria-current] { anchor-name: --tab-current; background: none; }
-      .tabs::after {
-        content: ''; position: absolute; z-index: -1; position-anchor: --tab-current; pointer-events: none; opacity: 1;
+      .tabs .sel {
+        display: block; position: absolute; z-index: -1; position-anchor: --tab-current; pointer-events: none; opacity: 1;
         top: anchor(top); bottom: anchor(bottom); left: anchor(left); right: anchor(right); border-radius: 20px;
         background: var(--tint-current);
         transition: left var(--dur-med) var(--ease-spring), right var(--dur-med) var(--ease-spring);
       }
-      .tabs:not(:has(a[aria-current]))::after { display: none; }
+      .tabs:not(:has(a[aria-current])) .sel { display: none; }
     }
     @media (min-width: 900px) { .tabs { display: none; } }
   `],

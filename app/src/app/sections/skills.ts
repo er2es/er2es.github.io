@@ -49,32 +49,28 @@ import { FILES, SKILLS, type SiteContent } from '../content/model';
      *  - a pill gets one soft glint sweeping across it, and its outline warms to the accent colour; a touch does the same.
      */
     @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-      .group::before {
-        content: ''; position: absolute; inset: 0 -0.5rem; z-index: -1; border-radius: 14px; pointer-events: none; opacity: 0;
+      /* both exist only while the row is hovered: nothing lies over the text at rest */
+      .group:hover::before {
+        content: ''; position: absolute; inset: 0 -0.5rem; z-index: -1; border-radius: 14px; pointer-events: none;
         background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 50%), var(--lit), transparent 70%);
-        transition: opacity var(--dur-med) var(--ease-out);
+        animation: row-lit var(--dur-med) var(--ease-out) both;
       }
-      .group::after {
+      .group:hover::after {
         content: ''; position: absolute; left: -0.5rem; top: 0.9rem; bottom: 0.9rem; width: 2px; border-radius: 1px; pointer-events: none;
-        background: var(--accent); transform: scaleY(0); transform-origin: top; transition: transform var(--dur-med) var(--ease-out);
+        background: var(--accent); transform-origin: top; animation: row-line var(--dur-med) var(--ease-out) both;
       }
-      .group:hover::before { opacity: 1; }
-      .group:hover::after { transform: scaleY(1); }
 
       .pill:hover { border-color: color-mix(in srgb, var(--accent) 50%, transparent); background: color-mix(in srgb, var(--accent) 9%, transparent); }
-      .pill:hover::after { animation: glint 750ms var(--ease-out) both; }
+      .pill:hover::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 30%, color-mix(in srgb, var(--accent) 38%, transparent) 50%, transparent 70%); background-size: 260% 100%; animation: glint 750ms var(--ease-out) both; }
     }
     /* the same glint on a touch screen, from the touch: the pill gets .touched for the length of the animation (glint() below) */
     @media (prefers-reduced-motion: no-preference) {
       .pill { transition: border-color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out); }
-      .pill::after {
-        content: ''; position: absolute; inset: 0; pointer-events: none; opacity: 0;
-        background: linear-gradient(105deg, transparent 30%, color-mix(in srgb, var(--accent) 38%, transparent) 50%, transparent 70%);
-        background-size: 260% 100%; background-position: 140% 0;
-      }
       .pill.touched { border-color: color-mix(in srgb, var(--accent) 50%, transparent); background: color-mix(in srgb, var(--accent) 9%, transparent); }
-      .pill.touched::after { animation: glint 750ms var(--ease-out) both; }
+      .pill.touched::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 30%, color-mix(in srgb, var(--accent) 38%, transparent) 50%, transparent 70%); background-size: 260% 100%; animation: glint 750ms var(--ease-out) both; }
     }
+    @keyframes row-lit { from { opacity: 0; } }
+    @keyframes row-line { from { transform: scaleY(0); } }
     @keyframes glint { 0% { opacity: 1; background-position: 140% 0; } 100% { opacity: 1; background-position: -40% 0; } }
     @media (min-width: 800px) { .group { grid-template-columns: 14rem 1fr; gap: 1.5rem; align-items: baseline; padding-block: 1.125rem; } }
   `],

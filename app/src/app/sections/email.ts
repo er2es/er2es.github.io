@@ -48,7 +48,7 @@ import { copyText } from '../core/clipboard';
     .addr svg { flex: none; translate: 0 -0.5px; }
     /* the same bubble as the theme button's answer, under the end of the button where the icon is (above it, it would cover the line of text over the button) */
     .bubble {
-      position: absolute; z-index: 5; right: 0; top: calc(100% + 8px); width: max-content; max-width: min(18rem, 100%); padding: 0.4rem 0.7rem; border-radius: 10px;
+      position: absolute; z-index: 5; right: 0; top: calc(100% + 8px); width: max-content; max-width: min(18rem, 100%); padding: 0.4rem 0.7rem; border-radius: var(--r-pop);
       display: inline-flex; align-items: center; gap: 0.4rem; background: var(--bg-2); color: var(--fg); border: 1px solid var(--line); box-shadow: var(--glass-shadow);
       font: 500 var(--t-footnote) / 1.3 var(--font); pointer-events: none;
     }

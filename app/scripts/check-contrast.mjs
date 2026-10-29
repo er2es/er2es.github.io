@@ -14,20 +14,22 @@ const ratio = (a, b) => {
   return (hi + 0.05) / (lo + 0.05);
 };
 
-// [theme, label, foreground, background, minimum ratio]. Hex values must also appear in _tokens.scss.
+// [theme, label, foreground, background, minimum ratio]: 7, the enhanced (AAA) ratio for text. Hex values must also appear in _tokens.scss.
 const PAIRS = [
-  ['light', 'text on page', '#1d1d1f', '#ffffff', 4.5],
-  ['light', 'secondary text on page', '#6e6e73', '#ffffff', 4.5],
-  ['light', 'secondary text on grouped', '#6e6e73', '#f5f5f7', 4.5],
-  ['light', 'accent on page', '#1a7f45', '#ffffff', 4.5],
-  ['light', 'accent on grouped', '#1a7f45', '#f5f5f7', 4.5],
-  ['light', 'button text on accent', '#ffffff', '#1a7f45', 4.5],
-  ['dark', 'text on page', '#f5f5f7', '#000000', 4.5],
-  ['dark', 'secondary text on page', '#98989d', '#000000', 4.5],
-  ['dark', 'secondary text on grouped', '#98989d', '#1c1c1e', 4.5],
-  ['dark', 'accent on page', '#30d158', '#000000', 4.5],
-  ['dark', 'accent on grouped', '#30d158', '#1c1c1e', 4.5],
-  ['dark', 'button text on accent', '#000000', '#30d158', 4.5],
+  ['light', 'text on page', '#1d1d1f', '#ffffff', 7],
+  ['light', 'secondary text on page', '#515156', '#ffffff', 7],
+  ['light', 'secondary text on grouped', '#515156', '#f5f5f7', 7],
+  ['light', 'accent on page', '#126034', '#ffffff', 7],
+  ['light', 'accent on grouped', '#126034', '#f5f5f7', 7],
+  ['light', 'button text on accent', '#ffffff', '#126034', 7],
+  ['dark', 'text on page', '#f5f5f7', '#000000', 7],
+  ['dark', 'secondary text on page', '#b8b8bd', '#000000', 7],
+  ['dark', 'secondary text on grouped', '#b8b8bd', '#1c1c1e', 7],
+  ['dark', 'secondary text on cards', '#b8b8bd', '#2c2c2e', 7],
+  ['dark', 'accent on cards', '#34d65c', '#2c2c2e', 7],
+  ['dark', 'accent on page', '#34d65c', '#000000', 7],
+  ['dark', 'accent on grouped', '#34d65c', '#1c1c1e', 7],
+  ['dark', 'button text on accent', '#000000', '#34d65c', 7],
 ];
 
 let failed = false;

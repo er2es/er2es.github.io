@@ -53,7 +53,7 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
                   </summary>
                   <ul class="pts">@for (p of c().items[r.id].points; track $index) { <li>{{ p }}</li> }</ul>
                   @if (r.fact.keywords.length) {
-                    <p class="tags"><span class="sr-only">{{ c().ui.tags }}: </span>@for (k of r.fact.keywords; track k) { <span>{{ k }}</span> }</p>
+                    <p class="tags"><span class="sr-only">{{ c().ui.tags }}: </span>@for (k of r.fact.keywords; track k) { <span>{{ k }}</span> }<i class="sel" aria-hidden="true"></i></p>
                   }
                 </details>
               </div>

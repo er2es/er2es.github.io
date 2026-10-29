@@ -76,7 +76,7 @@ type Entry =
     .field { display: flex; gap: 0.5rem; align-items: center; padding: 0.75rem 0.75rem 0.75rem 1.25rem; border-bottom: 1px solid var(--line); }
     input { flex: 1; min-width: 0; min-height: 44px; border: 0; outline: none; background: transparent; color: var(--fg); font: inherit; text-overflow: ellipsis; }
     .list { overflow: auto; padding: 0.5rem; }
-    li { display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 1rem; border-radius: 14px; cursor: pointer; min-height: 44px; }
+    li { display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 1rem; border-radius: 16px; cursor: pointer; min-height: 44px; }
     li[aria-selected='true'] { background: color-mix(in srgb, var(--fg) 10%, transparent); }
     .ico { flex: none; color: var(--fg-2); transition: color var(--dur-short) var(--ease-out); }
     li[aria-selected='true'] .ico { color: var(--accent); }

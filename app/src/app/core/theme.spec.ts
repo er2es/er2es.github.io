@@ -28,6 +28,63 @@ describe('Theme', () => {
   });
 });
 
+describe('Theme: the two-way switch', () => {
+  const nav = globalThis as unknown as { matchMedia?: unknown };
+  const original = nav.matchMedia;
+  const listeners: ((e: { matches: boolean }) => void)[] = [];
+  const system = (dark: boolean) => {
+    nav.matchMedia = () => ({ matches: dark, addEventListener: (_: string, f: (e: { matches: boolean }) => void) => listeners.push(f) });
+  };
+  beforeEach(() => {
+    localStorage.clear();
+    delete document.documentElement.dataset['theme'];
+    listeners.length = 0;
+  });
+  afterEach(() => {
+    nav.matchMedia = original;
+  });
+
+  it('shows the system theme until a choice is made, and follows the system while it has none', () => {
+    system(true);
+    const theme = TestBed.inject(Theme);
+    expect(theme.mode()).toBe('auto');
+    expect(theme.shown()).toBe('dark');
+    expect(theme.opposite()).toBe('light');
+    expect(theme.offSystem()).toBe(false);
+    listeners[0]({ matches: false });
+    expect(theme.shown()).toBe('light');
+    expect(theme.opposite()).toBe('dark');
+  });
+
+  it('makes the first position Auto (nothing kept) and the second the opposite of the system, kept', () => {
+    system(true);
+    const theme = TestBed.inject(Theme);
+    theme.choose('other');
+    expect(theme.mode()).toBe('light');
+    expect(localStorage.getItem('cv:theme')).toBe('light');
+    expect(theme.offSystem()).toBe(true);
+    theme.choose('auto');
+    expect(theme.mode()).toBe('auto');
+    expect(theme.offSystem()).toBe(false);
+    expect(document.documentElement.dataset['theme']).toBeUndefined();
+  });
+
+  it('counts a kept choice that has become the system’s own as the first position', () => {
+    system(true);
+    localStorage.setItem('cv:theme', 'dark');
+    const theme = TestBed.inject(Theme);
+    expect(theme.mode()).toBe('dark');
+    expect(theme.offSystem()).toBe(false);
+  });
+
+  it('reads as light where the browser cannot tell', () => {
+    nav.matchMedia = undefined;
+    const theme = TestBed.inject(Theme);
+    expect(theme.shown()).toBe('light');
+    expect(theme.opposite()).toBe('dark');
+  });
+});
+
 describe('Theme with view transitions', () => {
   afterEach(() => {
     delete (document as unknown as Record<string, unknown>)['startViewTransition'];

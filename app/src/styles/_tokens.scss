@@ -3,9 +3,9 @@
   --bg-2: #1c1c1e;
   --bg-3: #2c2c2e;
   --fg: #f5f5f7;
-  --fg-2: #98989d;
+  --fg-2: #b8b8bd;
   --line: rgba(255, 255, 255, 0.16);
-  --accent: #30d158;
+  --accent: #34d65c;
   --accent-fg: #000000;
   --glass-bg: rgba(28, 28, 30, 0.7);
   --glass-edge: rgba(255, 255, 255, 0.22);
@@ -27,9 +27,9 @@
   --bg-2: #f5f5f7;
   --bg-3: #ffffff;
   --fg: #1d1d1f;
-  --fg-2: #6e6e73;
+  --fg-2: #515156;
   --line: rgba(0, 0, 0, 0.14);
-  --accent: #1a7f45;
+  --accent: #126034;
   --accent-fg: #ffffff;
   --glass-bg: rgba(255, 255, 255, 0.72);
   --glass-edge: rgba(255, 255, 255, 0.75);
@@ -67,7 +67,9 @@
   --gutter: max(16px, env(safe-area-inset-left), env(safe-area-inset-right));
   --bar-h: 56px;
   --tabbar-h: 64px;
-  --radius: 22px;
+  --radius: 22px; /* cards and glass surfaces (squircle corners) */
+  --r-ctl: 16px; /* a control inside a surface's corner: the surface's radius less the gap it keeps (22 - 6) */
+  --r-pop: 10px; /* tooltips, bubbles and notes */
 
   // Motion: one set of curves and durations for the whole site (zeroed under reduced motion in _motion.scss).
   // Spring: stiffness 220, damping 22, mass 1 (about 3 % overshoot), sampled for linear().

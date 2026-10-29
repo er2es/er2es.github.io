@@ -20,6 +20,7 @@ const smooth = (t: number): number => t * t * (3 - 2 * t);
       transform-origin: 0 0; visibility: hidden; will-change: transform; box-shadow: var(--glass-shadow);
     }
     .ghost.on { visibility: visible; }
+    @supports (corner-shape: squircle) { .ghost { corner-shape: squircle; } .ghost.arrived { corner-shape: round; } } /* a squircle like the portrait it came from, round in the header's round slot */
     /* one soft ring when the avatar has arrived in the header */
     .ghost.arrived { animation: arrive var(--dur-ring) var(--ease-out); }
     @keyframes arrive {

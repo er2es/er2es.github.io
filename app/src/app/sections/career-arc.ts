@@ -107,7 +107,7 @@ const BASE: ItemId = 'edu-nonprofit';
     /* what the year under a mouse was (one card for the whole graph; the log below carries the same facts for everyone else) */
     .tip {
       position: absolute; z-index: 5; top: calc(50% + var(--cell) / 2 + 8px); left: calc(var(--c, 50) * 1%); translate: calc(var(--c, 50) * -1%) 0;
-      width: max-content; max-width: 16rem; padding: 0.5rem 0.75rem; border-radius: 12px; pointer-events: none; cursor: default;
+      width: max-content; max-width: 16rem; padding: 0.5rem 0.75rem; border-radius: var(--r-pop); pointer-events: none; cursor: default;
       background: var(--bg-2); border: 1px solid var(--line); box-shadow: var(--glass-shadow);
       font-size: var(--t-footnote); line-height: 1.35; color: var(--fg-2); white-space: normal;
     }
