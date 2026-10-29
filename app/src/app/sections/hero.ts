@@ -35,7 +35,7 @@ import { Email } from './email';
     @keyframes drift { from { transform: translate3d(0, 0, 0) scale(1); } to { transform: translate3d(7vmax, 5vmax, 0) scale(1.15); } }
     @media (prefers-reduced-motion: reduce) { .aurora i { animation: none; } }
     .text { display: grid; gap: 0.75rem; justify-items: start; }
-    .role { font-size: var(--t-title2); line-height: 1.3; }
+    .role { font-size: var(--t-title2); line-height: 1.3; text-wrap: balance; } /* two lines break evenly, never leaving one word alone */
     /*
      * Availability and place on one line. Every part carries a leading separator dot; the inner line is pulled left
      * by one separator width and the outer one clips it, so a part that wraps to a new line loses its dot (no orphans).

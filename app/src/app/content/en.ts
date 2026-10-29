@@ -53,7 +53,7 @@ export const en: SiteContent = {
   },
   hero: {
     name: 'József Szabó',
-    role: 'Full-stack PHP developer · Symfony, Angular, PostgreSQL · QA / tester',
+    role: 'Full-stack PHP developer · Symfony, Angular, PostgreSQL · QA',
     location: 'Budapest, Hungary',
     status: 'REMOTE / HYBRID',
     cta: 'Email me',
