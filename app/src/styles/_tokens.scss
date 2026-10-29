@@ -76,6 +76,7 @@
   --dur-press: 150ms;
   --dur-short: 250ms;
   --dur-med: 400ms;
+  --dur-ring: 600ms; /* a one-off ring that spreads out of something (status dot, commit node, avatar arriving) */
 }
 
 @media (prefers-color-scheme: dark) {

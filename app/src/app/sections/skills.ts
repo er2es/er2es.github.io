@@ -96,12 +96,12 @@ export class Skills {
 
   /** A finger on a pill plays its glint once (a mouse does it on hover, in CSS). Nothing is pressed or opened. */
   protected glint(e: PointerEvent): void {
-    if (e.pointerType === 'mouse') return;
+    if (e.pointerType === 'mouse' || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const pill = (e.target as Element).closest<HTMLElement>('.pill');
     if (!pill) return;
     pill.classList.remove('touched');
     void pill.offsetWidth; // restart the animation on a repeated touch
     pill.classList.add('touched');
-    setTimeout(() => pill.classList.remove('touched'), 800);
+    pill.addEventListener('animationend', () => pill.classList.remove('touched'), { once: true });
   }
 }

@@ -3,6 +3,7 @@ import { getContent } from './content';
 import { SECTION_IDS, type SectionId } from './content/model';
 import { trackActive } from './core/active';
 import { initHash, shownSection } from './core/hash';
+import { initTips } from './core/tips';
 import { LangSwitch } from './core/lang';
 import { initLit } from './core/lit';
 import { Seo } from './core/seo';
@@ -79,6 +80,7 @@ export class Home {
   /** The Shift x3 scene: the photo, then the photo as the backdrop of the sheet, then fading out. */
   readonly pup = signal<'off' | 'scene' | 'sheet'>('off');
   readonly pupLeaving = signal(false);
+  private sweepTimer: ReturnType<typeof setTimeout> | undefined;
   // every opening gets a fresh instance, even if the previous one has not been torn down yet
   protected readonly paletteGen = signal(0);
   protected readonly eggGen = signal(0);
@@ -91,6 +93,7 @@ export class Home {
     const destroy = inject(DestroyRef);
     afterNextRender(() => {
       destroy.onDestroy(initHash());
+      destroy.onDestroy(initTips());
       const stop = trackActive(SECTION_IDS, (id) => {
         this.active.set(shownSection(id as SectionId));
       });
@@ -118,7 +121,8 @@ export class Home {
     if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
       const root = document.documentElement;
       root.classList.add('sweep');
-      setTimeout(() => root.classList.remove('sweep'), 1400);
+      clearTimeout(this.sweepTimer);
+      this.sweepTimer = setTimeout(() => root.classList.remove('sweep'), 1400);
     }
     if (this.pup() === 'off') {
       this.pup.set('scene'); // first: the photo
@@ -138,10 +142,12 @@ export class Home {
   private leavePup(): void {
     if (this.pup() === 'off' || this.pupLeaving()) return;
     this.pupLeaving.set(true);
+    // the fade-out lasts 520 ms; with reduced motion there is none, so nothing waits
+    const wait = matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 540;
     setTimeout(() => {
       this.pup.set('off');
       this.pupLeaving.set(false);
-    }, 540);
+    }, wait);
   }
 
   /** A late close event from an old instance must not close the one that replaced it. */

@@ -37,7 +37,7 @@
 }
 
 /* where a search result or an in-page link lands: a brief highlight (static under reduced motion) */
-.flash { animation: flash 1.4s ease-out; }
+.flash { animation: flash 1400ms var(--ease-out); }
 @keyframes flash { 0% { background: color-mix(in srgb, var(--accent) 22%, transparent); } 100% { background: transparent; } }
 @media (prefers-reduced-motion: reduce) { .flash { animation: none; background: color-mix(in srgb, var(--accent) 16%, transparent); } }
 

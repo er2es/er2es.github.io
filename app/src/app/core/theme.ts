@@ -14,6 +14,8 @@ function stored(): ThemeMode {
 export class Theme {
   private readonly doc = inject(DOCUMENT);
   readonly mode = signal<ThemeMode>(stored());
+  /** The newest theme transition: an older one that finishes late must not clean up after it. */
+  private vtSeq = 0;
 
   /** `from` is the control that asked: the new theme grows out of it as a circle (CSS in _motion.scss). */
   cycle(from?: Element | null): void {
@@ -40,7 +42,9 @@ export class Theme {
       root.style.setProperty('--vt-r', `${Math.hypot(Math.max(x, view.innerWidth - x), Math.max(y, view.innerHeight - y))}px`);
       root.classList.add('theme-vt');
     }
+    const id = ++this.vtSeq;
     const done = () => {
+      if (id !== this.vtSeq) return;
       root.classList.remove('theme-vt');
       for (const p of ['--vt-x', '--vt-y', '--vt-r']) root.style.removeProperty(p);
     };

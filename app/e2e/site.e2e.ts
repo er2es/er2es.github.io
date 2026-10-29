@@ -819,3 +819,78 @@ test.describe('skill pills on a touch screen', () => {
     await expect(pill).not.toHaveClass(/touched/, { timeout: 3000 });
   });
 });
+
+test.describe('HIG and motion polish', () => {
+  test('a skill pill is not pressable: no press scale rule applies to it', async ({ page }) => {
+    await ready(page, '/hu/');
+    const rules = await page.evaluate(() => [...document.styleSheets].flatMap((s) => [...s.cssRules]).map((r) => r.cssText).filter((t) => /\.pill[^{]*:active/.test(t)));
+    expect(rules).toEqual([]);
+  });
+
+  test('the tooltip waits 400 ms on hover, and Escape hides it until the pointer moves', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await ready(page, '/hu/');
+    const search = page.locator('app-header button[data-tip]').first();
+    await search.hover();
+    await expect.poll(() => search.evaluate((e) => getComputedStyle(e, '::after').animationDelay)).toBe('0.4s');
+    await expect.poll(() => search.evaluate((e) => getComputedStyle(e, '::after').display)).toBe('block');
+    await page.keyboard.press('Escape');
+    await expect.poll(() => search.evaluate((e) => getComputedStyle(e, '::after').display)).toBe('none');
+    await page.mouse.move(2, 2);
+    await search.hover();
+    await expect.poll(() => search.evaluate((e) => getComputedStyle(e, '::after').display)).toBe('block');
+  });
+
+  test('the theme button tooltip lines up with its right edge, and keyboard focus shows a tooltip at once', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await ready(page, '/hu/');
+    const theme = page.locator('app-header button[data-tip-align="end"]');
+    await page.keyboard.press('Tab');
+    await theme.focus();
+    await page.keyboard.press('Shift+Tab');
+    await page.keyboard.press('Tab');
+    await expect.poll(() => theme.evaluate((e) => getComputedStyle(e, '::after').display)).toBe('block');
+    expect(await theme.evaluate((e) => getComputedStyle(e, '::after').animationDelay)).toBe('0s');
+    expect(await theme.evaluate((e) => getComputedStyle(e, '::after').right)).toBe('0px');
+  });
+
+  test('phone: the targets are at least 44 px high', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 800 });
+    await ready(page, '/hu/');
+    const tall = (sel: string) => page.locator(sel).evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().height)));
+    for (const h of await tall('.arc .name')) expect(h).toBeGreaterThanOrEqual(44);
+    for (const h of await tall('#projects .more')) expect(h).toBeGreaterThanOrEqual(44);
+    for (const h of await tall('footer a')) expect(h).toBeGreaterThanOrEqual(44);
+    expect((await tall('app-header .brand'))[0]).toBeGreaterThanOrEqual(44);
+    const chip = await page.locator('.arc .filter').first().evaluate((e) => { const r = e.getBoundingClientRect(); const b = getComputedStyle(e, '::before'); return r.height + parseFloat(b.top) * -2; });
+    expect(chip).toBeGreaterThanOrEqual(44);
+  });
+
+  test.describe('on a touch screen', () => {
+    test.use({ hasTouch: true });
+
+    test('tapping a hobby tile shows its name for a moment, tapping elsewhere puts it away', async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 800 });
+      await ready(page, '/hu/');
+      const tile = page.locator('.tile.dog');
+      await tile.scrollIntoViewIfNeeded();
+      await tile.tap();
+      await expect(tile).toHaveClass(/tip-open/);
+      expect(await tile.evaluate((e) => getComputedStyle(e, '::after').display)).toBe('block');
+      await page.locator('.tile.cinema').tap();
+      await expect(tile).not.toHaveClass(/tip-open/);
+      await expect(page.locator('.tile.cinema')).toHaveClass(/tip-open/);
+    });
+  });
+
+  test('the theme answer is a live region that is always there, so it is announced', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await ready(page, '/hu/');
+    const live = page.locator('app-header .ctl [role="status"]');
+    await expect(live).toHaveCount(1);
+    await expect(live).toHaveText('');
+    await page.locator('app-header button[aria-label^="Téma"]').click();
+    await expect(live).toContainText('Világos');
+  });
+});
+

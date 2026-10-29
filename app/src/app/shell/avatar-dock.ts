@@ -21,7 +21,7 @@ const smooth = (t: number): number => t * t * (3 - 2 * t);
     }
     .ghost.on { visibility: visible; }
     /* one soft ring when the avatar has arrived in the header */
-    .ghost.arrived { animation: arrive 700ms var(--ease-out); }
+    .ghost.arrived { animation: arrive var(--dur-ring) var(--ease-out); }
     @keyframes arrive {
       from { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent); }
       to { box-shadow: 0 0 0 14px transparent; }
