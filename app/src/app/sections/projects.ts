@@ -14,7 +14,7 @@ import { FACT_BY_ID, FILES, PROJECT_ORDER, period, type SiteContent } from '../c
           @for (id of order; track id) {
             <li class="card reveal" [id]="'p-' + id" tabindex="-1">
               <h3>{{ c().items[id].title }}</h3>
-              @if (per(id)) { <p class="per mono">{{ per(id) }}</p> }
+              @if (per(id)) { <p class="per">{{ per(id) }}</p> }
               <p class="sum" [id]="'sum-' + id" [class.open]="opened().has(id)">{{ c().items[id].summary }}</p>
               @if (long(id)) {
                 <button type="button" class="more" [attr.aria-expanded]="opened().has(id)" [attr.aria-controls]="'sum-' + id" (click)="fold(id)">
@@ -43,7 +43,7 @@ import { FACT_BY_ID, FILES, PROJECT_ORDER, period, type SiteContent } from '../c
   styles: [`
     .cards { display: grid; gap: 1rem; margin-top: 1.5rem; }
     .card { display: grid; gap: 0.75rem; align-content: start; outline: none; }
-    .per { color: var(--fg-2); font-size: var(--t-footnote); }
+    .per { color: var(--fg-2); font-size: var(--t-footnote); font-weight: 500; font-variant-numeric: tabular-nums; }
     .pts li { padding-left: 1rem; position: relative; }
     .pts li::before { content: ''; position: absolute; left: 0; top: 0.7em; width: 5px; height: 5px; border-radius: 50%; background: var(--fg-2); }
     /* on narrow screens a long description folds to a few lines, with a chevron to unfold it */

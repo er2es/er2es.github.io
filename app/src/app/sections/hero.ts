@@ -25,7 +25,7 @@ import { Email } from './email';
   `,
   styles: [`
     .stage { position: relative; overflow: clip; isolation: isolate; }
-    .hero { display: grid; gap: 1.5rem; align-items: center; padding-top: calc(var(--bar-h) + clamp(1.75rem, 4.5vw, 3.5rem)); padding-bottom: clamp(2rem, 4vw, 3.25rem); }
+    .hero { display: grid; gap: 1.5rem; align-items: center; padding-top: calc(var(--bar-h) + clamp(1.75rem, 4.5vw, 3.5rem)); padding-bottom: clamp(2.75rem, 4vw, 3.25rem); } /* room under the email button for its "copied" bubble, which the stage would otherwise clip */
     .aurora { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
     .aurora i { position: absolute; border-radius: 50%; filter: blur(70px); will-change: transform; animation: drift 70s ease-in-out infinite alternate; }
     .aurora i:nth-child(1) { width: 46vmax; height: 46vmax; left: -12vmax; top: -18vmax; background: radial-gradient(circle at 40% 40%, var(--aurora-a), transparent 66%); }

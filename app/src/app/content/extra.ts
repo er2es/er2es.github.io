@@ -10,6 +10,9 @@ export interface ExtraText {
   copied: string;
   copiedShort: string;
   copyFailed: string;
+  /** What a node of the career line says: on the main line, or a branch of it. */
+  fullTime: string;
+  partTime: string;
   /** The line under the career graph on a touch screen, until a year is touched. */
   touch: string;
   /** Appended (visually hidden) to links that open in a new tab. */
@@ -26,6 +29,8 @@ export const EXTRA: Record<Locale, ExtraText> = {
     copied: 'Email address copied to clipboard',
     copiedShort: 'Copied',
     copyFailed: 'Could not copy. The address is shown below.',
+    fullTime: 'Full-time',
+    partTime: 'Part-time',
     touch: 'Touch or drag across a year for the details',
     newTab: '(opens in a new tab)',
     more: 'Show the whole description',
@@ -37,6 +42,8 @@ export const EXTRA: Record<Locale, ExtraText> = {
     copied: 'Az email cím a vágólapra másolva',
     copiedShort: 'Másolva',
     copyFailed: 'Nem sikerült a másolás. A cím lent olvasható.',
+    fullTime: 'Teljes munkaidő',
+    partTime: 'Részmunkaidő',
     touch: 'Érints meg egy évet, vagy húzd rajta az ujjad',
     newTab: '(új lapon nyílik)',
     more: 'A teljes leírás megjelenítése',
