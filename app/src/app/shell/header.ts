@@ -118,6 +118,7 @@ import { SectionIcon } from './section-icon';
     @media (max-width: 1099px) { .links app-section-icon { display: none; } } /* the bar has no room for them between 900 and 1100 px */
     .links a app-section-icon { transition: translate var(--dur-short) var(--ease-spring), color var(--dur-short) var(--ease-out); }
     .links a[aria-current] app-section-icon { color: var(--accent); }
+    @media (hover: hover) { .links a:hover app-section-icon { color: var(--accent); } }
     @media (hover: hover) and (prefers-reduced-motion: no-preference) { .links a:hover app-section-icon { translate: 0 -2px; } }
     @media (hover: hover) { .links a:hover { color: var(--fg); } }
     /* with the pill, an item has no background of its own (it would show as a second shape under the pill) */

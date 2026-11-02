@@ -10,6 +10,8 @@ export interface ExtraText {
   copied: string;
   copiedShort: string;
   copyFailed: string;
+  /** The line under the career graph on a touch screen, until a year is touched. */
+  touch: string;
   /** Appended (visually hidden) to links that open in a new tab. */
   newTab: string;
   /** Unfold / fold a long project description on narrow screens (spoken only). */
@@ -24,6 +26,7 @@ export const EXTRA: Record<Locale, ExtraText> = {
     copied: 'Email address copied to clipboard',
     copiedShort: 'Copied',
     copyFailed: 'Could not copy. The address is shown below.',
+    touch: 'Touch or drag across a year for the details',
     newTab: '(opens in a new tab)',
     more: 'Show the whole description',
     less: 'Show less',
@@ -34,6 +37,7 @@ export const EXTRA: Record<Locale, ExtraText> = {
     copied: 'Az email cím a vágólapra másolva',
     copiedShort: 'Másolva',
     copyFailed: 'Nem sikerült a másolás. A cím lent olvasható.',
+    touch: 'Érints meg egy évet, vagy húzd rajta az ujjad',
     newTab: '(új lapon nyílik)',
     more: 'A teljes leírás megjelenítése',
     less: 'Kevesebb megjelenítése',
