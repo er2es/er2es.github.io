@@ -627,21 +627,27 @@ test.describe('career graph', () => {
     };
   };
 
-  test('the log starts collapsed with the Backend family chosen; families are added and removed one by one', async ({ page }) => {
+  test('the log starts collapsed with every family chosen, the foundation in grey; chips appear once only some are chosen', async ({ page }) => {
     const { lit, chips, lane } = await setup(page);
     await expect(page.locator('#experience details[open]')).toHaveCount(0);
-    await expect(lane('Backend')).toHaveAttribute('aria-pressed', 'true');
-    await expect(chips).toHaveCount(1);
-    const backendJobs = await lit.count();
-    expect(backendJobs).toBeGreaterThan(2);
+    for (const name of ['Backend', 'Adatb\u00e1zis', 'Tesztel\u00e9s', 'Frontend', 'DevOps']) await expect(lane(name)).toHaveAttribute('aria-pressed', 'true');
+    await expect(chips).toHaveCount(0); // all chosen: the names say it
+    const all = await lit.count();
+    expect(all).toBeGreaterThan(5);
+    const base = page.locator('#experience .row.base');
+    await expect(base).toHaveClass(/lit/); // the foundation is lit with the whole graph...
+    const grey = await base.locator('summary').evaluate((e) => getComputedStyle(e).backgroundColor);
+    const tint = await page.locator('#experience .row.lit:not(.base) summary').first().evaluate((e) => getComputedStyle(e).backgroundColor);
+    expect(grey).not.toBe(tint); // ...in grey, not in the accent tint of the others
 
-    await lane('Frontend').click(); // a second family joins the first
-    await expect(lane('Frontend')).toHaveAttribute('aria-pressed', 'true');
-    await expect(lane('Backend')).toHaveAttribute('aria-pressed', 'true');
-    await expect(chips).toHaveCount(2);
-
-    await lane('Backend').click(); // and the first can leave: only the two front-end jobs stay lit
+    await lane('Backend').click(); // one leaves: the chips appear for the four that stay
     await expect(lane('Backend')).toHaveAttribute('aria-pressed', 'false');
+    await expect(chips).toHaveCount(4);
+    expect(await lit.count()).toBeLessThan(all);
+    await expect(base).not.toHaveClass(/lit/);
+
+    for (const name of ['Adatb\u00e1zis', 'Tesztel\u00e9s', 'DevOps']) await lane(name).click(); // only the two front-end jobs stay lit
+    await expect(chips).toHaveCount(1);
     await expect(lit).toHaveCount(2);
 
     await chips.first().click(); // a chip removes its family
@@ -651,17 +657,16 @@ test.describe('career graph', () => {
 
   test('pointing at a year lights that year, and the chosen families come back afterwards', async ({ page }) => {
     const { lit, lane } = await setup(page);
-    await lane('Backend').click(); // nothing chosen
-    await lane('Frontend').click();
+    for (const name of ['Backend', 'Adatb\u00e1zis', 'Tesztel\u00e9s', 'DevOps']) await lane(name).click(); // only Frontend
     await expect(lit).toHaveCount(2);
     const track = page.locator('.arc .lane').first().locator('.track');
     await track.scrollIntoViewIfNeeded();
     const box = (await track.boundingBox())!;
     await page.mouse.move(box.x + box.width * 0.5, box.y + box.height / 2);
-    await expect(page.locator('.arc .readout')).toContainText('2017');
+    await expect(page.locator('.arc .readout:not(.touch)')).toContainText('2017');
     await expect(lit).toHaveCount(1);
     await page.mouse.move(2, 2);
-    await expect(page.locator('.arc .readout')).not.toContainText('2017');
+    await expect(page.locator('.arc .readout:not(.touch)')).not.toContainText('2017');
     await expect(lit).toHaveCount(2);
   });
 
@@ -689,7 +694,7 @@ test.describe('career graph', () => {
       const y = await page.evaluate(() => scrollY);
       const box = (await page.locator('.arc .lane').first().locator('.cell[data-l="4"]').last().boundingBox())!;
       await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
-      await expect(page.locator('.arc .readout')).toContainText('2026');
+      await expect(page.locator('.arc .readout:not(.touch)')).toContainText('2026');
       expect(await page.evaluate(() => scrollY)).toBe(y);
     });
   });
@@ -873,6 +878,7 @@ test.describe('HIG and motion polish', () => {
   test('phone: the targets are at least 44 px high', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 800 });
     await ready(page, '/hu/');
+    await page.locator('.arc .name').first().click(); // one family off: the chips show
     const tall = (sel: string) => page.locator(sel).evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().height)));
     for (const h of await tall('.arc .name')) expect(h).toBeGreaterThanOrEqual(44);
     for (const h of await tall('#projects .more')) expect(h).toBeGreaterThanOrEqual(44);

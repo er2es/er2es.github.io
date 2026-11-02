@@ -1,8 +1,8 @@
-import { Component, inject, input } from '@angular/core';
+import { Component, DestroyRef, ElementRef, afterNextRender, inject, input } from '@angular/core';
 import { FACTS, FACT_BY_ID, FILES, period, type ItemId, type SiteContent } from '../content/model';
 import { railGeometry } from '../graph/geometry';
 import { layoutGraph } from '../graph/layout';
-import { CareerArc } from './career-arc';
+import { BASE, CareerArc } from './career-arc';
 import { SkillLens } from './uses';
 
 const LAYOUT = layoutGraph(
@@ -27,8 +27,9 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
         <p class="eyebrow mono roles" aria-hidden="true">roles/</p>
         <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -- one delegated keydown handler for the summaries inside (roving arrow keys); the list itself is not an interactive element -->
         <ol class="log" (keydown)="onKey($event)">
+          <li class="spine" aria-hidden="true"></li>
           @for (r of rows; track r.id) {
-            <li class="row" [id]="'job-' + r.id" tabindex="-1" [class.lit]="lens.ids().has(r.id)">
+            <li class="row" [id]="'job-' + r.id" tabindex="-1" [class.lit]="lens.ids().has(r.id)" [class.base]="r.id === base">
               <div class="railcol" [style.width.px]="r.rail.width" aria-hidden="true">
                 <svg class="rail" [attr.width]="r.rail.width" height="100%" focusable="false">
                   @for (l of r.rail.lines; track $index) {
@@ -42,7 +43,6 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
                     <circle class="node" [attr.cx]="d.x" [attr.cy]="d.y" [attr.r]="d.r" [style.fill]="'var(--lane-' + d.lane + ')'" style="stroke: var(--bg-2); stroke-width: 2px" />
                   }
                 </svg>
-                <span class="fill"></span>
               </div>
               <div class="body">
                 <details>
@@ -65,7 +65,7 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
   `,
   styles: [`
     .roles { margin-top: 2rem; }
-    .log { margin-top: 0.5rem; }
+    .log { position: relative; margin-top: 0.5rem; }
     .row { display: flex; gap: 0.75rem; scroll-margin-top: calc(var(--bar-h) + 1.25rem); outline: none; border-radius: 12px; }
     .railcol { position: relative; flex: none; }
     .rail { position: absolute; inset: 0; height: 100%; overflow: visible; }
@@ -102,16 +102,18 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
     .row.lit summary { background: color-mix(in srgb, var(--accent) 12%, transparent); }
     .row.lit .per { color: var(--fg); } /* the tint is darker than the page: keep the small text readable */
     .row.lit .node { scale: 1.3; }
+    /* the foundation (the first job) is the same grey as its block in the graph, not the accent tint of the others */
+    .row.lit.base summary { background: color-mix(in srgb, var(--fg) 20%, transparent); }
 
-    /* the career line fills with the accent colour as you scroll (scroll-driven, transform only) */
-    .fill { position: absolute; left: 7px; width: 2px; top: 0; bottom: 0; background: var(--accent); transform-origin: top; pointer-events: none; }
-    .row:first-child .fill { top: 22px; }
-    .row:last-child .fill { bottom: calc(100% - 22px); }
+    /* the career line fills with the accent colour as you scroll: one line for the whole log, from the first node to the last
+       (scroll-driven, transform only; --tail, the last entry's height less its node, is set in script) */
+    .spine { position: absolute; z-index: 1; left: 7px; width: 2px; top: 22px; bottom: var(--tail, 0px); list-style: none; background: var(--accent); transform-origin: top; pointer-events: none; }
     @media (prefers-reduced-motion: no-preference) {
       @supports (animation-timeline: view()) {
-        .fill { animation: grow linear both; animation-timeline: view(); animation-range: cover 5% cover 55%; }
+        .spine { animation: grow linear both; animation-timeline: view(); animation-range: cover 5% cover 80%; }
       }
     }
+    @media (prefers-reduced-motion: reduce) { .spine { display: none; } }
     @keyframes grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
 
     /* smooth disclosure where the browser supports it (progressive enhancement) */
@@ -130,9 +132,24 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
 export class Experience {
   readonly c = input.required<SiteContent>();
   protected readonly rows = ROWS;
+  protected readonly base = BASE;
   protected readonly file = FILES.experience;
 
   protected readonly lens = inject(SkillLens);
+
+  constructor() {
+    const host = inject<ElementRef<HTMLElement>>(ElementRef);
+    const destroy = inject(DestroyRef);
+    afterNextRender(() => {
+      // the line of the career ends at the last node, whatever the height of the last entry
+      const log = host.nativeElement.querySelector<HTMLElement>('.log');
+      const last = log?.lastElementChild as HTMLElement | null;
+      if (!log || !last) return;
+      const ro = new ResizeObserver(() => log.style.setProperty('--tail', `${last.offsetHeight - 22}px`));
+      ro.observe(last);
+      destroy.onDestroy(() => ro.disconnect());
+    });
+  }
 
   /** Up/Down (and Home/End) move between the entries' summaries, like a list. */
   protected onKey(e: KeyboardEvent): void {

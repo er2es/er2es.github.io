@@ -7,14 +7,15 @@ import { SkillLens, usesOf } from './uses';
 
 const JOBS = FACTS.filter((f) => f.kind === 'job').map((f) => ({ id: f.id, start: f.start!, end: f.end!, main: f.main }));
 /** The first job: not a skill family but the ground the others grew from, drawn as one block before the years. */
-const BASE: ItemId = 'edu-nonprofit';
+export const BASE: ItemId = 'edu-nonprofit';
 
 /**
  * The career as a contribution graph: one row per skill family, one square per year, the first job as the foundation
  * block on the left. A square is the darker the more of that family's skills (the pills of the Skills section) the
  * jobs of the year use ("used in the role", not a level of skill), so the picture fills in and darkens towards the present.
- * Lane names are toggles, any number of them: the roles log below lights the jobs of every chosen family, and a chip per
- * family says what is chosen and removes it. Pointing at (or touching) the grid shows what that year looked like.
+ * Lane names are toggles, any number of them, all of them chosen to begin with: the roles log below lights the jobs of every
+ * chosen family (and the first job, the foundation, while all are), and once only some are chosen, a chip per family says
+ * which and removes it. Pointing at (or touching) the grid shows what that year looked like.
  * Nothing here moves the page. The log underneath stays the readable source, so the drawing is hidden from assistive technology.
  */
 @Component({
@@ -34,10 +35,10 @@ const BASE: ItemId = 'edu-nonprofit';
                   <i class="cell" [attr.data-l]="cell.level" [class.off]="off(l.id)" [class.dim]="dim(cell.jobs)"><span class="fill"></span></i>
                 }
               </div>
-              @if (year() !== null) { <s class="head" [style.left.%]="headLeft()" [style.width.%]="100 / grid().cols"></s> }
+              @if (year() !== null) { <s class="head" [style.left.%]="head().left" [style.width.%]="head().width"></s> }
               @if (tip(); as tp) {
                 @if (tp.lane === l.id) {
-                  <div class="tip" [style.--c]="tp.center">
+                  <div class="tip" [class.up]="tp.up" [style.--c]="tp.center">
                     <b>{{ tp.title }}</b>
                     @for (line of tp.lines; track line) { <span class="job">{{ line }}</span> }
                     @if (tp.tags) { <em>{{ tp.tags }}</em> }
@@ -52,6 +53,7 @@ const BASE: ItemId = 'edu-nonprofit';
         </div>
         <div class="status">
           <p class="readout" aria-hidden="true">{{ readout() }}</p>
+          @if (!chips().length) { <p class="readout touch" aria-hidden="true" [class.hide]="year() !== null">{{ x().touch }}</p> }
           <div class="chips">
             @for (chip of chips(); track chip.id) {
               <button type="button" class="filter" [class.hide]="year() !== null" (click)="toggle(chip.id)">
@@ -111,6 +113,8 @@ const BASE: ItemId = 'edu-nonprofit';
       background: var(--bg-2); border: 1px solid var(--line); box-shadow: var(--glass-shadow);
       font-size: var(--t-footnote); line-height: 1.35; color: var(--fg-2); white-space: normal;
     }
+    /* a finger covers what is below the row: for a touch the card opens above it */
+    .tip.up { top: auto; bottom: calc(50% + var(--cell) / 2 + 8px); }
     .tip b { display: block; color: var(--fg); font-weight: 600; }
     .tip .job { display: block; }
     .tip em { display: block; margin-top: 0.125rem; font-style: normal; }
@@ -125,6 +129,9 @@ const BASE: ItemId = 'edu-nonprofit';
     .status { display: grid; margin: 0.25rem 0 0 calc(var(--label) + 0.75rem); min-height: 2.75em; align-content: start; }
     .status > * { grid-area: 1 / 1; }
     .readout { margin: 0; color: var(--fg-2); font-size: var(--t-footnote); }
+    .readout.touch { display: none; }
+    .readout.hide { visibility: hidden; }
+    @media (hover: none) { .readout.touch { display: block; } }
     .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; align-content: start; }
     .filter {
       position: relative; display: inline-flex; align-items: center; gap: 0.5rem; min-height: 32px; padding: 0 0.75rem 0 0.9rem; border: 0; border-radius: 999px;
@@ -135,7 +142,7 @@ const BASE: ItemId = 'edu-nonprofit';
     @media (hover: hover) { .filter:hover { background: color-mix(in srgb, var(--accent) 26%, transparent); } }
 
     @media (max-width: 599px) {
-      .arc { --row: 34px; --cell: 22px; }
+      .arc { --row: 40px; --cell: 26px; }
       .fill { border-radius: 4px; }
       .lane { grid-template-columns: 1fr; gap: 0; }
       .name { grid-auto-flow: column; justify-content: space-between; align-items: baseline; min-height: 44px; }
@@ -160,8 +167,8 @@ export class CareerArc implements OnInit {
   private readonly lens = inject(SkillLens);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
-  /** The skill families that are chosen (Backend to begin with): the log lights the jobs of any of them. */
-  protected readonly chosen = signal<ReadonlySet<string>>(new Set(['backend']));
+  /** The skill families that are chosen (all of them to begin with): the log lights the jobs of any of them. */
+  protected readonly chosen = signal<ReadonlySet<string>>(new Set(SKILLS.filter((g) => g.group !== 'other').map((g) => g.group)));
 
   ngOnInit(): void {
     this.lens.ids.set(this.union());
@@ -193,36 +200,42 @@ export class CareerArc implements OnInit {
 
   protected readonly x = computed(() => EXTRA[this.c().lang]);
 
-  /** One chip per chosen family. */
+  /** One chip per chosen family, once only some are chosen (with all of them chosen the names say it already). */
   protected readonly chips = computed(() =>
-    this.grid().lanes.filter((l) => this.chosen().has(l.id)).map((l) => ({ id: l.id, name: this.c().skills.groups[l.group] })),
+    this.chosen().size === this.grid().lanes.length ? [] : this.grid().lanes.filter((l) => this.chosen().has(l.id)).map((l) => ({ id: l.id, name: this.c().skills.groups[l.group] })),
   );
 
   protected readonly baseTags = computed(() => FACT_BY_ID[BASE].keywords.join(' · '));
 
   /** The year under the pointer, while it is scrubbing. */
   protected readonly year = signal<number | null>(null);
-  /** Where a mouse is pointing (a finger gets the line under the graph instead): which row, which year. */
-  private readonly hover = signal<{ lane: string; year: number } | null>(null);
+  /** Where the pointer is: which row, which year (a finger gets the card above its row). */
+  private readonly hover = signal<{ lane: string; year: number; touch: boolean } | null>(null);
   protected readonly tip = computed(() => {
     const h = this.hover();
     const g = this.grid();
     const lane = h && g.lanes.find((l) => l.id === h.lane);
     if (!h || !lane) return null;
     if (h.year < g.min + g.baseYears) {
-      return { lane: h.lane, center: (g.baseYears / g.cols) * 50, title: this.t(BASE).title, lines: [`${this.t(BASE).org} · ${this.per(BASE)}`], tags: this.baseTags() };
+      return { lane: h.lane, up: h.touch, center: (g.baseYears / g.cols) * 50, title: this.t(BASE).title, lines: [`${this.t(BASE).org} · ${this.per(BASE)}`], tags: this.baseTags() };
     }
     const cell = lane.cells.find((c) => c.year === h.year);
     if (!cell || !cell.jobs.length) return null;
     return {
       lane: h.lane,
+      up: h.touch,
       center: ((h.year - g.min + 0.5) / g.cols) * 100,
       title: String(h.year),
       lines: cell.jobs.map((j) => `${this.t(j).title} · ${this.t(j).org}`),
       tags: cell.tags.join(' · '),
     };
   });
-  protected readonly headLeft = computed(() => (((this.year() ?? 0) - this.grid().min) / this.grid().cols) * 100);
+  /** The highlight of the year under the pointer; over the foundation, the whole foundation block. */
+  protected readonly head = computed(() => {
+    const g = this.grid();
+    const i = Math.max(0, (this.year() ?? 0) - g.min);
+    return i < g.baseYears ? { left: 0, width: (g.baseYears / g.cols) * 100 } : { left: (i / g.cols) * 100, width: 100 / g.cols };
+  });
   private lit = '';
 
   protected readonly readout = computed(() => {
@@ -249,7 +262,10 @@ export class CareerArc implements OnInit {
 
   /** The jobs of every chosen family. */
   private union(): Set<ItemId> {
-    return new Set(this.grid().lanes.filter((l) => this.chosen().has(l.id)).flatMap((l) => l.ids as ItemId[]));
+    const lanes = this.grid().lanes;
+    const ids = new Set(lanes.filter((l) => this.chosen().has(l.id)).flatMap((l) => l.ids as ItemId[]));
+    if (lanes.length && lanes.every((l) => this.chosen().has(l.id))) ids.add(BASE); // the whole graph: the foundation as well
+    return ids;
   }
 
   protected pressed(lane: string): boolean {
@@ -283,7 +299,7 @@ export class CareerArc implements OnInit {
     const g = this.grid();
     const year = g.min + Math.min(g.cols - 1, Math.floor(p * g.cols));
     this.year.set(year);
-    this.hover.set(e.pointerType === 'mouse' ? { lane, year } : null);
+    this.hover.set({ lane, year, touch: e.pointerType !== 'mouse' });
     const ids = activeAt(JOBS, year) as ItemId[];
     const key = ids.join();
     if (key !== this.lit) {

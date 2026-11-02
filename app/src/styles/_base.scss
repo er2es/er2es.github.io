@@ -69,8 +69,8 @@ a:not([class]):focus-visible { border-radius: 6px; }
 
 /*
  * Tags: quiet chips in the menu's own form. Each one's hit area is its chip plus a 4px transparent border, so the chips touch
- * and the pointer is always over one of them; over the row, one pill (a real element, `.sel`) glides from tag to tag
- * with the menu's spring (anchor positioning; the chips alone elsewhere). The pill shows and hides at once: there is no
+ * and the pointer is always over one of them; over the row, one pill (a real element, `.sel`, the size of the chip) glides
+ * from tag to tag with the menu's spring (anchor positioning; the chips alone elsewhere). The pill shows and hides at once: there is no
  * anchor to glide from or to when the pointer is outside the row.
  */
 .tags { position: relative; isolation: isolate; display: flex; flex-wrap: wrap; row-gap: 0.25rem; margin-inline: -4px; font: 500 var(--t-footnote) / 1.2 var(--font); color: var(--fg); }
@@ -82,7 +82,7 @@ a:not([class]):focus-visible { border-radius: 6px; }
 @supports (anchor-name: --a) {
   .tags .sel {
     display: block; position: absolute; z-index: -1; position-anchor: --tag; pointer-events: none; opacity: 0;
-    top: anchor(top); bottom: anchor(bottom); left: anchor(left); right: anchor(right); border-radius: 999px; background: var(--tint-current);
+    top: calc(anchor(top) + 4px); bottom: calc(anchor(bottom) + 4px); left: calc(anchor(left) + 4px); right: calc(anchor(right) + 4px); border-radius: 999px; background: var(--tint-current);
     transition: top var(--dur-short) var(--ease-spring), bottom var(--dur-short) var(--ease-spring), left var(--dur-short) var(--ease-spring), right var(--dur-short) var(--ease-spring);
   }
   @media (hover: hover) {
