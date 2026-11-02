@@ -48,6 +48,25 @@ for (const page of ['index.html', join('hu', 'index.html')]) {
 }
 const notFound = join(out, '404.html');
 writeFileSync(notFound, withCsp(readFileSync(notFound, 'utf8')));
+// the sitemap: both languages, each pointing at the other, last modified on the day of this build
+const site = /SITE_URL = '([^']+)'/.exec(readFileSync(join(root, 'src', 'app', 'content', 'model.ts'), 'utf8'))?.[1];
+if (!site) throw new Error('SITE_URL not found in content/model.ts');
+const today = new Date().toISOString().slice(0, 10);
+const pages = [['en', `${site}/`], ['hu', `${site}/hu/`]];
+const alternates = pages.map(([l, href]) => `    <xhtml:link rel="alternate" hreflang="${l}" href="${href}"/>`).join(String.fromCharCode(10));
+const entries = pages.map(([, href]) => `  <url>
+    <loc>${href}</loc>
+    <lastmod>${today}</lastmod>
+${alternates}
+  </url>
+`).join('');
+writeFileSync(
+  join(out, 'sitemap.xml'),
+  `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+${entries}</urlset>
+`,
+);
 // which sources this build came from (`npm run check:docs` compares it, so a forgotten rebuild is caught)
 writeFileSync(join(out, '.source-hash'), sourceHash() + '\n');
 console.log(`docs/ ready: ${readdirSync(out).join(', ')}`);

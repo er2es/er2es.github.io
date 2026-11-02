@@ -1033,3 +1033,38 @@ test('text meets the enhanced (AAA) contrast of 7:1, in both themes and both lan
     expect(r.violations.map((v) => v.nodes.map((n) => n.target.join(' ')))).toEqual([]);
   }
 });
+
+test.describe('what crawlers read', () => {
+  test('robots.txt lets search and answer engines in and keeps the training crawlers out; the sitemap has both pages with a date', async ({ request }) => {
+    const robots = await (await request.get('/robots.txt')).text();
+    expect(robots).toMatch(/User-agent: OAI-SearchBot[\s\S]*?Allow: \//);
+    expect(robots).toMatch(/User-agent: GPTBot[\s\S]*?Disallow: \//);
+    expect(robots).toContain('Sitemap: https://er2es.github.io/sitemap.xml');
+    const sitemap = await (await request.get('/sitemap.xml')).text();
+    expect(sitemap.match(/<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/g)).toHaveLength(2);
+    expect(sitemap).toContain('<loc>https://er2es.github.io/</loc>');
+    expect(sitemap).toContain('<loc>https://er2es.github.io/hu/</loc>');
+    expect(sitemap).toContain('hreflang="hu"');
+    const llms = await (await request.get('/llms.txt')).text();
+    expect(llms).toMatch(/^# /);
+    expect(llms).toContain('https://er2es.github.io/hu/');
+  });
+
+  for (const p of PAGES) {
+    test(`${p.url}: a social card of its own, and structured data whose nodes point at each other`, async ({ page, request }) => {
+      await ready(page, p.url);
+      const meta = (key: string) => page.locator(`meta[property="${key}"], meta[name="${key}"]`).getAttribute('content');
+      expect(await meta('og:image')).toBe(`https://er2es.github.io/img/card-${p.lang}.jpg`);
+      expect(await meta('twitter:card')).toBe('summary_large_image');
+      const card = await request.get(`/img/card-${p.lang}.jpg`);
+      expect(card.status()).toBe(200);
+      expect(card.headers()['content-type']).toContain('image/jpeg');
+      expect((await card.body()).length).toBeGreaterThan(10_000);
+      const graph = JSON.parse((await page.locator('script[type="application/ld+json"]').textContent())!)['@graph'] as Record<string, unknown>[];
+      const ids = new Set(graph.map((n) => n['@id']));
+      const refs = JSON.stringify(graph).match(/\{"@id":"[^"]+"\}/g) ?? [];
+      expect(refs.length).toBeGreaterThan(2);
+      for (const r of refs) expect(ids.has(JSON.parse(r)['@id'])).toBe(true);
+    });
+  }
+});
