@@ -19,6 +19,10 @@
   --tint-hover: color-mix(in srgb, var(--fg) 11%, transparent);
   --tint-current: color-mix(in srgb, var(--fg) 19%, transparent);
   --tint-press: color-mix(in srgb, var(--fg) 24%, transparent);
+  // the side branches of the career line: each its own colour, none of them the accent (which is the line's progress)
+  --lane-1: rgb(77 163 255);
+  --lane-2: rgb(255 179 64);
+  --lane-3: rgb(191 90 242);
 }
 
 :root {
@@ -46,9 +50,9 @@
   --tint-press: color-mix(in srgb, var(--fg) 28%, transparent);
 
   --lane-0: var(--fg-2);
-  --lane-1: var(--accent);
-  --lane-2: var(--fg);
-  --lane-3: color-mix(in srgb, var(--accent) 55%, var(--fg-2));
+  --lane-1: rgb(10 100 200);
+  --lane-2: rgb(180 95 6);
+  --lane-3: rgb(138 63 214);
 
   // Static system faces only: Windows 11's variable Segoe UI Variable / Cascadia Mono roughly double the first layout.
   --font: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', system-ui, Roboto, 'Helvetica Neue', Arial, sans-serif;

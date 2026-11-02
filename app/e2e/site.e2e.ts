@@ -1068,3 +1068,44 @@ test.describe('what crawlers read', () => {
     });
   }
 });
+
+test('the nodes of the career line say full-time or part-time, and the two branches have their own colours', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await ready(page, '/hu/');
+  const tips = await page.locator('#experience .row .hit').evaluateAll((els) => els.map((e) => e.getAttribute('data-tip')));
+  expect(tips.filter((t) => t === 'Teljes munkaid\u0151').length).toBeGreaterThan(4);
+  expect(tips.filter((t) => t === 'R\u00e9szmunkaid\u0151')).toHaveLength(2); // the two branches
+  const colours = await page.evaluate(() => ['--lane-1', '--lane-2'].map((v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim()));
+  expect(new Set(colours).size).toBe(2);
+  const accent = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--accent').trim());
+  expect(colours).not.toContain(accent);
+  const hit = page.locator('#experience .row .hit').nth(6);
+  await hit.scrollIntoViewIfNeeded();
+  await hit.hover();
+  await expect.poll(() => hit.evaluate((e) => getComputedStyle(e, '::after').display), { timeout: 3000 }).toBe('block');
+});
+
+test('a node of the career line opens and closes its entry', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await ready(page, '/hu/');
+  const row = page.locator('#experience .row').nth(3);
+  const node = row.locator('.hit').last();
+  await node.scrollIntoViewIfNeeded();
+  await expect(row.locator('details')).not.toHaveAttribute('open', '');
+  await node.click();
+  await expect(row.locator('details')).toHaveAttribute('open', '');
+  await node.click();
+  await expect(row.locator('details')).not.toHaveAttribute('open', '');
+});
+
+test('on a phone the "copied" bubble under the hero email button is not cut off', async ({ page, context }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 700 });
+    await ready(page, '/hu/');
+    await page.locator('.hero button.addr').click();
+    await expect(page.locator('.hero .bubble')).toBeVisible();
+    const m = await page.evaluate(() => ({ bubble: document.querySelector('.hero .bubble')!.getBoundingClientRect().bottom, stage: document.querySelector('.stage')!.getBoundingClientRect().bottom }));
+    expect(m.bubble).toBeLessThanOrEqual(m.stage);
+  }
+});

@@ -26,7 +26,7 @@ export const BASE: ItemId = 'edu-nonprofit';
         @for (l of grid().lanes; track l.id; let i = $index; let last = $last) {
           <div class="lane" [style.--i]="i">
             <button type="button" class="name" [attr.aria-pressed]="pressed(l.id)" (click)="toggle(l.id)">
-              {{ c().skills.groups[l.group] }} <small class="mono">{{ from(l.since) }}</small>
+              {{ c().skills.groups[l.group] }} <small>{{ from(l.since) }}</small>
             </button>
             <div class="track" aria-hidden="true" (pointermove)="scrub($event, l.id)" (pointerdown)="scrub($event, l.id)" (pointerleave)="leave($event)">
               <div class="cells" [style.grid-template-columns]="'repeat(' + grid().cols + ', minmax(0, 1fr))'">
@@ -48,7 +48,7 @@ export const BASE: ItemId = 'edu-nonprofit';
             </div>
           </div>
         }
-        <div class="axis mono" aria-hidden="true">
+        <div class="axis" aria-hidden="true">
           @for (t of grid().ticks; track t.year; let last = $last) { <span [class.end]="last" [style.left.%]="last ? 100 : t.left">{{ t.year }}</span> }
         </div>
         <div class="status">
@@ -69,16 +69,16 @@ export const BASE: ItemId = 'edu-nonprofit';
   styles: [`
     :host { display: block; }
     .eyebrow { margin-bottom: 0.5rem; }
-    .arc { margin-top: 1.5rem; --label: 8.5rem; --row: 46px; --cell: 26px; }
+    .arc { margin-top: 1.5rem; --label: 8.5rem; --row: 52px; --cell: 26px; }
     .lane { display: grid; grid-template-columns: var(--label) 1fr; align-items: center; gap: 0.75rem; }
     /* each row's squares are their own layer (the entrance animation), so the row under the pointer comes to the front: its card must not sit behind the rows below */
     .lane:hover { position: relative; z-index: 6; }
     .name {
       text-align: left; font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0.375rem 0.5rem;
-      margin-inline: -0.5rem; border-radius: 10px; min-height: 44px; display: grid; line-height: 1.2;
+      margin: 3px -0.5rem; border-radius: 10px; min-height: 44px; display: grid; line-height: 1.2; /* 3px above and below: the labels are tiles with air between them (the row's height is the track's, so the foundation block stays one piece) */
       transition: background-color var(--dur-short) var(--ease-out);
     }
-    .name small { color: var(--fg-2); font-size: var(--t-footnote); }
+    .name small { color: var(--fg-2); font-size: var(--t-footnote); font-weight: 500; font-variant-numeric: tabular-nums; }
     @media (hover: hover) { .name:hover { background: color-mix(in srgb, var(--fg) 6%, transparent); } }
     .name[aria-pressed='true'] { background: color-mix(in srgb, var(--accent) 14%, transparent); }
     .name[aria-pressed='true'] small { color: var(--fg); }
@@ -122,7 +122,7 @@ export const BASE: ItemId = 'edu-nonprofit';
     /* the year under the pointer */
     .head { position: absolute; top: 0; bottom: 0; border-radius: 5px; background: color-mix(in srgb, var(--fg) 12%, transparent); pointer-events: none; }
 
-    .axis { position: relative; height: 1.25rem; margin-left: calc(var(--label) + 0.75rem); color: var(--fg-2); font-size: var(--t-footnote); }
+    .axis { position: relative; font-variant-numeric: tabular-nums; height: 1.25rem; margin-left: calc(var(--label) + 0.75rem); color: var(--fg-2); font-size: var(--t-footnote); }
     .axis span { position: absolute; top: 0.25rem; translate: -50%; }
     .axis span.end { translate: -100%; } /* the last year ends at the edge instead of hanging over it */
     /* the line under the grid: the year being pointed at, or else a chip for every family that is chosen */
