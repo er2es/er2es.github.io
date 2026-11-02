@@ -1033,3 +1033,79 @@ test('text meets the enhanced (AAA) contrast of 7:1, in both themes and both lan
     expect(r.violations.map((v) => v.nodes.map((n) => n.target.join(' ')))).toEqual([]);
   }
 });
+
+test.describe('what crawlers read', () => {
+  test('robots.txt lets search and answer engines in and keeps the training crawlers out; the sitemap has both pages with a date', async ({ request }) => {
+    const robots = await (await request.get('/robots.txt')).text();
+    expect(robots).toMatch(/User-agent: OAI-SearchBot[\s\S]*?Allow: \//);
+    expect(robots).toMatch(/User-agent: GPTBot[\s\S]*?Disallow: \//);
+    expect(robots).toContain('Sitemap: https://er2es.github.io/sitemap.xml');
+    const sitemap = await (await request.get('/sitemap.xml')).text();
+    expect(sitemap.match(/<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/g)).toHaveLength(2);
+    expect(sitemap).toContain('<loc>https://er2es.github.io/</loc>');
+    expect(sitemap).toContain('<loc>https://er2es.github.io/hu/</loc>');
+    expect(sitemap).toContain('hreflang="hu"');
+    const llms = await (await request.get('/llms.txt')).text();
+    expect(llms).toMatch(/^# /);
+    expect(llms).toContain('https://er2es.github.io/hu/');
+  });
+
+  for (const p of PAGES) {
+    test(`${p.url}: a social card of its own, and structured data whose nodes point at each other`, async ({ page, request }) => {
+      await ready(page, p.url);
+      const meta = (key: string) => page.locator(`meta[property="${key}"], meta[name="${key}"]`).getAttribute('content');
+      expect(await meta('og:image')).toBe(`https://er2es.github.io/img/card-${p.lang}.jpg`);
+      expect(await meta('twitter:card')).toBe('summary_large_image');
+      const card = await request.get(`/img/card-${p.lang}.jpg`);
+      expect(card.status()).toBe(200);
+      expect(card.headers()['content-type']).toContain('image/jpeg');
+      expect((await card.body()).length).toBeGreaterThan(10_000);
+      const graph = JSON.parse((await page.locator('script[type="application/ld+json"]').textContent())!)['@graph'] as Record<string, unknown>[];
+      const ids = new Set(graph.map((n) => n['@id']));
+      const refs = JSON.stringify(graph).match(/\{"@id":"[^"]+"\}/g) ?? [];
+      expect(refs.length).toBeGreaterThan(2);
+      for (const r of refs) expect(ids.has(JSON.parse(r)['@id'])).toBe(true);
+    });
+  }
+});
+
+test('the nodes of the career line say full-time or part-time, and the two branches have their own colours', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await ready(page, '/hu/');
+  const tips = await page.locator('#experience .row .hit').evaluateAll((els) => els.map((e) => e.getAttribute('data-tip')));
+  expect(tips.filter((t) => t === 'Teljes munkaid\u0151').length).toBeGreaterThan(4);
+  expect(tips.filter((t) => t === 'R\u00e9szmunkaid\u0151')).toHaveLength(2); // the two branches
+  const colours = await page.evaluate(() => ['--lane-1', '--lane-2'].map((v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim()));
+  expect(new Set(colours).size).toBe(2);
+  const accent = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--accent').trim());
+  expect(colours).not.toContain(accent);
+  const hit = page.locator('#experience .row .hit').nth(6);
+  await hit.scrollIntoViewIfNeeded();
+  await hit.hover();
+  await expect.poll(() => hit.evaluate((e) => getComputedStyle(e, '::after').display), { timeout: 3000 }).toBe('block');
+});
+
+test('a node of the career line opens and closes its entry', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await ready(page, '/hu/');
+  const row = page.locator('#experience .row').nth(3);
+  const node = row.locator('.hit').last();
+  await node.scrollIntoViewIfNeeded();
+  await expect(row.locator('details')).not.toHaveAttribute('open', '');
+  await node.click();
+  await expect(row.locator('details')).toHaveAttribute('open', '');
+  await node.click();
+  await expect(row.locator('details')).not.toHaveAttribute('open', '');
+});
+
+test('on a phone the "copied" bubble under the hero email button is not cut off', async ({ page, context }) => {
+  await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 700 });
+    await ready(page, '/hu/');
+    await page.locator('.hero button.addr').click();
+    await expect(page.locator('.hero .bubble')).toBeVisible();
+    const m = await page.evaluate(() => ({ bubble: document.querySelector('.hero .bubble')!.getBoundingClientRect().bottom, stage: document.querySelector('.stage')!.getBoundingClientRect().bottom }));
+    expect(m.bubble).toBeLessThanOrEqual(m.stage);
+  }
+});

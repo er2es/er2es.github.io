@@ -1,6 +1,6 @@
 {
   "name": "cv",
-  "version": "1.6.4",
+  "version": "1.6.5",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --port 4200",
@@ -12,6 +12,7 @@
     "test:coverage": "ng test --no-watch --coverage --coverage-reporters=lcov --coverage-reporters=text-summary --coverage-include=\"src/app/core/**/*.ts\" --coverage-include=\"src/app/graph/**/*.ts\" --coverage-include=\"src/app/content/**/*.ts\" --coverage-include=\"src/app/search/search.ts\" --coverage-include=\"src/app/search/assistant.ts\" --coverage-include=\"src/app/sections/uses.ts\" --coverage-exclude=\"**/*.spec.ts\"",
     "check:contrast": "node scripts/check-contrast.mjs",
     "portrait": "node scripts/portrait.mjs",
+    "card": "node scripts/social-card.mjs",
     "e2e": "playwright test -c e2e/playwright.config.ts",
     "check:privacy": "node scripts/verify-privacy.mjs",
     "check:docs": "node scripts/check-docs.mjs",

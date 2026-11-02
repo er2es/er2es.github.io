@@ -1,0 +1,18 @@
+# József Szabó
+
+> Full-stack PHP developer in Budapest (remote / hybrid): Symfony, Angular, TypeScript, PostgreSQL, testing and QA. This is his CV site, in English and in Hungarian. Employers and clients are described by kind and not named; the full CV is available by email.
+
+## The CV
+
+- [CV in English](https://er2es.github.io/): profile, work experience as a skills graph and a role log, skills by area, projects, education and languages
+- [Önéletrajz magyarul](https://er2es.github.io/hu/): the same, in Hungarian (Szabó József)
+
+## Contact and profiles
+
+- [Email](mailto:szabo.jozsef.acc@gmail.com): the best way to ask for the full CV
+- [GitHub](https://github.com/er2es)
+- [LinkedIn](https://www.linkedin.com/in/szabo-j%C3%B3zsef-a61156357/)
+
+## About the site
+
+- [Source code](https://github.com/er2es/er2es.github.io): Angular, prerendered to static pages, MIT licence

@@ -1,4 +1,5 @@
-import { Component, DestroyRef, ElementRef, afterNextRender, inject, input } from '@angular/core';
+import { Component, DestroyRef, ElementRef, afterNextRender, computed, inject, input } from '@angular/core';
+import { EXTRA } from '../content/extra';
 import { FACTS, FACT_BY_ID, FILES, period, type ItemId, type SiteContent } from '../content/model';
 import { railGeometry } from '../graph/geometry';
 import { layoutGraph } from '../graph/layout';
@@ -43,13 +44,16 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
                     <circle class="node" [attr.cx]="d.x" [attr.cy]="d.y" [attr.r]="d.r" [style.fill]="'var(--lane-' + d.lane + ')'" style="stroke: var(--bg-2); stroke-width: 2px" />
                   }
                 </svg>
+                @for (d of r.rail.dots; track $index) {
+                  <span class="hit" (click)="toggle($event)" [style.left.px]="d.x - 12" [style.top.px]="d.y - 12" [attr.data-tip]="r.fact.main ? x().fullTime : x().partTime" data-tip-align="start"></span>
+                }
               </div>
               <div class="body">
                 <details>
                   <summary>
                     <span class="role">{{ c().items[r.id].title }}</span>
                     <span class="org">{{ c().items[r.id].org }}</span>
-                    <span class="per mono">{{ per(r.id) }}</span>
+                    <span class="per">{{ per(r.id) }}</span><span class="sr-only"> · {{ r.fact.main ? x().fullTime : x().partTime }}</span>
                   </summary>
                   <ul class="pts">@for (p of c().items[r.id].points; track $index) { <li>{{ p }}</li> }</ul>
                   @if (r.fact.keywords.length) {
@@ -69,6 +73,8 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
     .row { display: flex; gap: 0.75rem; scroll-margin-top: calc(var(--bar-h) + 1.25rem); outline: none; border-radius: 12px; }
     .railcol { position: relative; flex: none; }
     .rail { position: absolute; inset: 0; height: 100%; overflow: visible; }
+    /* the nodes of the line say, on hover, whether the role was full-time (the main line) or a branch of it (part-time), and open or close their entry */
+    .hit { position: absolute; z-index: 2; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; }
     .body { flex: 1; min-width: 0; padding-bottom: 0.25rem; }
     summary { display: grid; gap: 0.125rem; padding-block: 0.5rem; min-height: 44px; }
     summary { position: relative; cursor: pointer; margin-inline: -0.5rem; padding-inline: 0.5rem 2rem; border-radius: 10px; }
@@ -81,7 +87,7 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
     @media (hover: hover) { summary:hover { background: color-mix(in srgb, var(--fg) 6%, transparent); } }
     @media (prefers-reduced-motion: reduce) { summary::after { transition: none; } }
     .role { font-weight: 700; }
-    .per { color: var(--fg-2); font-size: var(--t-footnote); }
+    .per { color: var(--fg-2); font-size: var(--t-footnote); font-weight: 500; font-variant-numeric: tabular-nums; } /* years in the page's own font, figures of one width */
     .pts { margin: 0.25rem 0 0.75rem; display: grid; gap: 0.5rem; }
     .pts li { padding-left: 1rem; position: relative; }
     .pts li::before { content: ''; position: absolute; left: 0; top: 0.7em; width: 5px; height: 5px; border-radius: 50%; background: var(--fg-2); }
@@ -133,6 +139,7 @@ export class Experience {
   readonly c = input.required<SiteContent>();
   protected readonly rows = ROWS;
   protected readonly base = BASE;
+  protected readonly x = computed(() => EXTRA[this.c().lang]);
   protected readonly file = FILES.experience;
 
   protected readonly lens = inject(SkillLens);
@@ -160,6 +167,12 @@ export class Experience {
     const next = e.key === 'Home' ? all[0] : e.key === 'End' ? all[all.length - 1] : all[i + (e.key === 'ArrowDown' ? 1 : -1)];
     e.preventDefault();
     next?.focus();
+  }
+
+  /** A node of the line opens (or closes) the entry it belongs to. */
+  protected toggle(e: Event): void {
+    const details = (e.currentTarget as HTMLElement).closest('.row')?.querySelector('details');
+    if (details) details.open = !details.open;
   }
 
   protected per(id: ItemId): string {

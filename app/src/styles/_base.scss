@@ -118,6 +118,7 @@ html:has(app-pup .pup, dialog[open]) { overflow: hidden; }
 }
 [data-tip][data-tip-pos='top']::after { top: auto; bottom: calc(100% + 8px); --tip-dy: 4px; }
 [data-tip][data-tip-align='end']::after { left: auto; right: 0; --tip-x: 0px; }
+[data-tip][data-tip-align='start']::after { left: 0; --tip-x: 0px; }
 @media (hover: hover) {
   [data-tip]:hover::after { display: block; animation: tip-in 120ms var(--ease-out) 400ms both; }
 }
