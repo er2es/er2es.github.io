@@ -60,7 +60,9 @@ export class Scratch {
 
   protected readonly x = computed(() => EXTRA[this.c().lang]);
   protected readonly state = signal<'idle' | 'scratching' | 'won'>('idle');
-  protected readonly prize = signal(EXTRA.en.prizes[0]);
+  /** Which prize it is; the words come from the language the page is in now, so a switch of language changes them too. */
+  private readonly which = signal(0);
+  protected readonly prize = computed(() => this.x().prizes[this.which()]);
   private last: number | null = null;
 
   constructor() {
@@ -109,7 +111,7 @@ export class Scratch {
         hv.classList.remove('in'); // a photo that was growing back stops
         const next = nextPrize(EXTRA.en.prizes.length, this.last);
         this.last = next;
-        this.prize.set(this.x().prizes[next]);
+        this.which.set(next);
         cv.classList.remove('gone');
         paint(cv, ctx);
         ctx.globalCompositeOperation = 'destination-out'; // what is drawn from now on takes the photo away

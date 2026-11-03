@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
+import { EXTRA } from '../src/app/content/extra';
 
 const EMAIL = 'szabo.jozsef.acc@gmail.com';
 const PAGES = [
@@ -1302,4 +1303,31 @@ test('the scroll-driven animations only move what the graphics card can move (tr
   });
   expect(props.length).toBeGreaterThan(0); // there are some
   expect(props.every((p) => ['translate', 'scale', 'rotate', 'transform', 'opacity'].includes(p))).toBe(true);
+});
+
+test('the prize under the scratch card changes language with the page', async ({ page }) => {
+  test.setTimeout(30_000);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await ready(page, '/hu/');
+  const box = (await page.locator('.portrait').boundingBox())!;
+  await page.mouse.move(box.x + 20, box.y + 30);
+  await page.mouse.down();
+  for (let i = 0; i < 9; i++) {
+    const y = box.y + 24 + (box.height - 48) * (i / 8);
+    await page.mouse.move(box.x + 20, y, { steps: 2 });
+    await page.mouse.move(box.x + box.width - 20, y, { steps: 8 });
+    if (await page.locator('app-scratch .prize.won').count()) break;
+  }
+  await page.mouse.up();
+  const prize = page.locator('app-scratch .prize');
+  await expect(prize).toHaveClass(/won/);
+  const hu = await prize.locator('b').textContent();
+  await page.mouse.move(2, 2);
+  await page.getByRole('link', { name: /English/ }).first().click(); // the switch of language, while the card is up
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+  await expect(prize.locator('em')).toHaveText(/Collect the real prize/);
+  const en = await prize.locator('b').textContent();
+  const titles = (l: 'en' | 'hu') => EXTRA[l].prizes.map((p) => p.title);
+  expect(titles('en').indexOf(en!)).toBeGreaterThanOrEqual(0); // an English prize...
+  expect(titles('en').indexOf(en!)).toBe(titles('hu').indexOf(hu!)); // ...and the very one that was there
 });
