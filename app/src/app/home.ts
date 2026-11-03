@@ -6,6 +6,7 @@ import { initHash, shownSection } from './core/hash';
 import { initTips } from './core/tips';
 import { LangSwitch } from './core/lang';
 import { initLit } from './core/lit';
+import { scrollToSection } from './core/nav';
 import { Seo } from './core/seo';
 import { onTripleShift } from './core/triple-shift';
 import { Egg } from './egg/egg';
@@ -20,12 +21,13 @@ import { Profile } from './sections/profile';
 import { Projects } from './sections/projects';
 import { Skills } from './sections/skills';
 import { AvatarDock } from './shell/avatar-dock';
+import { Backdrop } from './shell/backdrop';
 import { Header } from './shell/header';
 import { TabBar } from './shell/tabbar';
 
 @Component({
   selector: 'app-home',
-  imports: [Header, AvatarDock, TabBar, Egg, Pup, Footer, Hero, Profile, Experience, Skills, Projects, About, Contact, Palette],
+  imports: [Backdrop, Header, AvatarDock, TabBar, Egg, Pup, Footer, Hero, Profile, Experience, Skills, Projects, About, Contact, Palette],
   template: `
     <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
       <filter id="cv-refract" x="0" y="0" width="100%" height="100%">
@@ -33,6 +35,7 @@ import { TabBar } from './shell/tabbar';
         <feDisplacementMap in="SourceGraphic" in2="n" scale="14" xChannelSelector="R" yChannelSelector="G" />
       </filter>
     </svg>
+    <app-backdrop />
     <a class="skip" [attr.href]="mainHref()" (click)="skip($event)">{{ c().ui.skip }}</a>
     <app-header [attr.inert]="behind()" [c]="c()" [locale]="locale()" [active]="active()" (palette)="openPalette()" />
     <app-avatar-dock />
@@ -179,6 +182,13 @@ export class Home {
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
       e.preventDefault();
       this.openPalette();
+      return;
+    }
+    // Alt + 1 to 6: to the section of that place in the menu (with a modifier, so it is never a single-key shortcut)
+    const digit = /^Digit([1-6])$/.exec(e.code);
+    if (digit && e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey && !this.paletteOpen() && !this.eggOpen() && this.pup() === 'off') {
+      e.preventDefault();
+      scrollToSection(SECTION_IDS[Number(digit[1]) - 1]);
     }
   }
 }

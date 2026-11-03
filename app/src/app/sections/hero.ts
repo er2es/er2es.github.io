@@ -1,10 +1,11 @@
 import { Component, ElementRef, afterNextRender, inject, input, signal, DestroyRef } from '@angular/core';
 import type { SiteContent } from '../content/model';
+import { Scratch } from '../egg/scratch';
 import { Email } from './email';
 
 @Component({
   selector: 'app-hero',
-  imports: [Email],
+  imports: [Email, Scratch],
   template: `
     <div class="stage" [class.paused]="paused()">
       <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
@@ -15,11 +16,14 @@ import { Email } from './email';
         <p class="meta"><span class="in"><span class="status"><span class="dot" aria-hidden="true"></span>{{ c().hero.status }}</span> <span class="loc">{{ c().hero.location }}</span></span></p>
         <app-email [c]="c()" />
       </div>
-      <picture class="portrait">
+ <div class="portrait">
+      <picture>
         <source type="image/avif" srcset="/img/portrait-320.avif 320w, /img/portrait-480.avif 480w, /img/portrait-640.avif 640w" sizes="(min-width: 800px) 320px, 240px">
         <source type="image/webp" srcset="/img/portrait-320.webp 320w, /img/portrait-480.webp 480w, /img/portrait-640.webp 640w" sizes="(min-width: 800px) 320px, 240px">
         <img src="/img/portrait-640.jpg" width="320" height="320" [alt]="c().hero.portraitAlt" fetchpriority="high" decoding="async">
       </picture>
+      <app-scratch [c]="c()" />
+      </div>
     </section>
     </div>
   `,
@@ -49,13 +53,16 @@ import { Email } from './email';
     .meta { color: var(--fg-2); font-size: var(--t-subhead); font-weight: 500; letter-spacing: 0.02em; }
     .status { gap: 0.5rem; }
     /* the box has a definite size of its own: with a content-sized width the percentage on the image resolved to 0 until the file arrived, and the text below jumped (layout shift) */
-    .portrait { order: -1; position: relative; display: block; width: min(100%, 15rem); border-radius: 2rem; }
-    .portrait.docked img { visibility: hidden; }
+    .portrait { order: -1; position: relative; display: block; width: min(100%, 15rem); border-radius: var(--radius); } /* the radius of the menu bar */
+    .portrait picture { display: block; border-radius: inherit; } /* the photo takes its corners from the box through this one */
+    .portrait { touch-action: pan-y; -webkit-user-select: none; user-select: none; } /* an easter egg scratches off the photo (egg/scratch.ts): sideways strokes on a touch screen, and no text selection */
+    .portrait.docked img, .portrait.scratching img { visibility: hidden; }
+    /* a coin for a cursor, over the photo: a hint that there is something to scratch (a pointer you hover with, not on a touch screen) */
+    @media (hover: hover) and (pointer: fine) { .portrait:not(.docked) { cursor: url('/img/coin.svg') 11 11, crosshair; } }
     .portrait img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; border-radius: inherit; }
-    @supports (corner-shape: squircle) { .portrait, .portrait img { corner-shape: squircle; } } /* like the cards beside it */
     @media (min-width: 800px) {
       .hero { grid-template-columns: 1.2fr 0.8fr; }
-      .portrait { order: 0; justify-self: end; border-radius: 2.5rem; width: min(100%, 20rem); }
+      .portrait { order: 0; justify-self: end; width: min(100%, 20rem); }
     }
 
     /*

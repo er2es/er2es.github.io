@@ -12,7 +12,7 @@ import { copyText } from '../core/clipboard';
 @Component({
   selector: 'app-email',
   template: `
-    <div class="email">
+    <div class="email" [class.compact]="compact()">
       <span class="anchor">
         <button type="button" class="btn addr" (click)="copy()">
           <span class="text">{{ email }}</span>
@@ -53,6 +53,10 @@ import { copyText } from '../core/clipboard';
       font: 500 var(--t-footnote) / 1.3 var(--font); pointer-events: none;
     }
     .bubble svg { flex: none; color: var(--accent); }
+    /* a smaller one, for a small place (the card under the portrait): the bubble goes above the button, inside the card */
+    .compact .addr { min-height: 36px; padding: 0 0.85rem; gap: 0.4rem; font: 600 var(--t-footnote) / 1 var(--font); }
+    .compact .addr svg { width: 14px; height: 14px; }
+    .compact .bubble { top: auto; bottom: calc(100% + 6px); }
     @keyframes bubble-in { from { opacity: 0; translate: 0 -4px; } }
     @keyframes tick { from { stroke-dashoffset: 1; } }
     @media (prefers-reduced-motion: no-preference) {
@@ -63,6 +67,8 @@ import { copyText } from '../core/clipboard';
 })
 export class Email {
   readonly c = input.required<SiteContent>();
+  /** Smaller, for a small place. */
+  readonly compact = input(false);
   protected readonly email = EMAIL;
   protected readonly x = computed(() => EXTRA[this.c().lang]);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);

@@ -1,5 +1,5 @@
 import { Component, DestroyRef, ElementRef, afterNextRender, computed, effect, inject, input, output, signal, untracked } from '@angular/core';
-import { SECTION_IDS, type Locale, type SectionId, type SiteContent } from '../content/model';
+import { FILES, SECTION_IDS, type Locale, type SectionId, type SiteContent } from '../content/model';
 import { LangSwitch } from '../core/lang';
 import { anchorHref, inPageClick, pagePath } from '../core/nav';
 import { squirclePath } from '../core/squircle';
@@ -17,11 +17,11 @@ import { SectionIcon } from './section-icon';
         <span class="avatar-slot" aria-hidden="true"><svg class="sz" [attr.viewBox]="mono.box" focusable="false"><path [attr.d]="mono.d" /></svg></span>
         <span class="mark">{{ c().hero.name }}</span>
       </a>
-      <nav class="links" [attr.aria-label]="c().ui.navLabel">
-        @for (s of sections; track s) {
-          <a [attr.href]="href(s)" [attr.aria-current]="active() === s ? 'location' : null" (click)="go($event, s)"><app-section-icon [id]="s" [size]="18" />{{ c().ui.sections[s] }}</a>
-        }
+      <nav class="links" [attr.aria-label]="c().ui.navLabel" [attr.data-dir]="dir()" (pointerover)="over($event)" (pointermove)="pull($event)" (pointerleave)="out()">
         <span class="sel" aria-hidden="true"></span>
+        @for (s of sections; track s; let i = $index) {
+          <a [attr.href]="href(s)" [attr.aria-current]="active() === s ? 'location' : null" [attr.data-i]="i" [attr.data-tip]="files[s]" data-tip-mono (click)="go($event, s)"><app-section-icon [id]="s" [size]="18" [animate]="active() === s" /><span class="t">{{ c().ui.sections[s] }}</span><b class="prog" aria-hidden="true"></b></a>
+        }
       </nav>
       <div class="ctl">
         <button type="button" class="chip icon" aria-keyshortcuts="Control+K Meta+K" [attr.aria-label]="c().ui.palette.open" [attr.data-tip]="c().ui.palette.open + ' (Ctrl K)'" (click)="palette.emit()">
@@ -71,6 +71,8 @@ import { SectionIcon } from './section-icon';
     .avatar-slot { flex: none; display: grid; place-items: center; overflow: hidden; width: 36px; height: 36px; border-radius: 12px; background: var(--tint-current); transition: background-color var(--dur-short) var(--ease-out); }
     /* the monogram holds the place until the portrait arrives, and is pushed out upwards by it (and drops back in when the portrait leaves) */
     .sz { width: 24px; height: auto; fill: var(--fg); transition: translate var(--dur-med) var(--ease-spring), scale var(--dur-med) var(--ease-spring), opacity var(--dur-short) var(--ease-out); }
+    @media (hover: hover) { .brand:hover .avatar-slot:not(.filled) { background: var(--tint-press); } }
+    @media (hover: hover) and (prefers-reduced-motion: no-preference) { .brand:hover .avatar-slot:not(.filled) .sz { scale: 1.08; } }
     .avatar-slot.filled { background: transparent; }
     .avatar-slot.filled .sz { translate: 0 -140%; scale: 0.6; opacity: 0; }
     /* scroll edge: text passing above the floating bar softens into the page instead of showing sharp */
@@ -103,9 +105,13 @@ import { SectionIcon } from './section-icon';
         background: var(--tint-current);
         /* quick enough to keep up with the pointer; the short delay (only on the way back to the current item) keeps the
            pill from jumping away while the pointer crosses the edge of the menu */
-        transition: left var(--dur-short) var(--ease-spring) 90ms, right var(--dur-short) var(--ease-spring) 90ms,
+        transition: left var(--lag) var(--ease-spring) 90ms, right var(--lag) var(--ease-spring) 90ms,
           background-color var(--dur-short) var(--ease-out), scale var(--dur-press) var(--ease-out);
       }
+      /* it stretches as it travels: the edge it is heading with is quick, the one behind it follows (data-dir: which way) */
+      .links { --lead: calc(var(--dur-short) * 0.75); --lag: var(--dur-med); }
+      .links[data-dir='right'] .sel { transition: left var(--lag) var(--ease-spring) 90ms, right var(--lead) var(--ease-out) 90ms, background-color var(--dur-short) var(--ease-out), scale var(--dur-press) var(--ease-out); }
+      .links[data-dir='left'] .sel { transition: left var(--lead) var(--ease-out) 90ms, right var(--lag) var(--ease-spring) 90ms, background-color var(--dur-short) var(--ease-out), scale var(--dur-press) var(--ease-out); }
       @media (hover: hover) {
         .links:has(a:hover) a[aria-current]:not(:hover) { anchor-name: none; }
         .links a:hover { anchor-name: --nav-target; }
@@ -116,10 +122,16 @@ import { SectionIcon } from './section-icon';
       .links.links:has(a:active) .sel { background: var(--tint-press); scale: 0.96; transition-delay: 0s; }
     }
     @media (max-width: 1099px) { .links app-section-icon { display: none; } } /* the bar has no room for them between 900 and 1100 px */
+    /* the icon and the label are drawn a pixel or two towards the pointer (--tx, --ty are set in script) */
+    .links a app-section-icon, .links a .t { translate: var(--tx, 0px) var(--ty, 0px); }
+    .links a .t { transition: translate var(--dur-short) var(--ease-out); }
     .links a app-section-icon { transition: translate var(--dur-short) var(--ease-spring), color var(--dur-short) var(--ease-out); }
+    /* how far through its section the page is (--p, from script): the current item's pill fills with a tint of the accent, left to right */
+    .links a .prog { position: absolute; z-index: -1; inset: 0; border-radius: var(--r-ctl); background: color-mix(in srgb, var(--accent) 22%, transparent); clip-path: inset(0 calc((1 - var(--p, 0)) * 100%) 0 0); opacity: 0; transition: opacity var(--dur-short) var(--ease-out); pointer-events: none; }
+    .links a[aria-current] .prog { opacity: 1; }
     .links a[aria-current] app-section-icon { color: var(--accent); }
     @media (hover: hover) { .links a:hover app-section-icon { color: var(--accent); } }
-    @media (hover: hover) and (prefers-reduced-motion: no-preference) { .links a:hover app-section-icon { translate: 0 -2px; } }
+    @media (hover: hover) and (prefers-reduced-motion: no-preference) { .links a:hover app-section-icon { translate: var(--tx, 0px) calc(var(--ty, 0px) - 2px); } }
     @media (hover: hover) { .links a:hover { color: var(--fg); } }
     /* with the pill, an item has no background of its own (it would show as a second shape under the pill) */
     @supports not (anchor-name: --a) { @media (hover: hover) { .links a:not([aria-current]):hover { background: var(--tint-hover); } } }
@@ -170,6 +182,15 @@ export class Header {
   readonly palette = output<void>();
 
   protected readonly mono = MONOGRAM;
+  /** The file name each section is known by (the tooltip of its menu item). */
+  protected readonly files = FILES;
+  /** Which way the pill is heading (it stretches towards it): towards a later section is "right". */
+  protected readonly dir = signal<'right' | 'left'>('right');
+  private hoverIdx: number | null = null;
+  private lastActive = SECTION_IDS.indexOf(this.active());
+  private pulled: HTMLElement | null = null;
+  /** Measures the progress through the current section on the next frame (set once the page is up). */
+  private measure: () => void = () => undefined;
   protected readonly theme = inject(Theme);
   /** The progress line follows the bar's own outline (squircle corners included), whatever width the bar has. */
   protected readonly outline = signal('');
@@ -192,7 +213,42 @@ export class Header {
       });
     });
     destroy.onDestroy(() => clearTimeout(this.hintTimer));
+    // the current section changes (by scrolling or by a click): the pill travels there, in that direction
+    effect(() => {
+      const i = SECTION_IDS.indexOf(this.active());
+      untracked(() => {
+        if (this.hoverIdx === null && i !== this.lastActive) this.dir.set(i > this.lastActive ? 'right' : 'left');
+        this.lastActive = i;
+        this.measure(); // the new current item has no measure yet
+      });
+    });
     afterNextRender(() => {
+      // how far through the current section the page is: the line under its menu item
+      let pr = 0;
+      const progress = (): void => {
+        pr = 0;
+        const el = document.getElementById(this.active());
+        const link = this.host.nativeElement.querySelectorAll<HTMLElement>('.links a')[SECTION_IDS.indexOf(this.active())];
+        if (!el || !link) return;
+        const r = el.getBoundingClientRect();
+        let p = (innerHeight * 0.4 - r.top) / r.height;
+        if (this.active() === SECTION_IDS[SECTION_IDS.length - 1]) {
+          // the last section cannot be scrolled up to the reading line: it fills from when it has come well into view and is full when the page is at its end
+          const start = r.top + scrollY - innerHeight * 0.7;
+          p = (scrollY - start) / Math.max(1, document.documentElement.scrollHeight - innerHeight - start);
+        }
+        link.style.setProperty('--p', Math.min(1, Math.max(0, p)).toFixed(3));
+      };
+      const onScroll = (): void => {
+        if (!pr) pr = requestAnimationFrame(progress);
+      };
+      this.measure = onScroll;
+      addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+      destroy.onDestroy(() => {
+        removeEventListener('scroll', onScroll);
+        cancelAnimationFrame(pr);
+      });
       const bar = this.host.nativeElement.querySelector<HTMLElement>('.bar');
       if (!bar) return;
       const fit = (): void => this.outline.set(squirclePath(bar.offsetWidth, bar.offsetHeight, 22, 2));
@@ -298,6 +354,44 @@ export class Header {
 
   protected go(e: Event, id: SectionId): void {
     inPageClick(e, id);
+  }
+
+  /** The pointer enters an item: the pill will travel there, so it knows which way (and the item before it lets go of its pull). */
+  protected over(e: PointerEvent): void {
+    if (e.pointerType !== 'mouse') return;
+    const a = (e.target as Element).closest<HTMLElement>('a[data-i]');
+    const i = a ? Number(a.dataset['i']) : null;
+    if (i === null || i === this.hoverIdx) return;
+    this.dir.set(i > (this.hoverIdx ?? this.lastActive) ? 'right' : 'left');
+    this.hoverIdx = i;
+    this.release();
+  }
+
+  /** The pointer leaves the menu: the pill goes back to the current item, in that direction. */
+  protected out(): void {
+    if (this.hoverIdx !== null) this.dir.set(this.lastActive > this.hoverIdx ? 'right' : 'left');
+    this.hoverIdx = null;
+    this.release();
+  }
+
+  /** The icon and the label of the item under the pointer lean towards it, a pixel or two (not under reduced motion). */
+  protected pull(e: PointerEvent): void {
+    if (e.pointerType !== 'mouse' || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const a = (e.target as Element).closest<HTMLElement>('a[data-i]');
+    if (!a) return;
+    const r = a.getBoundingClientRect();
+    const k = (v: number, half: number): number => Math.min(1, Math.max(-1, v / half));
+    a.style.setProperty('--tx', `${(k(e.clientX - (r.left + r.width / 2), r.width / 2) * 2).toFixed(2)}px`);
+    a.style.setProperty('--ty', `${(k(e.clientY - (r.top + r.height / 2), r.height / 2) * 1.5).toFixed(2)}px`);
+    this.pulled = a;
+  }
+
+  private release(): void {
+    const a = this.pulled;
+    if (!a || (this.hoverIdx !== null && a.dataset['i'] === String(this.hoverIdx))) return;
+    a.style.removeProperty('--tx');
+    a.style.removeProperty('--ty');
+    this.pulled = null;
   }
 
   protected switchLang(e: Event): void {
