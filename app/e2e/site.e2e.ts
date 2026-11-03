@@ -1285,3 +1285,21 @@ test.describe('the scratch card on the portrait', () => {
     await expect(prize).not.toHaveClass(/on/);
   });
 });
+
+test('the scroll-driven animations only move what the graphics card can move (transform, translate, scale, opacity)', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await ready(page, '/hu/');
+  await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; scrollTo(0, document.getElementById('experience')!.offsetTop - 200); });
+  await page.waitForTimeout(500);
+  const props = await page.evaluate(() => {
+    const all = new Set<string>();
+    for (const a of document.getAnimations()) {
+      if (!(a.timeline && 'source' in a.timeline)) continue; // the ones driven by scrolling
+      for (const k of (a.effect as KeyframeEffect).getKeyframes()) for (const p of Object.keys(k)) all.add(p);
+    }
+    for (const skip of ['offset', 'computedOffset', 'easing', 'composite']) all.delete(skip);
+    return [...all].sort();
+  });
+  expect(props.length).toBeGreaterThan(0); // there are some
+  expect(props.every((p) => ['translate', 'scale', 'rotate', 'transform', 'opacity'].includes(p))).toBe(true);
+});
