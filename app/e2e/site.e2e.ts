@@ -1331,3 +1331,63 @@ test('the prize under the scratch card changes language with the page', async ({
   expect(titles('en').indexOf(en!)).toBeGreaterThanOrEqual(0); // an English prize...
   expect(titles('en').indexOf(en!)).toBe(titles('hu').indexOf(hu!)); // ...and the very one that was there
 });
+
+test.describe('the scratch card on a touch screen', () => {
+  test.use({ hasTouch: true, isMobile: true });
+
+  const finger = async (page: Page) => {
+    const cdp = await page.context().newCDPSession(page);
+    const send = (type: 'touchStart' | 'touchMove' | 'touchEnd', x?: number, y?: number) =>
+      cdp.send('Input.dispatchTouchEvent', { type, touchPoints: type === 'touchEnd' ? [] : [{ x: x!, y: y! }] });
+    return { start: (x: number, y: number) => send('touchStart', x, y), move: (x: number, y: number) => send('touchMove', x, y), end: () => send('touchEnd') };
+  };
+  const setup = async (page: Page) => {
+    await page.setViewportSize({ width: 390, height: 780 });
+    await ready(page, '/hu/');
+    await page.waitForTimeout(500);
+    return (await page.locator('.portrait').boundingBox())!;
+  };
+
+  test('sideways strokes scratch at once, and the page stays where it is', async ({ page }) => {
+    const box = await setup(page);
+    const f = await finger(page);
+    const y0 = await page.evaluate(() => scrollY);
+    await f.start(box.x + 20, box.y + 30);
+    for (let r = 0; r < 9; r++) {
+      const y = box.y + 28 + r * ((box.height - 56) / 8);
+      const [a, b] = r % 2 ? [box.x + box.width - 20, box.x + 20] : [box.x + 20, box.x + box.width - 20];
+      for (let k = 0; k <= 8; k++) await f.move(a + ((b - a) * k) / 8, y);
+      if (await page.locator('app-scratch .prize.won').count()) break;
+    }
+    await f.end();
+    await expect(page.locator('app-scratch .prize')).toHaveClass(/won/);
+    expect(await page.evaluate(() => scrollY)).toBe(y0);
+  });
+
+  test('a finger held still arms the photo, and then every stroke scratches, up and down too, without scrolling the page', async ({ page }) => {
+    const box = await setup(page);
+    const f = await finger(page);
+    const y0 = await page.evaluate(() => scrollY);
+    await f.start(box.x + 20, box.y + 40);
+    await expect(page.locator('.portrait')).toHaveClass(/armed/, { timeout: 2000 }); // it is ready
+    for (let c = 0; c < 9; c++) {
+      const x = box.x + 20 + c * ((box.width - 40) / 8);
+      const [a, b] = c % 2 ? [box.y + box.height - 20, box.y + 20] : [box.y + 20, box.y + box.height - 20];
+      for (let k = 0; k <= 8; k++) await f.move(x, a + ((b - a) * k) / 8);
+      if (await page.locator('app-scratch .prize.won').count()) break;
+    }
+    await f.end();
+    await expect(page.locator('app-scratch .prize')).toHaveClass(/won/);
+    await expect(page.locator('.portrait')).not.toHaveClass(/armed/);
+    expect(await page.evaluate(() => scrollY)).toBe(y0);
+  });
+
+  test('a swipe up or down that starts on the photo is the page scrolling, not a scratch', async ({ page }) => {
+    const box = await setup(page);
+    const f = await finger(page);
+    await f.start(box.x + box.width / 2, box.y + box.height - 20);
+    for (let k = 1; k <= 8; k++) await f.move(box.x + box.width / 2 + k, box.y + box.height - 20 - k * 12);
+    await f.end();
+    await expect(page.locator('app-scratch .prize')).not.toHaveClass(/on/);
+  });
+});

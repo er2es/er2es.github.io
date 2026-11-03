@@ -12,8 +12,9 @@ import { confetti } from './confetti';
  * and the rest falls off in a burst of confetti; the card stays for five seconds (a line along its bottom counts them down,
  * like the other short answers of the page) and the photo fades back in. Scroll away from
  * it and back and the card is gone.
- * The card is not announced or reachable until it has been won. On a touch screen, sideways strokes scratch (the page
- * still scrolls under a vertical one).
+ * The card is not announced or reachable until it has been won. On a touch screen, a sideways stroke scratches at once and
+ * a vertical one still scrolls the page; hold a finger still for a moment (a small buzz and a shrink say it is ready) and
+ * every stroke scratches, in any direction, without moving the page.
  */
 @Component({
   selector: 'app-scratch',
@@ -85,6 +86,9 @@ export class Scratch {
       let down: { x: number; y: number } | null = null; // where the pointer last was, while the button is down
       let from: { x: number; y: number } | null = null; // where it went down
       let measured = 0;
+      let touch = false; // the gesture is a finger's
+      let armed = false; // it scratches: a mouse button down, or a finger that moved sideways or has stayed still for a moment
+      let armTimer: ReturnType<typeof setTimeout> | undefined;
       let restoreTimer: ReturnType<typeof setTimeout> | undefined;
       let hideTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -153,12 +157,39 @@ export class Scratch {
         restoreTimer = setTimeout(restore, 5000); // as long as the line along the bottom of the card takes to run out
       };
 
+      /** A finger: pressed and still for a moment, the photo gives a small buzz and a little shrink, and from then on any stroke scratches. */
+      const arm = (): void => {
+        armed = true;
+        box.classList.add('armed');
+        navigator.vibrate?.(10);
+      };
+      const disarm = (): void => {
+        clearTimeout(armTimer);
+        armed = false;
+        box.classList.remove('armed');
+      };
+
       const onDown = (e: PointerEvent): void => {
         if ((e.pointerType === 'mouse' && e.button !== 0) || box.classList.contains('docked') || (e.target as Element).closest('app-email')) return;
         down = from = { x: e.clientX, y: e.clientY };
+        touch = e.pointerType !== 'mouse';
+        if (touch) armTimer = setTimeout(arm, 300);
+        else armed = true; // a mouse scratches at once
       };
       const onMove = (e: PointerEvent): void => {
         if (!down || !from || this.state() === 'won') return;
+        if (!armed) {
+          // a finger that moves before it has been still: sideways it is a scratch, up or down it is the page being scrolled
+          const dx = e.clientX - from.x;
+          const dy = e.clientY - from.y;
+          if (Math.hypot(dx, dy) < 10) return;
+          clearTimeout(armTimer);
+          if (Math.abs(dx) > Math.abs(dy) * 1.5) armed = true;
+          else {
+            down = from = null;
+            return;
+          }
+        }
         if (this.state() === 'idle') {
           if (Math.hypot(e.clientX - from.x, e.clientY - from.y) < 10) return; // a click is not a scratch
           begin();
@@ -168,7 +199,7 @@ export class Scratch {
           ctx.moveTo(p0.x, p0.y);
         }
         const p = point(e.clientX, e.clientY);
-        ctx.lineWidth = Math.max(26, cv.width * 0.12);
+        ctx.lineWidth = Math.max(26, cv.width * (touch ? 0.17 : 0.12)); // a finger is wider than a pointer
         ctx.lineCap = ctx.lineJoin = 'round';
         ctx.lineTo(p.x, p.y);
         ctx.stroke();
@@ -178,17 +209,25 @@ export class Scratch {
         const now = performance.now();
         if (now - measured > 120) {
           measured = now;
-          if (share() >= 0.4) win();
+          if (share() >= (touch ? 0.3 : 0.4)) win();
         }
       };
       const onUp = (): void => {
         down = from = null;
+        disarm();
         if (this.state() === 'scratching') {
-          if (share() >= 0.4) win();
+          if (share() >= (touch ? 0.3 : 0.4)) win();
           else restoreTimer = setTimeout(restore, 6000); // left half scratched: the photo comes back
         }
       };
       const noDrag = (e: Event): void => e.preventDefault();
+      /** Once it scratches, a finger must not scroll the page; and the menu a long press opens (save the image...) must not open. */
+      const noScroll = (e: TouchEvent): void => {
+        if (armed && e.cancelable) e.preventDefault();
+      };
+      const noMenu = (e: Event): void => {
+        if (touch) e.preventDefault();
+      };
 
       const watch = new IntersectionObserver(([entry]) => {
         if (!entry.isIntersecting && this.state() !== 'idle') reset();
@@ -199,6 +238,8 @@ export class Scratch {
       box.addEventListener('pointerup', onUp);
       box.addEventListener('pointercancel', onUp);
       box.addEventListener('dragstart', noDrag);
+      box.addEventListener('touchmove', noScroll, { passive: false });
+      box.addEventListener('contextmenu', noMenu);
       destroy.onDestroy(() => {
         watch.disconnect();
         clearTimeout(restoreTimer);
@@ -208,6 +249,9 @@ export class Scratch {
         box.removeEventListener('pointerup', onUp);
         box.removeEventListener('pointercancel', onUp);
         box.removeEventListener('dragstart', noDrag);
+        box.removeEventListener('touchmove', noScroll);
+        box.removeEventListener('contextmenu', noMenu);
+        clearTimeout(armTimer);
       });
     });
   }

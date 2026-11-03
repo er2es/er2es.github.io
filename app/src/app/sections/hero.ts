@@ -55,7 +55,8 @@ import { Email } from './email';
     /* the box has a definite size of its own: with a content-sized width the percentage on the image resolved to 0 until the file arrived, and the text below jumped (layout shift) */
     .portrait { order: -1; position: relative; display: block; width: min(100%, 15rem); border-radius: var(--radius); } /* the radius of the menu bar */
     .portrait picture { display: block; border-radius: inherit; } /* the photo takes its corners from the box through this one */
-    .portrait { touch-action: pan-y; -webkit-user-select: none; user-select: none; } /* an easter egg scratches off the photo (egg/scratch.ts): sideways strokes on a touch screen, and no text selection */
+    .portrait { touch-action: pan-y; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; transition: scale var(--dur-press) var(--ease-out); }
+    .portrait.armed { scale: 0.97; } /* a finger has held still on the photo: it is ready to be scratched */ /* an easter egg scratches off the photo (egg/scratch.ts): sideways strokes on a touch screen, and no text selection */
     .portrait.docked img, .portrait.scratching img { visibility: hidden; }
     /* a coin for a cursor, over the photo: a hint that there is something to scratch (a pointer you hover with, not on a touch screen) */
     @media (hover: hover) and (pointer: fine) { .portrait:not(.docked) { cursor: url('/img/coin.svg') 11 11, crosshair; } }
