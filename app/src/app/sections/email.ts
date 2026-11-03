@@ -54,7 +54,8 @@ import { copyText } from '../core/clipboard';
     }
     .bubble svg { flex: none; color: var(--accent); }
     /* a smaller one, for a small place (the card under the portrait): the bubble goes above the button, inside the card */
-    .compact .addr { min-height: 36px; padding: 0 0.85rem; gap: 0.4rem; font: 600 var(--t-footnote) / 1 var(--font); }
+    .compact .addr { min-height: 36px; padding: 0 0.7rem; gap: 0.35rem; font: 600 0.75rem / 1 var(--font); white-space: nowrap; }
+    .compact .addr .text { overflow-wrap: normal; } /* the address stays on one line, even on the smallest card */
     .compact .addr svg { width: 14px; height: 14px; }
     .compact .bubble { top: auto; bottom: calc(100% + 6px); }
     @keyframes bubble-in { from { opacity: 0; translate: 0 -4px; } }
