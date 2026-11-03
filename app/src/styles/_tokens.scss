@@ -19,6 +19,7 @@
   --tint-hover: color-mix(in srgb, var(--fg) 11%, transparent);
   --tint-current: color-mix(in srgb, var(--fg) 19%, transparent);
   --tint-press: color-mix(in srgb, var(--fg) 24%, transparent);
+  --band: color-mix(in srgb, var(--bg-2) 40%, transparent); // every other section: the backdrop shows through it
   // the side branches of the career line: each its own colour, none of them the accent (which is the line's progress)
   --lane-1: rgb(77 163 255);
   --lane-2: rgb(255 179 64);
@@ -50,6 +51,7 @@
   --tint-press: color-mix(in srgb, var(--fg) 28%, transparent);
 
   --lane-0: var(--fg-2);
+  --band: color-mix(in srgb, var(--fg) 4.5%, transparent); // on the light page a tint of the text colour, which the near-white grey of --bg-2 could not give
   --lane-1: rgb(10 100 200);
   --lane-2: rgb(180 95 6);
   --lane-3: rgb(138 63 214);

@@ -14,8 +14,7 @@ body {
   margin: 0;
   font: 400 var(--t-body) / 1.47 var(--font);
   color: var(--fg);
-  background: var(--bg);
-  -webkit-font-smoothing: antialiased;
+  -webkit-font-smoothing: antialiased; /* no background of its own: the page's is the root's, so the backdrop (z-index -1) shows above it */
 }
 
 h1, h2, h3, p, ul, ol, dl, dd { margin: 0; }
@@ -119,6 +118,7 @@ html:has(app-pup .pup, dialog[open]) { overflow: hidden; }
 [data-tip][data-tip-pos='top']::after { top: auto; bottom: calc(100% + 8px); --tip-dy: 4px; }
 [data-tip][data-tip-align='end']::after { left: auto; right: 0; --tip-x: 0px; }
 [data-tip][data-tip-align='start']::after { left: 0; --tip-x: 0px; }
+[data-tip][data-tip-mono]::after { font-family: var(--mono); letter-spacing: 0.02em; }
 @media (hover: hover) {
   [data-tip]:hover::after { display: block; animation: tip-in 120ms var(--ease-out) 400ms both; }
 }

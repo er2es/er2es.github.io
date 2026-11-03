@@ -409,14 +409,14 @@ test.describe('email address: visible, copyable, answered on the button', () => 
     test(`${p.url}: the address is text in the hero and contact; Enter copies it and a bubble under the button confirms`, async ({ page, context }) => {
       await context.grantPermissions(['clipboard-read', 'clipboard-write']);
       await ready(page, p.url);
-      await expect(page.locator('.hero').getByText(EMAIL, { exact: true })).toBeVisible();
+      await expect(page.locator('.hero > .text').getByText(EMAIL, { exact: true })).toBeVisible();
       await expect(page.locator('#contact').getByText(EMAIL, { exact: true })).toBeVisible();
       await expect(page.locator('#contact a[href^="mailto:"]')).toHaveAttribute('href', `mailto:${EMAIL}`); // the mail icon beside the other links
-      const copy = page.locator('.hero').getByRole('button', { name: new RegExp(EMAIL.replace(/\./g, '\\.')) });
+      const copy = page.locator('.hero > .text').getByRole('button', { name: new RegExp(EMAIL.replace(/\./g, '\\.')) });
       await copy.focus();
       await page.keyboard.press('Enter');
-      const heard = page.locator('.hero [role=status]');
-      const bubble = page.locator('.hero .bubble');
+      const heard = page.locator('.hero > .text [role=status]');
+      const bubble = page.locator('.hero > .text .bubble');
       await expect(heard).toHaveText(COPIED[p.lang as 'en' | 'hu']); // a screen reader hears the sentence
       await expect(bubble).toHaveText(SHORT[p.lang as 'en' | 'hu']); // the eye gets the short word, under the icon
       await expect(copy.locator('.tick')).toHaveCount(1); // and the copy icon has turned into a check
@@ -440,8 +440,8 @@ test.describe('email address: visible, copyable, answered on the button', () => 
       document.execCommand = () => false;
     });
     await ready(page, '/');
-    await page.locator('.hero').getByRole('button', { name: /@/ }).click();
-    await expect(page.locator('.hero .bubble.error')).toHaveText('Could not copy. The address is shown below.');
+    await page.locator('.hero > .text').getByRole('button', { name: /@/ }).click();
+    await expect(page.locator('.hero > .text .bubble.error')).toHaveText('Could not copy. The address is shown below.');
     expect(await page.evaluate(() => getSelection()?.toString())).toBe(EMAIL);
   });
 });
@@ -1018,8 +1018,8 @@ test('a short-lived answer counts its two seconds down in a line along its botto
   await page.emulateMedia({ colorScheme: 'dark' });
   await ready(page, '/hu/');
   const life = (sel: string) => page.locator(sel).evaluate((e) => { const a = getComputedStyle(e, '::after'); return `${a.animationName} ${a.animationDuration}`; });
-  await page.locator('.hero button.addr').click();
-  await expect.poll(() => life('.hero .bubble')).toBe('info-life 2s');
+  await page.locator('.hero > .text button.addr').click();
+  await expect.poll(() => life('.hero > .text .bubble')).toBe('info-life 2s');
   await page.getByRole('radiogroup', { name: 'Téma' }).getByRole('radio', { name: 'Világos' }).click();
   await expect.poll(() => life('app-header .hint')).toBe('info-life 2s');
 });
@@ -1103,9 +1103,185 @@ test('on a phone the "copied" bubble under the hero email button is not cut off'
   for (const width of [320, 390]) {
     await page.setViewportSize({ width, height: 700 });
     await ready(page, '/hu/');
-    await page.locator('.hero button.addr').click();
-    await expect(page.locator('.hero .bubble')).toBeVisible();
-    const m = await page.evaluate(() => ({ bubble: document.querySelector('.hero .bubble')!.getBoundingClientRect().bottom, stage: document.querySelector('.stage')!.getBoundingClientRect().bottom }));
+    await page.locator('.hero > .text button.addr').click();
+    await expect(page.locator('.hero > .text .bubble')).toBeVisible();
+    const m = await page.evaluate(() => ({ bubble: document.querySelector('.hero > .text .bubble')!.getBoundingClientRect().bottom, stage: document.querySelector('.stage')!.getBoundingClientRect().bottom }));
     expect(m.bubble).toBeLessThanOrEqual(m.stage);
   }
+});
+
+test.describe('the backdrop', () => {
+  const painted = (page: Page) => page.evaluate(() => {
+    const cv = document.querySelector('app-backdrop canvas') as HTMLCanvasElement;
+    const px = cv.getContext('2d')!.getImageData(0, 0, cv.width, cv.height).data;
+    let n = 0;
+    let sum = 0;
+    for (let i = 3; i < px.length; i += 4) if (px[i] > 0) { n++; sum += (i / 4) % 997 * px[i]; }
+    return { n, sum };
+  });
+
+  test('sits behind the page, hidden from assistive technology, never catches the pointer, and draws lines that move with the scroll and bend around the mouse', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await ready(page, '/hu/');
+    const host = page.locator('app-backdrop');
+    await expect(host).toHaveAttribute('aria-hidden', 'true');
+    expect(await host.evaluate((e) => { const c = getComputedStyle(e); return [c.position, c.zIndex, c.pointerEvents]; })).toEqual(['fixed', '-1', 'none']);
+    const before = await painted(page);
+    expect(before.n).toBeGreaterThan(2000);
+    await page.mouse.move(300, 300);
+    await page.mouse.move(640, 420, { steps: 5 });
+    await page.waitForTimeout(500);
+    const bent = await painted(page);
+    expect(bent.sum).not.toBe(before.sum); // the pointer moved the lines
+    await page.evaluate(() => scrollTo({ top: 1600, behavior: 'instant' }));
+    await page.mouse.move(2, 2); // and away again: the bend lets go
+    await page.waitForTimeout(900);
+    const scrolled = await painted(page);
+    expect(scrolled.sum).not.toBe(bent.sum); // the scroll moved them
+  });
+
+  test('under reduced motion the lines are drawn once and stay still', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await ready(page, '/hu/');
+    const first = await painted(page);
+    expect(first.n).toBeGreaterThan(2000);
+    await page.mouse.move(300, 300);
+    await page.mouse.move(640, 420, { steps: 5 });
+    await page.evaluate(() => scrollTo({ top: 1200, behavior: 'instant' }));
+    await page.waitForTimeout(500);
+    expect((await painted(page)).sum).toBe(first.sum);
+  });
+});
+
+test.describe('the menu', () => {
+  test('the pill stretches towards where it goes, the label leans to the pointer, and the menu item names its file', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await ready(page, '/hu/');
+    const nav = page.locator('app-header .links');
+    const links = nav.locator('a');
+    await links.nth(3).hover();
+    await expect(nav).toHaveAttribute('data-dir', 'right'); // towards a later section
+    await links.nth(1).hover();
+    await expect(nav).toHaveAttribute('data-dir', 'left');
+    const box = (await links.nth(1).boundingBox())!;
+    await page.mouse.move(box.x + box.width - 6, box.y + box.height / 2);
+    await expect.poll(() => links.nth(1).evaluate((e) => e.style.getPropertyValue('--tx'))).not.toBe('');
+    await page.mouse.move(2, 2); // away from the menu: the lean is let go
+    await expect.poll(() => links.nth(1).evaluate((e) => e.style.getPropertyValue('--tx'))).toBe('');
+    expect(await links.evaluateAll((els) => els.map((e) => e.getAttribute('data-tip')))).toEqual(['README.md', 'CHANGELOG', 'tests/', 'projects/', 'ABOUT', 'CONTACT']);
+    await links.nth(0).hover();
+    await expect.poll(() => links.nth(0).evaluate((e) => getComputedStyle(e, '::after').fontFamily), { timeout: 3000 }).toMatch(/mono|Consolas|Menlo/i);
+  });
+
+  test('the current item fills with the progress through its section (the last one by the end of the page); the current icon draws itself', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await ready(page, '/hu/');
+    await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; });
+    const current = page.locator('app-header .links a[aria-current]');
+    const at = (frac: number) => page.evaluate((f) => { const s = document.getElementById('experience')!; scrollTo(0, s.offsetTop + s.offsetHeight * f - innerHeight * 0.4); }, frac);
+    await at(0.1);
+    await expect(current).toContainText('Tapasztalat');
+    await expect(current.locator('app-section-icon svg')).toHaveClass(/on/);
+    const p = () => current.evaluate((e) => parseFloat(e.style.getPropertyValue('--p')));
+    await expect.poll(p).toBeLessThan(0.3);
+    await at(0.8);
+    await expect.poll(p).toBeGreaterThan(0.6);
+    await expect.poll(() => current.locator('.prog').evaluate((e) => getComputedStyle(e).opacity)).toBe('1'); // it fades in
+    await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+    await expect(current).toContainText('Kapcsolat');
+    await expect.poll(p).toBeGreaterThan(0.95); // the last section is full at the bottom of the page
+  });
+
+  test('Alt+1 to 6 jump to the sections; a click on a menu item brings its heading a line that goes away', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await ready(page, '/hu/');
+    await page.keyboard.press('Alt+3');
+    await expect(page.locator('app-header .links a[aria-current]')).toContainText('Kompetenci');
+    await page.keyboard.press('Control+Alt+2'); // with another modifier: nothing
+    await page.waitForTimeout(300);
+    await expect(page.locator('app-header .links a[aria-current]')).toContainText('Kompetenci');
+    await page.locator('app-header .links a', { hasText: 'Projektek' }).click();
+    await expect(page.locator('#projects h2')).toHaveClass(/flash-title/, { timeout: 4000 });
+    await expect(page.locator('#projects h2')).not.toHaveClass(/flash-title/, { timeout: 4000 });
+    await expect(page.locator('#projects.flash')).toHaveCount(0); // the whole section does not light up
+  });
+});
+
+test.describe('the scratch card on the portrait', () => {
+  const scratch = async (page: Page, rows = 9) => {
+    const box = (await page.locator('.portrait').boundingBox())!;
+    await page.mouse.move(box.x + 20, box.y + 30);
+    await page.mouse.down();
+    for (let i = 0; i < rows; i++) {
+      const y = box.y + 24 + (box.height - 48) * (i / (rows - 1));
+      await page.mouse.move(box.x + 20, y, { steps: 2 });
+      await page.mouse.move(box.x + box.width - 20, y, { steps: 8 });
+      if (await page.locator('app-scratch .prize.won').count()) break; // won: no need to scratch the rest
+    }
+    await page.mouse.up();
+  };
+
+  test('a click does nothing; scratching it away shows a prize and the address to copy, with confetti and a five second countdown, and the photo fades back', async ({ page, context }) => {
+    test.setTimeout(45_000);
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await ready(page, '/hu/');
+    const prize = page.locator('app-scratch .prize');
+    const box = (await page.locator('.portrait').boundingBox())!;
+    expect(await page.locator('.portrait').evaluate((e) => getComputedStyle(e).cursor)).toContain('/img/coin.svg'); // a coin to hint at it, not the plain arrow
+    await page.mouse.click(box.x + 100, box.y + 100);
+    await expect(prize).not.toHaveClass(/on/); // a click is not a scratch
+    await expect(prize).toHaveAttribute('aria-hidden', 'true'); // and the card is out of reach until it is won
+    const confetti = page.locator('body > canvas').first().waitFor({ state: 'attached', timeout: 20_000 }); // it comes while the stroke is still going
+    await scratch(page);
+    await confetti;
+    await expect(prize).toHaveClass(/won/);
+    await expect(prize).toHaveAttribute('role', 'status');
+    await expect(prize).toContainText('Az igazi nyeremény átvétele 😁');
+    await prize.getByRole('button', { name: /szabo\.jozsef\.acc@gmail\.com/ }).click(); // the address is copied, as everywhere else
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe('szabo.jozsef.acc@gmail.com');
+    await expect(prize.locator('.bubble')).toHaveText('Másolva');
+    expect(await page.locator('.portrait img').evaluate((e) => getComputedStyle(e).borderTopLeftRadius)).toBe('22px'); // the photo has the radius of the menu bar
+    await expect(page.locator('body > canvas')).toHaveCount(0, { timeout: 5000 }); // and the confetti is gone again
+    expect(await prize.evaluate((e) => { const a = getComputedStyle(e, '::after'); return `${a.animationName} ${a.animationDuration}`; })).toBe('info-life 5s'); // five seconds, counted down along the bottom
+    await expect(prize).not.toHaveClass(/on/, { timeout: 12_000 }); // the photo is back
+  });
+
+  test('under reduced motion there is no confetti; a stroke half way leaves the photo to come back by itself', async ({ page }) => {
+    test.setTimeout(30_000);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await ready(page, '/hu/');
+    const prize = page.locator('app-scratch .prize');
+    await scratch(page);
+    await expect(prize).toHaveClass(/won/);
+    await expect(page.locator('body > canvas')).toHaveCount(0);
+  });
+
+  test('two scratches in a row give two different prizes', async ({ page }) => {
+    test.setTimeout(60_000);
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await ready(page, '/hu/');
+    const title = () => page.locator('app-scratch .prize b').textContent();
+    await scratch(page);
+    await expect(page.locator('app-scratch .prize')).toHaveClass(/won/);
+    const first = await title();
+    await expect(page.locator('app-scratch .prize')).not.toHaveClass(/on/, { timeout: 12_000 });
+    await scratch(page);
+    await expect(page.locator('app-scratch .prize')).toHaveClass(/won/);
+    expect(await title()).not.toBe(first);
+  });
+
+  test('scrolling away from the card and back finds the photo again', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await ready(page, '/hu/');
+    const prize = page.locator('app-scratch .prize');
+    await scratch(page);
+    await expect(prize).toHaveClass(/won/);
+    await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; scrollTo(0, 1500); });
+    await expect(prize).not.toHaveClass(/on/);
+    await page.evaluate(() => scrollTo(0, 0));
+    await expect(prize).not.toHaveClass(/on/);
+  });
 });
