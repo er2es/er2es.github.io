@@ -31,8 +31,8 @@ export const BASE: ItemId = 'edu-nonprofit';
             <div class="track" aria-hidden="true" (pointermove)="scrub($event, l.id)" (pointerdown)="scrub($event, l.id)" (pointerleave)="leave($event)">
               <div class="cells" [style.grid-template-columns]="'repeat(' + grid().cols + ', minmax(0, 1fr))'">
                 <i class="base" [class.first]="i === 0" [class.last]="last" [style.grid-column]="'span ' + grid().baseYears"></i>
-                @for (cell of l.cells; track cell.year) {
-                  <i class="cell" [attr.data-l]="cell.level" [class.off]="off(l.id)" [class.dim]="dim(cell.jobs)"><span class="fill"></span></i>
+                @for (cell of l.cells; track cell.year; let ci = $index) {
+                  <i class="cell" [attr.data-l]="cell.level" [style.--c]="grid().baseYears + ci" [class.off]="off(l.id)" [class.dim]="dim(cell.jobs)"><span class="fill"></span></i>
                 }
               </div>
               @if (year() !== null) { <s class="head" [style.left.%]="head().left" [style.width.%]="head().width"></s> }
@@ -151,13 +151,15 @@ export const BASE: ItemId = 'edu-nonprofit';
       .axis span:nth-last-child(2) { display: none; } /* the year before it would touch the last one on a narrow screen */
     }
 
-    /* the years fill in from the foundation towards the present as the grid scrolls into view (scroll-driven, clip only) */
+    /* the years fill in from the foundation towards the present as the grid scrolls into view: each square grows in a little
+       after the one before it (scroll-driven, and only opacity and scale, which the graphics card does by itself; --c is its
+       place in the row). Nothing is kept once it has come in: the end of the animation is the square as it is. */
     @media (prefers-reduced-motion: no-preference) {
       @supports (animation-timeline: view()) {
-        .arc .cells { animation: wipe linear both; animation-timeline: view(); animation-range: entry 5% entry 75%; }
+        .arc .cells > i { animation: rise linear backwards; animation-timeline: view(); animation-range: cover calc(var(--c, 0) * 0.6%) cover calc(10% + var(--c, 0) * 0.6%); }
       }
     }
-    @keyframes wipe { from { clip-path: inset(-300px 100% -300px -300px); } to { clip-path: inset(-300px); } }
+    @keyframes rise { from { opacity: 0; scale: 0.7; } }
     @media (prefers-reduced-motion: reduce) { .name, .fill { transition: none; } }
   `],
   host: { '(document:pointerdown)': 'outside($event)' },

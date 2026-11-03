@@ -3,13 +3,13 @@ import { SPACING, contourSegments, fieldAt, spacingAt, type Bump } from '../core
 
 /**
  * The page's background, behind everything: a light mesh that drifts from colour to colour as the page scrolls (CSS only,
- * `_backdrop.scss`) and, over it, fine contour lines. The lines move with the scroll and bend around the mouse pointer.
+ * `_backdrop.scss`, animating only what the graphics card can: translate and opacity) and, over it, fine contour lines. The lines move with the scroll and bend around the mouse pointer.
  * Nothing runs while nothing moves: the loop stops when the lines have settled. A touch screen has no pointer to follow;
  * under reduced motion the lines are drawn once and stay still. Decorative, so hidden from assistive technology.
  */
 @Component({
   selector: 'app-backdrop',
-  template: `<div class="mesh"></div><canvas #lines class="lines"></canvas>`,
+  template: `<div class="mesh"><i class="blob g"></i><i class="blob b"></i><i class="blob o"></i></div><canvas #lines class="lines"></canvas>`,
   styles: [`
     :host { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
     .mesh, .lines { position: absolute; inset: 0; width: 100%; height: 100%; }
