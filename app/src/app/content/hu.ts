@@ -172,6 +172,11 @@ export const hu: SiteContent = {
       summary: 'Saját, nyílt forráskódú keresőkönyvtáram PHP-hoz és Symfonyhoz, amely csak a PostgreSQL-re támaszkodik. Rangsorolt teljes szöveges keresést ad, amely elnézi az elírásokat és figyelmen kívül hagyja az ékezeteket, szűrőkkel és lekérdezőnyelvvel; Elasticsearch, Meilisearch vagy más külső szolgáltatás nem kell hozzá. A meglévő táblákhoz nem nyúl: az index mellettük, egy külön táblában él. AI-ügynökökkel támogatott (agentic) munkafolyamattal készült, a minőségét mutációs tesztelés is őrzi.',
       points: [],
     },
+    slimfony: {
+      title: 'Slimfony',
+      summary: 'Nagyon kicsi mag PHP-s mikroszolgáltatásokhoz, FrankenPHP worker módban, néhány Symfony-komponensből építve. A konténert és az útvonalakat már a build lefordítja, és két kérés között semmi nem marad meg. Alapból biztonságos: nem árul el belső hibaüzeneteket, és ha bekapcsolod a hitelesítést, minden tiltott, amíg a hívó nem igazolja magát (JWT). A PostgreSQL-kapcsolatot hosszú életű workerben is biztonságosan kezeli, és Prometheus-metrikák meg health check-ek is tartoznak hozzá.',
+      points: [],
+    },
     'cv-site': {
       title: 'Ez az önéletrajz-oldal',
       summary: 'Ez az oldal, amit éppen nézel. Angularban készült, magyarul és angolul is olvasható, külső szolgáltatást nem tölt be, és nem követ. Minden módosításnál automatikusan lefut a típusellenőrzés, a lint, valamint a unit-, az end-to-end és a hozzáférhetőségi teszt.',
