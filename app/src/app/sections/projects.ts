@@ -1,4 +1,4 @@
-import { Component, computed, input, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, afterNextRender, computed, inject, input, signal } from '@angular/core';
 import { EXTRA } from '../content/extra';
 import { FACT_BY_ID, FILES, PROJECT_ORDER, period, type SiteContent } from '../content/model';
 
@@ -53,13 +53,38 @@ import { FACT_BY_ID, FILES, PROJECT_ORDER, period, type SiteContent } from '../c
     @media (max-width: 799px) {
       .sum:not(.open) { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 5; line-clamp: 5; overflow: hidden; }
     }
-    @media (min-width: 800px) { .cards { grid-template-columns: repeat(2, 1fr); } .more { display: none; } }
+    /* two columns, and every tile as tall as its own text: each tile goes where there is room first, in the order of the list.
+       The tiles are measured in script (--rows: how many 4px rows a tile takes) and the grid fills in; without the script the
+       tiles are the plain rows of a two-column grid. */
+    @media (min-width: 800px) {
+      .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .cards.masonry { grid-auto-rows: 4px; row-gap: 0; grid-auto-flow: row dense; }
+      .cards.masonry > .card { grid-row-end: span var(--rows, 1); align-self: start; }
+      .more { display: none; }
+    }
     @media (prefers-reduced-motion: reduce) { .more svg { transition: none; } }
   `],
 })
 export class Projects {
   readonly c = input.required<SiteContent>();
   protected readonly order = PROJECT_ORDER;
+
+  constructor() {
+    const host = inject<ElementRef<HTMLElement>>(ElementRef);
+    const destroy = inject(DestroyRef);
+    afterNextRender(() => {
+      const list = host.nativeElement.querySelector<HTMLElement>('.cards');
+      if (!list) return;
+      const cards = [...list.querySelectorAll<HTMLElement>(':scope > .card')];
+      // each tile takes as many 4px rows as its height and the 16px gap below it need
+      const measure = (): void => cards.forEach((c) => c.style.setProperty('--rows', String(Math.ceil((c.offsetHeight + 16) / 4))));
+      list.classList.add('masonry');
+      measure();
+      const ro = new ResizeObserver(measure); // a tile changes height when its text reflows, and when it is first laid out (the section is rendered on demand)
+      cards.forEach((c) => ro.observe(c));
+      destroy.onDestroy(() => ro.disconnect());
+    });
+  }
   protected readonly x = computed(() => EXTRA[this.c().lang]);
   protected readonly file = FILES.projects;
   protected per = (id: (typeof PROJECT_ORDER)[number]) => period(FACT_BY_ID[id]);

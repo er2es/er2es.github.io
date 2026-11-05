@@ -19,7 +19,7 @@ export const FILES: Record<SectionId, string> = {
 
 export type ItemId =
   | 'chamber' | 'uni-med' | 'welfare' | 'uni-admin' | 'health-inst' | 'edu-authority' | 'pricing-co' | 'edu-nonprofit'
-  | 'fuzzphony' | 'sport-programme' | 'surveys' | 'gov-reporting' | 'wordpress' | 'audit' | 'admissions-map' | 'cv-site';
+  | 'fuzzphony' | 'slimfony' | 'sport-programme' | 'surveys' | 'gov-reporting' | 'wordpress' | 'audit' | 'admissions-map' | 'cv-site';
 
 export interface Fact {
   id: ItemId;
@@ -56,6 +56,8 @@ export const FACTS: readonly Fact[] = [
     keywords: ['Legacy PHP', 'Bootstrap'] },
   { id: 'fuzzphony', kind: 'project', main: false, inGraph: false, start: null, end: null,
     url: 'https://github.com/er2es/fuzzphony', keywords: ['PHP', 'Symfony', 'PostgreSQL', 'Mutation testing'] },
+  { id: 'slimfony', kind: 'project', main: false, inGraph: false, start: null, end: null,
+    url: 'https://github.com/slimfony/core', keywords: ['PHP', 'Symfony', 'FrankenPHP', 'PostgreSQL', 'Prometheus'] },
   { id: 'cv-site', kind: 'project', main: false, inGraph: false, start: 2026, end: 2026,
     url: 'https://github.com/er2es/er2es.github.io', keywords: ['Angular', 'TypeScript', 'SCSS', 'Playwright'] },
   { id: 'gov-reporting', kind: 'project', main: false, inGraph: false, start: 2015, end: 2020,
@@ -71,7 +73,7 @@ export const FACTS: readonly Fact[] = [
 export const FACT_BY_ID = Object.fromEntries(FACTS.map((f) => [f.id, f])) as Record<ItemId, Fact>;
 
 /** Display order of the project cards. */
-export const PROJECT_ORDER: readonly ItemId[] = ['fuzzphony', 'cv-site', 'audit', 'gov-reporting', 'wordpress', 'sport-programme', 'surveys', 'admissions-map'];
+export const PROJECT_ORDER: readonly ItemId[] = ['fuzzphony', 'slimfony', 'cv-site', 'audit', 'gov-reporting', 'wordpress', 'sport-programme', 'surveys', 'admissions-map'];
 
 export function period(f: Fact): string {
   if (f.start === null || f.end === null) return '';

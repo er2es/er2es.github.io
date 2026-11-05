@@ -172,6 +172,11 @@ export const en: SiteContent = {
       summary: 'My open-source search library for PHP and Symfony, built on PostgreSQL alone. It adds ranked full-text search that tolerates typos and ignores accents, with filters and a query language, and needs no Elasticsearch, Meilisearch or other external service. Existing tables stay as they are: the index lives in a separate table beside them. Built with an AI-agentic workflow; mutation testing keeps its quality in check.',
       points: [],
     },
+    slimfony: {
+      title: 'Slimfony',
+      summary: 'A very small core for PHP microservices on FrankenPHP worker mode, built from a few Symfony components. The container and the routes are compiled at build time and nothing is kept between requests. Secure by default: errors are not leaked, and with authentication on, everything is denied until the caller is verified (JWT). PostgreSQL access is safe in a long-lived worker, and Prometheus metrics and health checks come with it.',
+      points: [],
+    },
     'cv-site': {
       title: 'This CV site',
       summary: 'This very site. Built in Angular, in English and Hungarian, with no external services and no tracking. Type check, lint, unit, end-to-end and accessibility tests run automatically on every change.',
