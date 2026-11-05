@@ -174,7 +174,7 @@ export const en: SiteContent = {
     },
     slimfony: {
       title: 'Slimfony',
-      summary: 'An ultra-lightweight microservice core built on Symfony components, tailored specifically for FrankenPHP worker mode.Features build-time compiled containers and routes with a strict zero-state memory footprint between requests. Secure by default with zero error leakage and a mandatory JWT deny-by-default authorization policy. Built-in Prometheus metrics, health checks, and worker-safe PostgreSQL connection management out of the box.',
+      summary: 'An ultra-lightweight microservice core built on Symfony components, tailored specifically for FrankenPHP worker mode. Features build-time compiled containers and routes with a strict zero-state memory footprint between requests. Secure by default with zero error leakage and a mandatory JWT deny-by-default authorization policy. Built-in Prometheus metrics, health checks, and worker-safe PostgreSQL connection management out of the box.',
       points: [],
     },
     'cv-site': {
