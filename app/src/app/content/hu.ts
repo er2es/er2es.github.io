@@ -174,7 +174,7 @@ export const hu: SiteContent = {
     },
     slimfony: {
       title: 'Slimfony',
-      summary: 'Nagyon kicsi mag PHP-s mikroszolgáltatásokhoz, FrankenPHP worker módban, néhány Symfony-komponensből építve. A konténert és az útvonalakat már a build lefordítja, és két kérés között semmi nem marad meg. Alapból biztonságos: nem árul el belső hibaüzeneteket, és ha bekapcsolod a hitelesítést, minden tiltott, amíg a hívó nem igazolja magát (JWT). A PostgreSQL-kapcsolatot hosszú életű workerben is biztonságosan kezeli, és Prometheus-metrikák meg health check-ek is tartoznak hozzá.',
+      summary: 'Symfony komponensekre épülő mikroszolgáltatás core FrankenPHP worker módhoz. A konténer és a routing build időben statikusan lefordul, a worker állapota teljesen izolált a kérések között. Alapértelmezés szerint zárt: nincsenek kiszivárgó hibaüzenetek, a JWT-alapú hitelesítés pedig deny-by-default elvet követ. Beépített Prometheus metrikákkal, health check-kel és hosszú életű, worker-biztos PostgreSQL kapcsolatkezeléssel érkezik.',
       points: [],
     },
     'cv-site': {

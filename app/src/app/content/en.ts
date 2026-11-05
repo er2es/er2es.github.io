@@ -174,7 +174,7 @@ export const en: SiteContent = {
     },
     slimfony: {
       title: 'Slimfony',
-      summary: 'A very small core for PHP microservices on FrankenPHP worker mode, built from a few Symfony components. The container and the routes are compiled at build time and nothing is kept between requests. Secure by default: errors are not leaked, and with authentication on, everything is denied until the caller is verified (JWT). PostgreSQL access is safe in a long-lived worker, and Prometheus metrics and health checks come with it.',
+      summary: 'An ultra-lightweight microservice core built on Symfony components, tailored specifically for FrankenPHP worker mode.Features build-time compiled containers and routes with a strict zero-state memory footprint between requests. Secure by default with zero error leakage and a mandatory JWT deny-by-default authorization policy. Built-in Prometheus metrics, health checks, and worker-safe PostgreSQL connection management out of the box.',
       points: [],
     },
     'cv-site': {
