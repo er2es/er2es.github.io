@@ -1086,6 +1086,7 @@ test('the nodes of the career line say full-time or part-time, and the two branc
   expect(new Set(colours).size).toBe(2);
   const accent = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--accent').trim());
   expect(colours).not.toContain(accent);
+  expect(await page.locator('#experience .row .dot .half').count()).toBe(2); // the two branch nodes are half the colour of the main line, the others whole
   const hit = page.locator('#experience .row .hit').nth(6);
   await hit.scrollIntoViewIfNeeded();
   await hit.hover();

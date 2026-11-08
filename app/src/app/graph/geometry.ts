@@ -25,14 +25,14 @@ export function railGeometry(row: GraphRow, laneCount: number, isFirst: boolean,
   row.cells.forEach((cell, k) => {
     if (k === 0) {
       lines.push({ x: x(0), y1: isFirst ? NODE_Y : 0, y2: isLast ? NODE_Y : '100%', lane: 0 });
-      if (cell === 'node') dots.push({ x: x(0), y: NODE_Y, r: 5, lane: 0 });
+      if (cell === 'node') dots.push({ x: x(0), y: NODE_Y, r: 6.25, lane: 0 });
       return;
     }
     if (cell === 'pass') lines.push({ x: x(k), y1: 0, y2: '100%', lane: k });
     if (cell === 'node') {
       lines.push({ x: x(k), y1: NODE_Y, y2: '100%', lane: k });
       curves.push({ d: curve(0, k), lane: k });
-      dots.push({ x: x(k), y: NODE_Y, r: 4, lane: k });
+      dots.push({ x: x(k), y: NODE_Y, r: 5, lane: k });
     }
     if (cell === 'fork') curves.push({ d: curve(k, 0), lane: k });
   });
