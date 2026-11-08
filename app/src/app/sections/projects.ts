@@ -15,15 +15,17 @@ import { FACT_BY_ID, FILES, PROJECT_ORDER, period, type SiteContent } from '../c
             <li class="card reveal" [id]="'p-' + id" tabindex="-1">
               <h3>{{ c().items[id].title }}</h3>
               @if (per(id)) { <p class="per">{{ per(id) }}</p> }
-              <p class="sum" [id]="'sum-' + id" [class.open]="opened().has(id)">{{ c().items[id].summary }}</p>
+              <div class="fold" [id]="'sum-' + id" [class.cut]="long(id)" [class.open]="opened().has(id)">
+                <p class="sum">{{ c().items[id].summary }}</p>
+                @if (c().items[id].points.length) {
+                  <ul class="pts">@for (p of c().items[id].points; track $index) { <li>{{ p }}</li> }</ul>
+                }
+              </div>
               @if (long(id)) {
                 <button type="button" class="more" [attr.aria-expanded]="opened().has(id)" [attr.aria-controls]="'sum-' + id" (click)="fold(id)">
-                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6" /></svg>
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6" /></svg>
                   <span class="sr-only">{{ opened().has(id) ? x().less : x().more }}</span>
                 </button>
-              }
-              @if (c().items[id].points.length) {
-                <ul class="pts">@for (p of c().items[id].points; track $index) { <li>{{ p }}</li> }</ul>
               }
               @if (kw(id).length) {
                 <p class="tags"><span class="sr-only">{{ c().ui.tags }}: </span>@for (k of kw(id); track k) { <span>{{ k }}</span> }<i class="sel" aria-hidden="true"></i></p>
@@ -47,11 +49,16 @@ import { FACT_BY_ID, FILES, PROJECT_ORDER, period, type SiteContent } from '../c
     .pts li { padding-left: 1rem; position: relative; }
     .pts li::before { content: ''; position: absolute; left: 0; top: 0.7em; width: 5px; height: 5px; border-radius: 50%; background: var(--fg-2); }
     /* on narrow screens a long description folds to a few lines, with a chevron to unfold it */
-    .more { justify-self: start; margin-top: -0.25rem; width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 999px; background: color-mix(in srgb, var(--fg) 8%, transparent); color: var(--fg); cursor: pointer; }
+    .fold { display: grid; gap: 0.75rem; }
+    /* a small round button (a 44px target through its ::before) */
+    .more { position: relative; justify-self: center; width: 32px; height: 32px; margin-top: -0.5rem; display: grid; place-items: center; border: 0; border-radius: 999px; background: color-mix(in srgb, var(--fg) 10%, transparent); color: var(--fg); cursor: pointer; }
+    .more::before { content: ''; position: absolute; inset: -6px; }
     .more svg { transition: rotate var(--dur-short) var(--ease-out); }
     .more[aria-expanded='true'] svg { rotate: 180deg; }
+    /* on a phone a long tile (the text and its list together) is cut off a few lines down, fading out instead of ending mid-word */
     @media (max-width: 799px) {
-      .sum:not(.open) { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 5; line-clamp: 5; overflow: hidden; }
+      .fold.cut { max-height: 80em; transition: max-height var(--dur-med) var(--ease-out); }
+      .fold.cut:not(.open) { max-height: 8.5em; overflow: hidden; -webkit-mask-image: linear-gradient(#000 45%, transparent); mask-image: linear-gradient(#000 45%, transparent); }
     }
     /* two columns, and every tile as tall as its own text: each tile goes where there is room first, in the order of the list.
        The tiles are measured in script (--rows: how many 4px rows a tile takes) and the grid fills in; without the script the

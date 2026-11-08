@@ -62,7 +62,7 @@ export const hu: SiteContent = {
   profile: {
     paragraphs: [
       'Budapesti full-stack PHP-fejlesztő vagyok. Webalkalmazásokat készítek, a szerveroldalon Symfonyval, a böngészőben Angularral és TypeScripttel, de a munka nálam nem áll meg az alkalmazás kódjánál: a PostgreSQL-ben triggereket és tárolt eljárásokat írok, és az adatbázis tervezésében is részt veszek.',
-      'Több mint három évig egy webes platform munkáit koordináltam, GitLab CI/CD-re és RHEL-szerverekre épülő környezetben. A külső fejlesztőcsapattal együtt dolgoztam, én szerveztem a leszállított verzióik belső tesztelését, az adatbázis-tervezésről és az infrastruktúra-igényekről pedig a belső kollégákkal egyeztettem. Emellett egyedül építettem fel a platform support oldalát, és partnerszervezeteknek REST és SOAP API-végpontokat is készítettem.',
+      'Több mint három évig egy webes platform fejlesztési és technikai munkáit koordináltam, GitLab CI/CD-re és RHEL-szerverekre épülő környezetben. A külső fejlesztőcsapattal dolgoztam együtt: az általuk szállított verziók belső tesztelését én szerveztem, az adatbázis-tervezésről és az infrastruktúra-igényekről pedig a belső kollégákkal egyeztettem. Emellett egyedül építettem fel a platform support oldalát, és partnerszervezeteknek REST és SOAP API-végpontokat is készítettem.',
       'A fejlesztéshez a minőségbiztosítás felől érkeztem. 2008-ban adat-előkészítéssel és VBA-val kezdtem az informatikában, aztán több évig szoftvertesztelő voltam: Selenium WebDriverrel írtam automatizált teszteket, emellett felhasználói elfogadási (UAT) és felfedező tesztelésben vettem részt. Azóta refaktoráltam legacy PHP-kódot, Laravelben és CodeIgniterben is készítettem alkalmazásokat, néhány évig pedig WordPresszel foglalkoztam: egy több mint 200 oldalas multisite-ot gondoztam, és témákat is fejlesztettem hozzá.',
     ],
     hobbies: { label: 'Szabadidőben', cinema: 'Mozi', woods: 'Erdei kirándulás', dog: 'Kutyák', walk: 'Séta', pho: 'Pho leves', games: 'Videójátékok' },
@@ -72,7 +72,7 @@ export const hu: SiteContent = {
     arc: 'Évek és szakmai területek rácsa: minél sötétebb egy négyzet, annál több kompetenciát használtam abban az évben.',
   },
   skills: {
-    intro: 'A technológiák, amelyekkel dolgozom, és a tesztelési módszerek, amelyeket a QA-s évekből hoztam magammal, területek szerint.',
+    intro: 'Amivel dolgozom, és amit a QA-s évekből a tesztelésről hoztam magammal, területek szerint.',
     groups: {
       backend: 'Backend',
       frontend: 'Frontend',
@@ -82,7 +82,7 @@ export const hu: SiteContent = {
       other: 'Egyéb',
     },
   },
-  projects: { intro: 'Munkahelyi és saját projektek, mindegyiknél néhány sor arról, mire való.', open: 'Megnyitás a GitHubon' },
+  projects: { intro: 'Munkahelyi és saját projektek, mindegyiknél néhány sor arról, mire való.', open: 'Megnézem a GitHubon' },
   about: {
     education: {
       heading: 'Tanulmányok',
@@ -112,10 +112,10 @@ export const hu: SiteContent = {
       points: [
         'Egy több mint hároméves projektben koordináltam egy Symfony-backendre és Angular-frontendre épülő webes platform technikai és fejlesztési munkáit; a külső fejlesztőcsapat által szállított verziók belső tesztelését is én szerveztem.',
         'Hibákat javítottam és új funkciókat készítettem a Symfony-backendben és az Angular-frontendben, GitLab CI/CD-re és RHEL-re épülő környezetben.',
-        'Jártas vagyok az X.509-alapú hitelesítési folyamatokban.',
+        'Dolgoztam X.509-alapú hitelesítéssel.',
         'PostgreSQL-lekérdezéseket, triggereket és tárolt eljárásokat írtam, bővítettem és optimalizáltam; az adatbázis-tervezésről és az infrastruktúra-igényekről a belső kollégákkal egyeztettem.',
-        'Kialakítottam a CI/CD-folyamatokat egy többkonténeres, több szerveres, leállás nélküli (zero downtime) környezetben.',
-        'A projektek minőségbiztosítása: QA, SonarQube, e2e és unit tesztek, felhasználói elfogadási teszt (UAT) és CI/CD. Emellett egy legacy Java és Go microservice környezetet is karbantartottam.',
+        'Kialakítottam a CI/CD-folyamatokat egy több konténerből és több szerverből álló környezetben, leállás nélküli (zero downtime) kiadásokkal.',
+        'A projektek minőségbiztosítása is hozzám tartozott: QA, SonarQube, e2e és unit tesztek, felhasználói elfogadási teszt (UAT) és CI/CD. Emellett egy régi Java- és Go-alapú mikroszolgáltatás-környezetet is karbantartottam.',
         'Legutóbb egy Podmanre épülő, több konténeres webalkalmazáson dolgoztam: koordináltam a fejlesztését és a minőségbiztosítását, és kialakítottam a hozzá tartozó PostgreSQL-eljárásokat.',
         'A platform support oldalát egyedül építettem fel, Symfonyban és Angularban.',
         'Partnerszervezeteknek webalkalmazások, valamint REST és SOAP API-végpontok is kikerültek a kezem alól.',
@@ -127,7 +127,7 @@ export const hu: SiteContent = {
       org: 'Állami orvosi egyetem',
       points: [
         'Az egyetem WordPress multisite-rendszerén dolgoztam, amely több mint 200 oldalt és mintegy 800 adminisztrátort szolgált ki.',
-        'Újraépítettem az alapoktól a kezdőlapot és a hírrovatot, frontend- és backendoldalon egyaránt.',
+        'Az alapoktól újraépítettem a kezdőlapot és a hírrovatot, frontend- és backendoldalon is.',
         'WordPress-témákat készítettem SASS-szal, Node-dal, Gulppal és Bootstrap 4-gyel, emellett kisebb Laravel-alkalmazásokat is írtam.',
       ],
     },
@@ -169,12 +169,12 @@ export const hu: SiteContent = {
     },
     fuzzphony: {
       title: 'Fuzzphony',
-      summary: 'Saját, nyílt forráskódú keresőkönyvtáram PHP-hoz és Symfonyhoz, amely csak a PostgreSQL-re támaszkodik. Rangsorolt teljes szöveges keresést ad, amely elnézi az elírásokat és figyelmen kívül hagyja az ékezeteket, szűrőkkel és lekérdezőnyelvvel; Elasticsearch, Meilisearch vagy más külső szolgáltatás nem kell hozzá. A meglévő táblákhoz nem nyúl: az index mellettük, egy külön táblában él. AI-ügynökökkel támogatott (agentic) munkafolyamattal készült, a minőségét mutációs tesztelés is őrzi.',
+      summary: 'Saját, nyílt forráskódú keresőkönyvtáram PHP-hoz és Symfonyhoz, amely csak a PostgreSQL-re támaszkodik. Rangsorolt teljes szöveges keresést ad, amely elnézi az elírásokat és figyelmen kívül hagyja az ékezeteket, szűrőkkel és lekérdezőnyelvvel; Elasticsearch, Meilisearch vagy más külső szolgáltatás nem kell hozzá. A meglévő táblákhoz nem nyúl: az index mellettük, egy külön táblában él. AI-ügynökökkel támogatott (agentic) munkafolyamatban készült, a minőségét pedig mutációs teszteléssel ellenőrzöm.',
       points: [],
     },
     slimfony: {
       title: 'Slimfony',
-      summary: 'Symfony komponensekre épülő mikroszolgáltatás core FrankenPHP worker módhoz. A konténer és a routing build időben statikusan lefordul, a worker állapota teljesen izolált a kérések között. Alapértelmezés szerint zárt: nincsenek kiszivárgó hibaüzenetek, a JWT-alapú hitelesítés pedig deny-by-default elvet követ. Beépített Prometheus metrikákkal, health check-kel és hosszú életű, worker-biztos PostgreSQL kapcsolatkezeléssel érkezik.',
+      summary: 'Nagyon könnyű alap PHP-s mikroszolgáltatásokhoz, FrankenPHP worker módban, néhány Symfony-komponensből építve. A konténert és az útvonalakat a build fordítja le, és két kérés között semmi nem marad meg a memóriában. Alapból biztonságos: nem szivárog ki hibainformáció, és bekapcsolt hitelesítés (JWT) mellett minden tiltott, amíg a hívó nincs azonosítva. A PostgreSQL-t biztonságosan kezeli hosszú életű workerben, és be van építve a Prometheus-metrika meg a health check is.',
       points: [],
     },
     'cv-site': {
@@ -184,17 +184,17 @@ export const hu: SiteContent = {
     },
     audit: {
       title: 'Audit- és adminisztrációs rendszerek',
-      summary: 'Webalkalmazások jogszerűségi auditokhoz, amelyeknek az üzleti logikáját én alakítottam ki. Az űrlapok dinamikusan épülnek fel mintegy 400, többféle típusú kérdésből, összetett validációval; a válaszokat a rendszer kiértékeli, és DOCX-dokumentumot generál belőlük. Ugyanerre a modellre épül egy egyszerűbb, CodeIgniterben írt audit is, körülbelül 300 kérdéssel és saját számítási, összesítési szabályokkal.',
+      summary: 'Webalkalmazások jogszabályi megfelelőségi auditokhoz, amelyeknek az üzleti logikáját én alakítottam ki. Az űrlapok dinamikusan épülnek fel mintegy 400, többféle típusú kérdésből, összetett validációval; a válaszokat a rendszer kiértékeli, és DOCX-dokumentumot generál belőlük. Ugyanerre a modellre épül egy egyszerűbb, CodeIgniterben írt audit is, körülbelül 300 kérdéssel és saját számítási, összesítési szabályokkal.',
       points: ['Projekttervező és -nyilvántartó rendszer (Laravel 7, Bootstrap).', 'EU-s támogatások nyilvántartása (Laravel 8, Backpack).'],
     },
     'gov-reporting': {
       title: 'Kormányzati mutatók oldala',
-      summary: 'Kormányzati mutatókat bemutató WordPress-oldal, amelyet 2020-ig én terveztem, fejlesztettem és üzemeltettem. Az egyik mutató technikai hátterén is dolgoztam: ez a fővároson kívül a legközelebbi kormányablak átlagos közúti távolságát követte 2015 és 2019 között. A 2019-es jelentés nyomdakész változatát PHP-ban, TCPDF-fel állítottam elő. Egyes mutatók módszertanát és kiszámítását is én dolgoztam ki, a Google Maps API segítségével.',
+      summary: 'Kormányzati mutatókat bemutató WordPress-oldal, amelyet 2020-ig én terveztem, fejlesztettem és üzemeltettem. Az egyik mutató technikai hátterén is dolgoztam: ez a fővároson kívül a legközelebbi kormányablakig megtett átlagos közúti távolságot követte 2015 és 2019 között. A 2019-es jelentés nyomdakész változatát PHP-ban, TCPDF-fel állítottam elő. Egyes mutatók módszertanát és kiszámítását is én dolgoztam ki, a Google Maps API segítségével.',
       points: [],
     },
     wordpress: {
       title: 'WordPress-projektek',
-      summary: 'WordPress-oldalak több megbízónak, amelyeket felépítettem, hangoltam és üzemeltettem: gyorsítótárazás, átállás PHP 7-re, szerverköltöztetés, CDN-beállítás, kisebb frontend-módosítások. Mellettük szerepköralapú tudás- és dokumentumtár, további ügyfélfelületek, valamint landing- és bemutatkozó oldalak is készültek.',
+      summary: 'WordPress-oldalak több megbízónak, amelyeket felépítettem, hangoltam és üzemeltettem: gyorsítótárazás, átállás PHP 7-re, szerverköltöztetés, CDN-beállítás, kisebb frontend-módosítások. Emellett készült egy szerepköralapú tudás- és dokumentumtár, további ügyfélfelületek, valamint landing- és bemutatkozó oldalak.',
       points: [],
     },
     'sport-programme': {
@@ -204,7 +204,7 @@ export const hu: SiteContent = {
     },
     surveys: {
       title: 'Kérdőíves kutatások',
-      summary: 'Kérdőíves adatfelvételi rendszerek a teljes folyamatra, az űrlapoktól a mögöttük álló lekérdezésekig és statisztikai feldolgozásig; IBM SPSS alapszinten.',
+      summary: 'Kérdőíves adatfelvételi rendszerek az egész folyamatra, az űrlapoktól a lekérdezéseken át a statisztikai feldolgozásig; az IBM SPSS-t alapszinten használtam.',
       points: [],
     },
     'admissions-map': {

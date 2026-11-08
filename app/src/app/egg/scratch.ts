@@ -173,7 +173,7 @@ export class Scratch {
         if ((e.pointerType === 'mouse' && e.button !== 0) || box.classList.contains('docked') || (e.target as Element).closest('app-email')) return;
         down = from = { x: e.clientX, y: e.clientY };
         touch = e.pointerType !== 'mouse';
-        if (touch) armTimer = setTimeout(arm, 300);
+        if (touch) armTimer = setTimeout(arm, 220);
         else armed = true; // a mouse scratches at once
       };
       const onMove = (e: PointerEvent): void => {
@@ -184,7 +184,7 @@ export class Scratch {
           const dy = e.clientY - from.y;
           if (Math.hypot(dx, dy) < 10) return;
           clearTimeout(armTimer);
-          if (Math.abs(dx) > Math.abs(dy) * 1.5) armed = true;
+          if (Math.abs(dx) > Math.abs(dy) * 0.9) armed = true; // sideways, or slanting: a scratch
           else {
             down = from = null;
             return;
@@ -199,7 +199,7 @@ export class Scratch {
           ctx.moveTo(p0.x, p0.y);
         }
         const p = point(e.clientX, e.clientY);
-        ctx.lineWidth = Math.max(26, cv.width * (touch ? 0.17 : 0.12)); // a finger is wider than a pointer
+        ctx.lineWidth = Math.max(26, cv.width * (touch ? 0.2 : 0.12)); // a finger is wider than a pointer
         ctx.lineCap = ctx.lineJoin = 'round';
         ctx.lineTo(p.x, p.y);
         ctx.stroke();
@@ -209,14 +209,14 @@ export class Scratch {
         const now = performance.now();
         if (now - measured > 120) {
           measured = now;
-          if (share() >= (touch ? 0.3 : 0.4)) win();
+          if (share() >= (touch ? 0.25 : 0.4)) win();
         }
       };
       const onUp = (): void => {
         down = from = null;
         disarm();
         if (this.state() === 'scratching') {
-          if (share() >= (touch ? 0.3 : 0.4)) win();
+          if (share() >= (touch ? 0.25 : 0.4)) win();
           else restoreTimer = setTimeout(restore, 6000); // left half scratched: the photo comes back
         }
       };
