@@ -795,6 +795,11 @@ test.describe('review fixes', () => {
     await expect(more).toHaveAttribute('aria-expanded', 'false');
     await more.click();
     await expect(more).toHaveAttribute('aria-expanded', 'true');
+    await more.click(); // and folds again: the text and its list are cut off together, fading out
+    await expect(more).toHaveAttribute('aria-expanded', 'false');
+    const fold = page.locator('#projects .fold.cut').first();
+    expect(await fold.evaluate((e) => getComputedStyle(e).maskImage)).toContain('gradient');
+    await more.click();
     await page.setViewportSize({ width: 1280, height: 800 });
     await expect(more).toBeHidden();
   });
@@ -882,7 +887,8 @@ test.describe('HIG and motion polish', () => {
     await page.locator('.arc .name').first().click(); // one family off: the chips show
     const tall = (sel: string) => page.locator(sel).evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().height)));
     for (const h of await tall('.arc .name')) expect(h).toBeGreaterThanOrEqual(44);
-    for (const h of await tall('#projects .more')) expect(h).toBeGreaterThanOrEqual(44);
+    const target = await page.locator('#projects .more').first().evaluate((e) => { const r = e.getBoundingClientRect(); const b = getComputedStyle(e, '::before'); return Math.min(r.height - parseFloat(b.top) * 2, r.width - parseFloat(b.left) * 2); }); // a small button with a 44 px target
+    expect(target).toBeGreaterThanOrEqual(44);
     for (const h of await tall('footer a')) expect(h).toBeGreaterThanOrEqual(44);
     expect((await tall('app-header .brand'))[0]).toBeGreaterThanOrEqual(44);
     const chip = await page.locator('.arc .filter').first().evaluate((e) => { const r = e.getBoundingClientRect(); const b = getComputedStyle(e, '::before'); return r.height + parseFloat(b.top) * -2; });

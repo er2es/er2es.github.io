@@ -82,7 +82,7 @@ export const en: SiteContent = {
       other: 'Other',
     },
   },
-  projects: { intro: 'Work and personal projects, each with a few lines on what it is for.', open: 'View on GitHub' },
+  projects: { intro: 'Work and personal projects, each with a few lines on what it is for.', open: 'See it on GitHub' },
   about: {
     education: {
       heading: 'Education',
@@ -112,10 +112,10 @@ export const en: SiteContent = {
       points: [
         'Coordinated technical and development work on a web platform (Symfony back end, Angular front end) over a project of more than three years, including internal testing of what the external development team delivered.',
         'Fixed bugs and added features in the Symfony back end and the Angular front end, working within a GitLab CI/CD and RHEL environment.',
-        'Familiar with X.509-based authentication flows.',
+        'Worked with X.509-based authentication.',
         'Wrote, extended and optimised PostgreSQL queries, triggers and stored procedures, and agreed database design and infrastructure needs with internal colleagues.',
         'Built the CI/CD processes for a multi-container, multi-server, zero-downtime environment.',
-        'Quality assurance of the projects: QA, SonarQube, end-to-end and unit tests, user acceptance testing and CI/CD. I also maintained a legacy Java and Go microservice environment.',
+        'Quality assurance for the projects was mine too: QA, SonarQube, end-to-end and unit tests, user acceptance testing and CI/CD. I also maintained a legacy Java and Go microservice environment.',
         'Most recently: a multi-container web application running on Podman. I coordinated its development and quality assurance, and built the PostgreSQL procedures it needed.',
         'Built the platform’s support site on my own, in Symfony and Angular.',
         'Developed web applications for partner organisations, along with REST and SOAP API endpoints.',
@@ -174,7 +174,7 @@ export const en: SiteContent = {
     },
     slimfony: {
       title: 'Slimfony',
-      summary: 'An ultra-lightweight microservice core built on Symfony components, tailored specifically for FrankenPHP worker mode. Features build-time compiled containers and routes with a strict zero-state memory footprint between requests. Secure by default with zero error leakage and a mandatory JWT deny-by-default authorization policy. Built-in Prometheus metrics, health checks, and worker-safe PostgreSQL connection management out of the box.',
+      summary: 'An ultra-lightweight core for PHP microservices on FrankenPHP worker mode, built from a few Symfony components. The container and the routes are compiled at build time, and nothing is kept between requests. Secure by default: no error details leak out, and with authentication on (JWT), everything is denied until the caller is verified. PostgreSQL access is safe in a long-lived worker, and Prometheus metrics and health checks are built in.',
       points: [],
     },
     'cv-site': {
