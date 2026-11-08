@@ -92,8 +92,8 @@ export const en: SiteContent = {
       heading: 'Languages',
       items: [
         'Hungarian: native',
-        'English (reading technical documentation): intermediate',
-        'English (speaking and writing): basic',
+        'English, reading technical documentation: intermediate',
+        'English, speaking and writing: basic',
       ],
     },
     award: {
@@ -132,7 +132,7 @@ export const en: SiteContent = {
       ],
     },
     welfare: {
-      title: 'PHP developer (part-time)',
+      title: 'PHP developer',
       org: 'Government social-welfare directorate',
       points: [
         'Adapted SeedDMS, an open-source document management system running on Ubuntu, to the organisation’s workflows and permission model.',

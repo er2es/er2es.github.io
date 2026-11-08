@@ -85,20 +85,20 @@ export const hu: SiteContent = {
   projects: { intro: 'Munkahelyi és saját projektek, mindegyiknél néhány sor arról, mire való.', open: 'Megnézem a GitHubon' },
   about: {
     education: {
-      heading: 'Tanulmányok',
-      items: ['Számítástechnikai szoftverüzemeltető (OKJ középfokú szakképzés), 2002–2007'],
+      heading: 'Végzettség',
+      items: ['Számítástechnikai szoftverüzemeltető, OKJ-s középfokú szakképesítés (2002–2007)'],
     },
     languages: {
-      heading: 'Nyelvtudás',
+      heading: 'Nyelvek',
       items: [
         'Magyar: anyanyelv',
-        'Angol (fejlesztési dokumentáció olvasása): középszint',
-        'Angol (beszéd és írás): alapszint',
+        'Angol, olvasás (szakmai dokumentáció): középszint',
+        'Angol, beszéd és írás: alapszint',
       ],
     },
     award: {
       heading: 'Elismerés',
-      text: 'Egy állami egyetemtől „A tanév embere” elismerést kaptam (2016/17) a kutatási pályázatok kezelésére és monitorozására szolgáló informatikai rendszer bevezetéséért.',
+      text: 'Egy állami egyetem „A tanév embere” díját kaptam (2016/17), mert bevezettem a kutatási pályázatok kezelésére és követésére szolgáló rendszert.',
     },
   },
   contact: {
@@ -132,7 +132,7 @@ export const hu: SiteContent = {
       ],
     },
     welfare: {
-      title: 'PHP-fejlesztő (részmunkaidő)',
+      title: 'PHP-fejlesztő',
       org: 'Állami szociális igazgatóság',
       points: [
         'A nyílt forráskódú, Ubuntun futó SeedDMS dokumentumkezelőt a szervezet ügymenetéhez és jogosultsági rendjéhez igazítottam.',

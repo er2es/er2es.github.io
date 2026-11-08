@@ -41,7 +41,11 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
                   }
                   @for (d of r.rail.dots; track $index) {
                     <circle class="halo" [attr.cx]="d.x" [attr.cy]="d.y" [attr.r]="d.r" [style.fill]="'var(--lane-' + d.lane + ')'" />
-                    <circle class="node" [attr.cx]="d.x" [attr.cy]="d.y" [attr.r]="d.r" [style.fill]="'var(--lane-' + d.lane + ')'" style="stroke: var(--bg-2); stroke-width: 2px" />
+                    <g class="dot" [style.transform-origin]="d.x + 'px ' + d.y + 'px'">
+                      <circle class="node" [attr.cx]="d.x" [attr.cy]="d.y" [attr.r]="d.r" [style.fill]="'var(--lane-' + d.lane + ')'" />
+                      @if (d.lane > 0) { <path class="half" [attr.d]="half(d.x, d.y, d.r)" style="fill: var(--lane-0)" /> }
+                      <circle class="ring" [attr.cx]="d.x" [attr.cy]="d.y" [attr.r]="d.r" fill="none" style="stroke: var(--bg-2); stroke-width: 2px" />
+                    </g>
                   }
                 </svg>
                 @for (d of r.rail.dots; track $index) {
@@ -94,11 +98,13 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
     .tags { padding-bottom: 0.5rem; }
 
     /* the commit node answers its row: grows a little on hover/focus, sends one ring out when the entry opens */
-    .node, .halo { transform-box: fill-box; transform-origin: center; }
+    .halo { transform-box: fill-box; transform-origin: center; }
+    .dot { transform-box: view-box; } /* a node scales about its own centre (set on the element) */
+    /* a node of a branch is half the colour of the main line: the role ran beside the main one */
     .halo { opacity: 0; }
     @media (prefers-reduced-motion: no-preference) {
-      .node { transition: scale var(--dur-short) var(--ease-spring); }
-      .row:is(:hover, :focus-within) .node { scale: 1.3; }
+      .dot { transition: scale var(--dur-short) var(--ease-spring); }
+      .row:is(:hover, :focus-within) .dot { scale: 1.3; }
       .row:has(details[open]) .halo { animation: ring var(--dur-ring) var(--ease-out); }
     }
     @keyframes ring { from { scale: 1; opacity: 0.5; } to { scale: 2.8; opacity: 0; } }
@@ -107,7 +113,7 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
     summary { transition: background-color var(--dur-short) var(--ease-out); }
     .row.lit summary { background: color-mix(in srgb, var(--accent) 12%, transparent); }
     .row.lit .per { color: var(--fg); } /* the tint is darker than the page: keep the small text readable */
-    .row.lit .node { scale: 1.3; }
+    .row.lit .dot { scale: 1.3; }
     /* the foundation (the first job) is the same grey as its block in the graph, not the accent tint of the others */
     .row.lit.base summary { background: color-mix(in srgb, var(--fg) 20%, transparent); }
 
@@ -139,6 +145,8 @@ export class Experience {
   readonly c = input.required<SiteContent>();
   protected readonly rows = ROWS;
   protected readonly base = BASE;
+  /** The left half of a node (a half circle), which is drawn in the colour of the main line. */
+  protected half = (x: number, y: number, r: number): string => `M${x},${y - r} A${r},${r} 0 0 0 ${x},${y + r} Z`;
   protected readonly x = computed(() => EXTRA[this.c().lang]);
   protected readonly file = FILES.experience;
 
