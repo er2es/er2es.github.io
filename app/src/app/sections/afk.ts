@@ -1,5 +1,6 @@
 import { Component, input } from '@angular/core';
 import type { SiteContent } from '../content/model';
+import { BuddyFigure } from './buddy';
 
 /**
  * Away from keyboard: four small tiles with line icons, each with one little motion of its own on hover
@@ -8,13 +9,14 @@ import type { SiteContent } from '../content/model';
  */
 @Component({
   selector: 'app-afk',
+  imports: [BuddyFigure],
   template: `
     <p class="eyebrow mono" aria-hidden="true">afk/</p>
     <!-- the tiles are focusable only to show their name: keyboard parity with the hover tooltip -->
-    <ul class="afk" [attr.aria-label]="c().profile.hobbies.label" (pointerdown)="reveal($event)">
+    <ul #row class="afk" [attr.aria-label]="c().profile.hobbies.label" (pointerdown)="reveal($event)">
       <svg class="trail row" viewBox="0 0 600 121.5" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M37.5 37.5 C90 37.5 90 67.5 142.5 67.5 S195 45 247.5 45 S300 75 352.5 75 S405 41.25 457.5 41.25 S510 63.75 562.5 63.75" vector-effect="non-scaling-stroke" /></svg>
       <svg class="trail wide" viewBox="0 0 256 416" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M60 60 C128 60 128 84 196 84 C196 140 60 140 60 196 C128 196 128 220 196 220 C196 276 60 276 60 332 C128 332 128 356 196 356" vector-effect="non-scaling-stroke" /></svg>
-      <li data-tip-pos="top" tabindex="0" class="tile cinema" [attr.data-tip]="c().profile.hobbies.cinema">
+      <li data-tip-pos="bottom" tabindex="0" class="tile cinema" [attr.data-tip]="c().profile.hobbies.cinema">
         <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
           <rect x="7" y="20" width="34" height="21" rx="3" />
           <path d="M20 26.5l9 5-9 5z" />
@@ -22,7 +24,7 @@ import type { SiteContent } from '../content/model';
         </svg>
         <span class="sr-only">{{ c().profile.hobbies.cinema }}</span>
       </li>
-      <li data-tip-pos="top" tabindex="0" class="tile woods" [attr.data-tip]="c().profile.hobbies.woods">
+      <li data-tip-pos="bottom" tabindex="0" class="tile woods" [attr.data-tip]="c().profile.hobbies.woods">
         <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
           <path d="M3 41h42" />
           <g class="tree a"><path d="M24 5l-7 12h14zM24 13l-9 15h18zM24 28v9" /></g>
@@ -31,7 +33,7 @@ import type { SiteContent } from '../content/model';
         </svg>
         <span class="sr-only">{{ c().profile.hobbies.woods }}</span>
       </li>
-      <li data-tip-pos="top" tabindex="0" class="tile dog" [attr.data-tip]="c().profile.hobbies.dog">
+      <li data-tip-pos="bottom" tabindex="0" class="tile dog" [attr.data-tip]="c().profile.hobbies.dog">
         <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
           <path d="M24 26c-6 0-11 4-11 8.5 0 3.2 2.6 4.5 5.5 4.5 2 0 3.5-1 5.5-1s3.5 1 5.5 1c2.9 0 5.5-1.3 5.5-4.5C35 30 30 26 24 26z" />
           <ellipse class="toe t1" cx="11" cy="23" rx="3.2" ry="4.4" transform="rotate(-20 11 23)" />
@@ -41,14 +43,14 @@ import type { SiteContent } from '../content/model';
         </svg>
         <span class="sr-only">{{ c().profile.hobbies.dog }}</span>
       </li>
-      <li data-tip-pos="top" tabindex="0" class="tile walk" [attr.data-tip]="c().profile.hobbies.walk">
+      <li data-tip-pos="bottom" tabindex="0" class="tile walk" [attr.data-tip]="c().profile.hobbies.walk">
         <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
           <g class="foot l"><ellipse cx="16" cy="12" rx="5" ry="7" /><ellipse cx="16" cy="24.5" rx="3.6" ry="3.5" /></g>
           <g class="foot r"><ellipse cx="32" cy="28" rx="5" ry="7" /><ellipse cx="32" cy="40.5" rx="3.6" ry="3.5" /></g>
         </svg>
         <span class="sr-only">{{ c().profile.hobbies.walk }}</span>
       </li>
-      <li data-tip-pos="top" tabindex="0" class="tile pho" [attr.data-tip]="c().profile.hobbies.pho">
+      <li data-tip-pos="bottom" tabindex="0" class="tile pho" [attr.data-tip]="c().profile.hobbies.pho">
         <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
           <path d="M5 26h38c0 9.5-8.5 15-19 15S5 35.5 5 26z" />
           <path d="M18 44h12" />
@@ -57,7 +59,7 @@ import type { SiteContent } from '../content/model';
         </svg>
         <span class="sr-only">{{ c().profile.hobbies.pho }}</span>
       </li>
-      <li data-tip-pos="top" tabindex="0" class="tile games" [attr.data-tip]="c().profile.hobbies.games">
+      <li data-tip-pos="bottom" tabindex="0" class="tile games" [attr.data-tip]="c().profile.hobbies.games">
         <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
           <g class="pad">
             <path d="M13 15h22c5.5 0 8.5 4.2 9.6 10.5l1.8 10.2c.6 3.6-1.4 6.3-4.4 6.3-2.3 0-3.9-1.3-5.5-3.8L33 34H15l-2.1 3.2c-1.6 2.5-3.2 3.8-5.5 3.8-3 0-5-2.7-4.4-6.3l1.8-10.2C4.5 19.2 7.5 15 13 15z" />
@@ -67,18 +69,19 @@ import type { SiteContent } from '../content/model';
         </svg>
         <span class="sr-only">{{ c().profile.hobbies.games }}</span>
       </li>
+      @defer (on hover(row)) { <app-buddy aria-hidden="true" /> }
     </ul>
   `,
   styles: [`
     :host { display: block; }
     .eyebrow { margin-bottom: 0.75rem; }
     /* one row on a phone and a tablet, like the soft skills: the same size, tilted and set at different heights (a percentage margin is a share of the tile's own width), led by a dashed line */
-    .afk { position: relative; list-style: none; margin: 0; padding: 0 0 1.5%; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5%; }
-    .trail { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; color: var(--fg-2); pointer-events: none; }
+    .afk { position: relative; isolation: isolate; list-style: none; margin: 0; padding: 0 0 1.5%; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5%; }
+    .trail { position: absolute; z-index: -1; inset: 0; width: 100%; height: 100%; overflow: visible; color: var(--fg-2); pointer-events: none; }
     .trail path { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-dasharray: 2 7; stroke-linecap: round; opacity: 0.5; }
     .trail.wide { display: none; }
     .tile {
-      position: relative; aspect-ratio: 1; display: grid; place-items: center; border-radius: 24px; corner-shape: squircle; color: var(--fg-2);
+      position: relative; z-index: 1; aspect-ratio: 1; display: grid; place-items: center; border-radius: 24px; corner-shape: squircle; color: var(--fg-2);
       border: 1px solid var(--line); background: linear-gradient(color-mix(in srgb, var(--fg) 5%, transparent), color-mix(in srgb, var(--fg) 5%, transparent)), var(--bg);
       transition: color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out), translate var(--dur-med) var(--ease-spring), rotate var(--dur-med) var(--ease-spring), box-shadow var(--dur-short) var(--ease-out);
     }
