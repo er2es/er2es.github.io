@@ -46,7 +46,7 @@ import { confetti } from './confetti';
     .coat.on { display: block; }
     .coat.gone { opacity: 0; }
     /* the photo fades back over the card, and the card is gone when it is whole again */
-    .heal { opacity: 0; transition: opacity 600ms var(--ease-out); pointer-events: none; }
+    .heal { opacity: 0; transition: opacity var(--dur-ring) var(--ease-out); pointer-events: none; }
     .heal.in { opacity: 1; }
     @media (prefers-reduced-motion: reduce) { .heal { transition: none; } }
     @media (prefers-reduced-motion: no-preference) { .prize.won b { animation: pop var(--dur-med) var(--ease-spring) both; } }

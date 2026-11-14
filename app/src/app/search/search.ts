@@ -39,8 +39,10 @@ export function highlight(label: string, query: string): Segment[] {
 }
 
 export function buildDocs(c: SiteContent): SearchDoc[] {
+  const h = c.profile.hobbies;
   const docs: SearchDoc[] = [
     { id: 'section:profile', section: 'profile', title: c.ui.sections.profile, text: c.profile.paragraphs.join(' '), anchor: 'profile' },
+    { id: 'profile:hobbies', section: 'profile', title: c.profile.hobbies.label, text: [h.cinema, h.woods, h.dog, h.walk, h.pho, h.games].join(' '), anchor: 'profile-afk' },
   ];
 
   for (const f of FACTS) {
@@ -76,15 +78,18 @@ export function buildDocs(c: SiteContent): SearchDoc[] {
   return docs;
 }
 
+/** How many words of the text start with `q`: "angol" finds "angolul" but not "hangoltam". */
+const wordsStarting = (words: readonly string[], q: string): number => words.filter((w) => w.startsWith(q)).length;
+
 function score(d: SearchDoc, qt: readonly string[]): number {
-  const title = norm(d.title);
-  const text = norm(d.text);
+  const title = tokens(d.title);
+  const text = tokens(d.text);
   let s = 0;
   for (const q of qt) {
-    const inTitle = title.includes(q);
-    const inText = text.includes(q);
-    if (!inTitle && !inText) return 0;
-    s += (inTitle ? 3 : 0) + (inText ? 1 : 0) + (title.startsWith(q) ? 2 : 0);
+    const inTitle = wordsStarting(title, q) > 0;
+    const inText = wordsStarting(text, q); // the more often a word comes up, the more it is about it
+    if (!inTitle && inText === 0) return 0;
+    s += (inTitle ? 3 : 0) + Math.min(inText, 3) + (title[0]?.startsWith(q) ? 2 : 0);
   }
   return s;
 }
@@ -95,7 +100,7 @@ export function search(docs: readonly SearchDoc[], query: string, limit = 6): Se
   return docs
     .map((d, i) => ({ d, i, s: score(d, qt) }))
     .filter((x) => x.s > 0)
-    .sort((a, b) => b.s - a.s || a.i - b.i)
+    .sort((a, b) => b.s - a.s || Number(a.d.id.startsWith('section:')) - Number(b.d.id.startsWith('section:')) || a.i - b.i) // on a tie an entry comes before a whole section
     .slice(0, limit)
     .map((x) => x.d);
 }

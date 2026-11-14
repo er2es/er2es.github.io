@@ -19,7 +19,7 @@ describe('careerGrid', () => {
 
   it('levels a year by how many technologies the family has in it, capped, and 1 where a job used it with none listed', () => {
     const levels = g.lanes[0].cells.map((c) => c.level);
-    expect(levels).toEqual([2, 2, 2, 0, MAX_LEVEL, MAX_LEVEL, MAX_LEVEL]); // 2013 is a gap, 2014+ lists five
+    expect(levels).toEqual([2, 2, 2, 2, MAX_LEVEL, MAX_LEVEL, MAX_LEVEL]); // 2013 is still the first job's (no job starts that year), 2014+ lists five
     const bare = careerGrid(jobs, 'base', [{ id: 'x', jobs: ['a'], tagsOf: () => [] }]);
     expect(bare.lanes[0].cells[0].level).toBe(1);
   });

@@ -27,6 +27,7 @@ const unitRun = runCapture('npm run test:coverage');
 const unit = count(unitRun, /Tests\s+(\d+) passed/);
 const coverage = Math.round(count(unitRun, /Statements\s*:\s*([\d.]+)%/));
 run('npm run check:contrast');
+run('npm run check:design');
 run('npm run portrait');
 run('npm run build');
 run('npm run check:privacy');

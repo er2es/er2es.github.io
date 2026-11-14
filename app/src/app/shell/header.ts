@@ -65,10 +65,10 @@ import { SectionIcon } from './section-icon';
       width: min(100% - 2 * max(10px, env(safe-area-inset-left), env(safe-area-inset-right)), 70rem); min-height: var(--bar-h); padding: 0 5px 0 9px; corner-shape: round;
       /* round corners (not the squircles of the other surfaces) and one gap on every side (6px around a 44px control, 10px around the 36px portrait, borders included):
          then what sits at the edges is exactly concentric with the bar's corner, radius 22 - gap */
-      display: flex; align-items: center; gap: 0.75rem; border-radius: 22px;
+      display: flex; align-items: center; gap: 0.75rem; border-radius: var(--radius);
     }
     /* where the portrait lands (app-avatar-dock flies a copy of it here while the hero scrolls away) */
-    .avatar-slot { flex: none; display: grid; place-items: center; overflow: hidden; width: 36px; height: 36px; border-radius: 12px; background: var(--tint-current); transition: background-color var(--dur-short) var(--ease-out); }
+    .avatar-slot { flex: none; display: grid; place-items: center; overflow: hidden; width: 36px; height: 36px; border-radius: var(--r-ctl); background: var(--tint-current); transition: background-color var(--dur-short) var(--ease-out); }
     /* the monogram holds the place until the portrait arrives, and is pushed out upwards by it (and drops back in when the portrait leaves) */
     .sz { width: 24px; height: auto; fill: var(--fg); transition: translate var(--dur-med) var(--ease-spring), scale var(--dur-med) var(--ease-spring), opacity var(--dur-short) var(--ease-out); }
     @media (hover: hover) { .brand:hover .avatar-slot:not(.filled) { background: var(--tint-press); } }
@@ -121,6 +121,8 @@ import { SectionIcon } from './section-icon';
       /* a press is shown on the pill, which shrinks with the label */
       .links.links:has(a:active) .sel { background: var(--tint-press); scale: 0.96; transition-delay: 0s; }
     }
+    /* between 900 and 1100 px the menu takes the room: the name would be cut off ("Szabó Jó…"), so the avatar stands for it */
+    @media (min-width: 900px) and (max-width: 1099px) { .mark { display: none; } }
     @media (max-width: 1099px) { .links app-section-icon { display: none; } } /* the bar has no room for them between 900 and 1100 px */
     /* the icon and the label are drawn a pixel or two towards the pointer (--tx, --ty are set in script) */
     .links a app-section-icon, .links a .t { translate: var(--tx, 0px) var(--ty, 0px); }
@@ -150,11 +152,11 @@ import { SectionIcon } from './section-icon';
     /* the theme as three positions (Light, Auto, Dark) with one thumb that glides between them */
     .theme { position: relative; display: inline-flex; align-items: center; height: 36px; padding: 0 2px; margin-inline: 2px; border-radius: var(--r-ctl); background: var(--tint-hover); }
     .thumb {
-      position: absolute; left: 2px; top: 2px; width: 34px; height: 32px; border-radius: 14px; pointer-events: none;
+      position: absolute; left: 2px; top: 2px; width: 34px; height: 32px; border-radius: var(--r-ctl); pointer-events: none;
       background: color-mix(in srgb, var(--fg) 16%, transparent); translate: calc(var(--k, 0) * 34px) 0;
     }
     .go .thumb { transition: translate var(--dur-med) var(--ease-spring); }
-    .seg { position: relative; z-index: 1; display: grid; place-items: center; width: 34px; height: 44px; margin-block: -4px; padding: 0; border: 0; border-radius: 14px; background: none; color: var(--fg-2); cursor: pointer; transition: color var(--dur-press) var(--ease-out); }
+    .seg { position: relative; z-index: 1; display: grid; place-items: center; width: 34px; height: 44px; margin-block: -4px; padding: 0; border: 0; border-radius: var(--r-ctl); background: none; color: var(--fg-2); cursor: pointer; transition: color var(--dur-press) var(--ease-out); }
     .seg[aria-checked='true'] { color: var(--fg); }
     @media (hover: hover) { .seg:hover { color: var(--fg); } }
     /* the controls at the bar's edges take the bar's corner, less the gap they keep from it (22px - 6px), instead of a full pill */

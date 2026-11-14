@@ -24,10 +24,10 @@ import { Component, input, output } from '@angular/core';
     :host { display: contents; }
     .pup {
       position: fixed; inset: 0; z-index: 15; overflow: hidden; cursor: pointer; background: #1a0f08;
-      animation: pup-in 700ms var(--ease-out) both;
+      animation: pup-in var(--dur-long) var(--ease-out) both;
     }
     .pup.sheet { cursor: default; }
-    .pup.leave { animation: pup-out 520ms ease-in-out both; pointer-events: none; }
+    .pup.leave { animation: pup-out var(--dur-ring) ease-in-out both; pointer-events: none; }
     @keyframes pup-in { from { opacity: 0; } }
     @keyframes pup-out { to { opacity: 0; } }
 
@@ -38,7 +38,7 @@ import { Component, input, output } from '@angular/core';
       animation: drift 22s ease-in-out infinite alternate;
     }
     /* the photo darkens behind the sheet through an overlay's opacity (cheap), not through the filter */
-    .pup::before { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: #000; opacity: 0; transition: opacity 700ms var(--ease-out); }
+    .pup::before { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: #000; opacity: 0; transition: opacity var(--dur-long) var(--ease-out); }
     .pup.sheet::before { opacity: 0.31; }
     /* nothing keeps running behind the sheet or while it fades out */
     .pup.sheet .bg, .pup.sheet .frame, .pup.sheet .hint, .pup.sheet .hint::before, .pup.sheet .hint::after, .pup.sheet .hint svg, .pup.leave .bg, .pup.leave .frame { animation-play-state: paused; }
@@ -48,12 +48,12 @@ import { Component, input, output } from '@angular/core';
     .stage { position: absolute; inset: 0; display: grid; place-items: center; perspective: 1100px; pointer-events: none; z-index: 1; }
     .frame {
       position: relative; height: min(76vh, 41rem); aspect-ratio: 424 / 736; max-width: 88vw; overflow: hidden;
-      border-radius: 30px; corner-shape: squircle;
+      border-radius: var(--radius); corner-shape: squircle;
       box-shadow: 0 50px 90px -24px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.3);
       transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform var(--dur-press) var(--ease-out);
       animation: land 1000ms var(--ease-spring) 120ms both, float 7s ease-in-out 1.1s infinite;
     }
-    .stage { transition: opacity 400ms var(--ease-out), scale 400ms var(--ease-out); }
+    .stage { transition: opacity var(--dur-med) var(--ease-out), scale var(--dur-med) var(--ease-out); }
     .pup.sheet .stage { opacity: 0; scale: 0.94; }
     .photo { display: block; width: 100%; height: 100%; object-fit: cover; }
     /* a soft highlight that follows the pointer across the picture, like light on glass */
@@ -74,7 +74,7 @@ import { Component, input, output } from '@angular/core';
       background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.38);
       -webkit-backdrop-filter: blur(14px) saturate(160%); backdrop-filter: blur(14px) saturate(160%);
       box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.4);
-      animation: hint-in 450ms var(--ease-spring) both; transition: opacity 300ms var(--ease-out);
+      animation: hint-in var(--dur-med) var(--ease-spring) both; transition: opacity var(--dur-short) var(--ease-out);
     }
     .pup.sheet .hint { opacity: 0; }
     .hint::before, .hint::after { content: ''; position: absolute; inset: -1px; border-radius: 50%; border: 1.5px solid rgba(255, 255, 255, 0.55); animation: ring 2.4s ease-out 0.3s infinite; }

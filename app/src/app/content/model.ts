@@ -14,8 +14,8 @@ export const FILES: Record<SectionId, string> = {
   experience: 'CHANGELOG',
   skills: 'tests/',
   projects: 'projects/',
-  about: 'ABOUT',
-  contact: 'CONTACT',
+  about: 'AUTHORS',
+  contact: 'MAINTAINERS',
 };
 
 export type ItemId =
@@ -36,7 +36,7 @@ export interface Fact {
 
 export const FACTS: readonly Fact[] = [
   { id: 'chamber', kind: 'job', main: true, inGraph: true, start: 2021, end: 2026,
-    keywords: ['Symfony', 'Angular', 'PostgreSQL', 'MariaDB', 'GitLab', 'CI/CD', 'RHEL', 'Podman', 'Legacy PHP refactor', 'WordPress multisite', 'SASS', 'Node', 'Bootstrap 4', 'QA', 'SonarQube', 'E2E testing', 'Unit testing', 'Jasmine', 'Java', 'Go', 'Postman', 'SoapUI'] },
+    keywords: ['Symfony', 'Angular', 'PostgreSQL', 'MariaDB', 'Triggers', 'Stored procedures', 'GitLab', 'CI/CD', 'RHEL', 'Podman', 'Legacy PHP refactor', 'WordPress multisite', 'SASS', 'Node', 'Bootstrap 4', 'QA', 'SonarQube', 'E2E testing', 'Unit testing', 'Jasmine', 'Java', 'Go', 'Postman', 'SoapUI'] },
   { id: 'uni-med', kind: 'job', main: true, inGraph: true, start: 2020, end: 2021,
     keywords: ['WordPress multisite', 'SASS', 'Node', 'Gulp', 'Bootstrap 4', 'Laravel'] },
   { id: 'uni-admin', kind: 'job', main: true, inGraph: true, start: 2016, end: 2020,
@@ -66,10 +66,19 @@ export const FACTS: readonly Fact[] = [
   { id: 'audit', kind: 'project', main: false, inGraph: false, start: 2019, end: 2021,
     keywords: ['CodeIgniter', 'Laravel', 'Bootstrap', 'Backpack'] },
   { id: 'surveys', kind: 'project', main: false, inGraph: false, start: 2012, end: 2021,
-    keywords: ['IBM SPSS'] },
+    keywords: ['PHP', 'LimeSurvey', 'EvaSys', 'IBM SPSS'] },
   { id: 'admissions-map', kind: 'project', main: false, inGraph: false, start: 2013, end: 2013,
     keywords: ['Legacy PHP', 'jQuery'] },
 ];
+
+/** Hungarian for the tags that are phrases rather than product names; for a tag that is also a skill, the skill's own label is used. */
+const TAG_HU: Record<string, string> = { 'Legacy PHP refactor': 'Régi PHP-kód refaktorálása', 'Legacy PHP': 'Régi PHP-kód', 'Mutation testing': 'Mutációs tesztelés' };
+
+/** A tag of a job or project, in the language of the page: the same words as the skills list uses, never English left in the Hungarian page. */
+export function tagLabel(name: string, lang: Locale): string {
+  if (lang === 'en') return name;
+  return TAG_HU[name] ?? SKILLS.flatMap((g) => g.items).find((s) => s.name === name)?.label?.hu ?? name;
+}
 
 export const FACT_BY_ID = Object.fromEntries(FACTS.map((f) => [f.id, f])) as Record<ItemId, Fact>;
 
@@ -112,6 +121,8 @@ export const SKILLS: readonly { group: SkillGroupId; items: readonly SkillFact[]
     { name: 'PostgreSQL' },
     { name: 'MariaDB' },
     { name: 'MySQL' },
+    { name: 'Triggers' },
+    { name: 'Stored procedures' },
   ] },
   { group: 'devops', items: [
     { name: 'GitLab' },

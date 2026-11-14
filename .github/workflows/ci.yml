@@ -49,6 +49,8 @@ jobs:
 
       - name: Colour contrast of the design tokens
         run: npm run check:contrast
+      - name: Design rules (radii, durations, state colours)
+        run: npm run check:design
 
       - name: docs/ is built from these sources
         run: npm run check:docs

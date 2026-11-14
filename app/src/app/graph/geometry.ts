@@ -28,13 +28,14 @@ export function railGeometry(row: GraphRow, laneCount: number, isFirst: boolean,
       if (cell === 'node') dots.push({ x: x(0), y: NODE_Y, r: 6.25, lane: 0 });
       return;
     }
-    if (cell === 'pass') lines.push({ x: x(k), y1: 0, y2: '100%', lane: k });
+    const hue = row.hues[k]!; // the colour: the lane's, unless it is used again
+    if (cell === 'pass') lines.push({ x: x(k), y1: 0, y2: '100%', lane: hue });
     if (cell === 'node') {
-      lines.push({ x: x(k), y1: NODE_Y, y2: '100%', lane: k });
-      curves.push({ d: curve(0, k), lane: k });
-      dots.push({ x: x(k), y: NODE_Y, r: 5, lane: k });
+      lines.push({ x: x(k), y1: NODE_Y, y2: '100%', lane: hue });
+      curves.push({ d: curve(0, k), lane: hue });
+      dots.push({ x: x(k), y: NODE_Y, r: 5, lane: hue });
     }
-    if (cell === 'fork') curves.push({ d: curve(k, 0), lane: k });
+    if (cell === 'fork') curves.push({ d: curve(k, 0), lane: hue });
   });
 
   return { width: laneCount * LANE_W, lines, curves, dots };

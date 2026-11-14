@@ -1,8 +1,29 @@
+/**
+ * Reports which section the reader is in: the one in the thin band across the middle of the window; at the very bottom
+ * the last one (it can be too short to reach the band). It is worked out afresh at every change and every scroll, from the
+ * sections that are in the band now: an observer only reports a section when it enters or leaves, so a section that stayed in
+ * the band while the bottom rule had the last one (About, above a short Contact) would never be named again on the way up.
+ */
 export function trackActive(ids: readonly string[], onActive: (id: string) => void): () => void {
   if (typeof IntersectionObserver === 'undefined') return () => undefined;
+  const inBand = new Set<string>();
+  let shown = '';
+  const show = (): void => {
+    const atEnd = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2;
+    // of those in the band, the last one on the page (two meet only at a boundary)
+    const id = atEnd ? ids[ids.length - 1]! : [...inBand].sort((a, b) => ids.indexOf(a) - ids.indexOf(b)).pop();
+    if (id !== undefined && id !== shown) {
+      shown = id;
+      onActive(id);
+    }
+  };
   const io = new IntersectionObserver(
     (entries) => {
-      for (const e of entries) if (e.isIntersecting) onActive(e.target.id);
+      for (const e of entries) {
+        if (e.isIntersecting) inBand.add(e.target.id);
+        else inBand.delete(e.target.id);
+      }
+      show();
     },
     { rootMargin: '-45% 0px -50% 0px' },
   );
@@ -10,13 +31,9 @@ export function trackActive(ids: readonly string[], onActive: (id: string) => vo
     const el = document.getElementById(id);
     if (el) io.observe(el);
   }
-  // The last section can be too short to reach the observer band: at the very bottom it wins.
-  const onScroll = (): void => {
-    if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2) onActive(ids[ids.length - 1]!);
-  };
-  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('scroll', show, { passive: true });
   return () => {
     io.disconnect();
-    window.removeEventListener('scroll', onScroll);
+    window.removeEventListener('scroll', show);
   };
 }

@@ -2,10 +2,13 @@ import type { Locale } from '../content/model';
 
 export interface ArcJob { id: string; start: number; end: number; main: boolean }
 
-/** The jobs running in `year`. A job ends where the next begins, so its last year belongs to the next one. */
+/**
+ * The jobs running in `year`. A job ends where the next begins, so its last year belongs to the next one; when no main job
+ * runs that year (the next begins later), the last year is still the job's own.
+ */
 export function activeAt(jobs: readonly ArcJob[], year: number): string[] {
-  const max = Math.max(...jobs.map((j) => j.end));
-  return jobs.filter((j) => j.start <= year && (year < j.end || (year >= max && j.end === max))).map((j) => j.id);
+  const running = (o: ArcJob): boolean => o.main && o.start <= year && year < o.end;
+  return jobs.filter((j) => j.start <= year && (year < j.end || (year === j.end && !jobs.some((o) => o !== j && running(o))))).map((j) => j.id);
 }
 
 // Hungarian suffix of "-tól/-től" follows how the last digit is spoken (egy-től, három-tól, hat-tól, húsz-tól)

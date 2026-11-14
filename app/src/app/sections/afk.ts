@@ -81,13 +81,14 @@ import { BuddyFigure } from './buddy';
     .trail path { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-dasharray: 2 7; stroke-linecap: round; opacity: 0.5; }
     .trail.wide { display: none; }
     .tile {
-      position: relative; z-index: 1; aspect-ratio: 1; display: grid; place-items: center; border-radius: 24px; corner-shape: squircle; color: var(--fg-2);
-      border: 1px solid var(--line); background: linear-gradient(color-mix(in srgb, var(--fg) 5%, transparent), color-mix(in srgb, var(--fg) 5%, transparent)), var(--bg);
+      position: relative; z-index: 1; aspect-ratio: 1; display: grid; place-items: center; border-radius: var(--radius); corner-shape: squircle; color: var(--fg-2);
+      /* the outline is a ring (one path), not a border (four sides, each smoothed on its own, which on a tilted tile comes out patchy) */
+      border: 0; box-shadow: 0 0 0 1px var(--ring), 0 0 8px var(--veil); background: linear-gradient(var(--veil), var(--veil)), var(--bg);
       transition: color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out), translate var(--dur-med) var(--ease-spring), rotate var(--dur-med) var(--ease-spring), box-shadow var(--dur-short) var(--ease-out);
     }
     .tile svg { width: 52%; height: auto; overflow: visible; }
     @media (hover: hover) {
-      .tile:hover { color: var(--accent); background: linear-gradient(color-mix(in srgb, var(--accent) 10%, transparent), color-mix(in srgb, var(--accent) 10%, transparent)), var(--bg); translate: 0 -4px; rotate: 0deg; box-shadow: 0 14px 28px -14px color-mix(in srgb, var(--accent) 55%, transparent); }
+      .tile:hover { color: var(--accent); background: linear-gradient(var(--tint-accent), var(--tint-accent)), var(--bg); translate: 0 -4px; rotate: 0deg; box-shadow: 0 0 0 1px var(--ring-accent), 0 14px 28px -14px color-mix(in srgb, var(--accent) 55%, transparent); }
     }
 
     .tile:nth-of-type(1) { rotate: -5deg; margin-top: 0; }
@@ -96,10 +97,12 @@ import { BuddyFigure } from './buddy';
     .tile:nth-of-type(4) { rotate: 6deg; margin-top: 50%; }
     .tile:nth-of-type(5) { rotate: -4deg; margin-top: 5%; }
     .tile:nth-of-type(6) { rotate: 3deg; margin-top: 35%; }
-    .tile:focus-visible, .tile.tip-open { rotate: 0deg; } /* the name shown beside a tile stands straight */
+    /* straight while the pointer is on it, or while its name is shown: these come after the tilts, which are as specific */
+    @media (hover: hover) { .tile:hover { rotate: 0deg; } }
+    .tile:focus-visible, .tile.tip-open { rotate: 0deg; }
 
     /* each icon has one motion of its own, only while the tile is hovered */
-    .clap { transform-origin: 8px 18px; transform: rotate(-17deg); transition: transform 160ms ease-in; }
+    .clap { transform-origin: 8px 18px; transform: rotate(-17deg); transition: transform var(--dur-press) ease-in; }
     .tree { transform-origin: 24px 38px; }
     .tree.b { transform-origin: 9px 37px; }
     .tree.c { transform-origin: 39px 37px; }
@@ -112,7 +115,7 @@ import { BuddyFigure } from './buddy';
       .woods:hover .tree { animation: sway 1.8s ease-in-out 2; }
       .woods:hover .tree.b { animation-delay: -0.6s; }
       .woods:hover .tree.c { animation-delay: -1.2s; }
-      .dog:hover .toe { animation: pop 900ms var(--ease-spring) both; }
+      .dog:hover .toe { animation: pop var(--dur-play) var(--ease-spring) both; }
       .dog:hover .t2 { animation-delay: 90ms; }
       .dog:hover .t3 { animation-delay: 180ms; }
       .dog:hover .t4 { animation-delay: 270ms; }
@@ -121,9 +124,9 @@ import { BuddyFigure } from './buddy';
       .pho:hover .steam path { animation: rise 1.6s ease-in-out 2; }
       .pho:hover .s2 { animation-delay: 0.25s; }
       .pho:hover .s3 { animation-delay: 0.5s; }
-      .games:hover .pad { animation: wiggle 700ms var(--ease-spring) both; }
-      .games:hover .b1 { animation: press 700ms ease-in-out 120ms both; }
-      .games:hover .b2 { animation: press 700ms ease-in-out 320ms both; }
+      .games:hover .pad { animation: wiggle var(--dur-long) var(--ease-spring) both; }
+      .games:hover .b1 { animation: press var(--dur-long) ease-in-out 120ms both; }
+      .games:hover .b2 { animation: press var(--dur-long) ease-in-out 320ms both; }
     }
     @keyframes sway { 50% { transform: rotate(4deg); } 0%, 100% { transform: rotate(-3deg); } }
     @keyframes pop { 40% { transform: translateY(-4px) scale(1.12); } }

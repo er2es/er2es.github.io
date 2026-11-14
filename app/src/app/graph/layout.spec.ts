@@ -5,11 +5,13 @@ const real: GraphInput[] = FACTS.filter((f) => f.inGraph).map((f) => ({
   id: f.id, main: f.main, start: f.start!, end: f.end!,
 }));
 
+const item = (id: string, main: boolean, start: number, end: number): GraphInput => ({ id, main, start, end });
+
 describe('layoutGraph', () => {
   it('orders newest-finished first and keeps main entries on lane 0', () => {
     const { rows } = layoutGraph(real);
     expect(rows.map((r) => r.id)).toEqual([
-      'chamber', 'uni-med', 'uni-admin', 'welfare', 'health-inst', 'edu-authority', 'pricing-co', 'edu-nonprofit',
+      'chamber', 'uni-med', 'uni-admin', 'welfare', 'edu-authority', 'health-inst', 'pricing-co', 'edu-nonprofit',
     ]);
     for (const r of rows) {
       const main = real.find((x) => x.id === r.id)!.main;
@@ -18,12 +20,38 @@ describe('layoutGraph', () => {
     }
   });
 
-  it('puts the two overlapping jobs on two side lanes next to the main line', () => {
+  it('sets a part-time job under the main one it finished with, and the two part-time jobs, one after the other, on one side lane', () => {
     const { laneCount, rows } = layoutGraph(real);
-    expect(laneCount).toBe(3);
+    const ids = rows.map((r) => r.id);
+    expect(ids.indexOf('health-inst')).toBe(ids.indexOf('edu-authority') + 1); // the junior analyst right under the tester it ran beside
+    expect(laneCount).toBe(2);
     const lane = Object.fromEntries(rows.map((r) => [r.id, r.lane]));
     expect(lane['welfare']).toBe(1);
-    expect(lane['health-inst']).toBe(2);
+    expect(lane['health-inst']).toBe(1);
+  });
+
+  it('draws a side lane through the rows it spans and forks it where the main line was when the side job began', () => {
+    const { rows } = layoutGraph([item('m1', true, 2018, 2022), item('s', false, 2010, 2021), item('m2', true, 2014, 2018), item('m3', true, 2010, 2014)]);
+    expect(rows.map((r) => r.id)).toEqual(['m1', 's', 'm2', 'm3']);
+    expect(rows[1]!.cells[1]).toBe('node');
+    expect(rows[2]!.cells[1]).toBe('pass'); // the lane runs on past m2
+    expect(rows[3]!.cells[1]).toBe('fork'); // and joins the main line at the last row
+  });
+
+  it('draws a side lane that is used again in another colour, and a lane used for the first time in its own', () => {
+    const { rows } = layoutGraph(real);
+    const hue = (id: string): number => {
+      const r = rows.find((x) => x.id === id)!;
+      return r.hues[r.lane]!;
+    };
+    expect(hue('welfare')).toBe(1);
+    expect(hue('health-inst')).toBe(2); // the second part-time job, on the same lane, in the next colour
+    expect(rows.find((r) => r.id === 'chamber')!.hues).toEqual([0, 0]); // the main line has none of its own
+  });
+
+  it('puts a main entry before a side one that finished the same year', () => {
+    const rows = layoutGraph([item('side', false, 2012, 2014), item('main', true, 2010, 2014)]).rows.map((r) => r.id);
+    expect(rows).toEqual(['main', 'side']);
   });
 
   it('never lets two side branches overlap on the same lane', () => {
@@ -48,7 +76,6 @@ describe('layoutGraph', () => {
 });
 
 describe('layoutGraph ordering and lanes', () => {
-  const item = (id: string, main: boolean, start: number, end: number): GraphInput => ({ id, main, start, end });
 
   it('orders by end, then start, then id, so the picture never depends on the input order', () => {
     const rows = layoutGraph([item('b', true, 2010, 2014), item('c', true, 2012, 2014), item('a', true, 2012, 2014)]).rows.map((r) => r.id);

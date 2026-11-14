@@ -16,9 +16,9 @@ export const en: SiteContent = {
     tags: 'Tags',
     theme: { label: 'Theme', auto: 'Auto', light: 'Light', dark: 'Dark', autoNote: 'Auto: follows your system (now {now})' },
     palette: {
-      open: 'Search and commands',
+      open: 'Search this CV',
       short: 'Search',
-      placeholder: 'e.g. PHP',
+      placeholder: 'e.g. PHP, Selenium',
       empty: 'No match',
       close: 'Close',
       ask: 'Ask',
@@ -62,17 +62,17 @@ export const en: SiteContent = {
   profile: {
     paragraphs: [
       'I am a full-stack PHP developer in Budapest. I build web applications with Symfony on the server and Angular and TypeScript in the browser, and I follow the work down into PostgreSQL, where I write triggers and stored procedures and help design the schema underneath them.',
-      'For more than three years I coordinated work on a web platform, in a GitLab CI/CD and RHEL environment. I worked with the external development team and organised the internal testing of what they delivered, and agreed database design and infrastructure needs with colleagues in-house. Alongside that, I built the platform’s support site on my own, as well as REST and SOAP API endpoints for partner organisations.',
+      'For more than three years I coordinated the development of a web platform in a GitLab CI/CD and RHEL environment: I organised the internal testing of what the external team delivered, and built the platform’s support site on my own.',
       'I came to development by way of testing. I started in IT in 2008 with data preparation and VBA, then spent several years as a software tester, writing automated tests in Selenium WebDriver and running user acceptance and exploratory testing. Since then I have refactored legacy PHP, built applications in Laravel and CodeIgniter, and for a few years looked after WordPress: a multisite of more than 200 sites, with themes I built for it.',
     ],
     hobbies: { label: 'Away from keyboard', cinema: 'Cinema', woods: 'Hiking in the woods', dog: 'Dogs', walk: 'Walks', pho: 'Pho soup', games: 'Video games' },
   },
   experience: {
     intro: 'Employers are described by type, not by name. The full CV is available by email.',
-    arc: 'Grid of years and skill families: the darker a square, the more skills of that family I used that year.',
+    arc: 'Grid of years and skill families: the stronger the colour, the more skills of that family I used that year.',
   },
   skills: {
-    intro: 'The stack I work in, and the testing methods I brought with me from my QA years, grouped by area.',
+    intro: 'What I work with, grouped by area; the testing methods come from my QA years.',
     groups: {
       backend: 'Back end',
       frontend: 'Front end',
@@ -92,7 +92,7 @@ export const en: SiteContent = {
       heading: 'Languages',
       items: [
         'Hungarian: native',
-        'English, reading technical documentation: intermediate',
+        'English, technical reading: intermediate',
         'English, speaking and writing: basic',
       ],
     },
@@ -102,8 +102,8 @@ export const en: SiteContent = {
     },
     soft: { label: 'Soft skills', team: 'Team player', comms: 'Communication', solo: 'Independence', detail: 'Attention to detail', solve: 'Problem solving', learn: 'Quick learner' },
     research: {
-      heading: 'research/',
-      intro: 'I am interested in how to assure quality in a hybrid way: static analysis tools, automation and human review working together across the whole software development cycle. I try it out on my own projects, Fuzzphony among them.',
+      heading: 'Writing',
+      intro: 'I’m interested in assuring software quality from several sides at once: static analysis, automation and human review, across the whole development cycle. I try it out on my own projects, such as Fuzzphony.',
     },
   },
   contact: {
@@ -119,9 +119,9 @@ export const en: SiteContent = {
         'Fixed bugs and added features in the Symfony back end and the Angular front end, working within a GitLab CI/CD and RHEL environment.',
         'Worked with X.509-based authentication.',
         'Wrote, extended and optimised PostgreSQL queries, triggers and stored procedures, and agreed database design and infrastructure needs with internal colleagues.',
-        'Built the CI/CD processes for a multi-container, multi-server, zero-downtime environment.',
-        'Quality assurance for the projects was mine too: QA, SonarQube, end-to-end and unit tests, user acceptance testing and CI/CD. I also maintained a legacy Java and Go microservice environment.',
-        'Most recently: a multi-container web application running on Podman. I coordinated its development and quality assurance, and built the PostgreSQL procedures it needed.',
+        'Set up CI/CD pipelines for a multi-container, multi-server environment, with zero-downtime releases.',
+        'Owned quality assurance for the projects: SonarQube, end-to-end and unit tests, user acceptance testing and CI/CD. Also maintained a legacy Java and Go microservice environment.',
+        'Most recently, coordinated the development and quality assurance of a multi-container web application running on Podman, and built the PostgreSQL procedures it needed.',
         'Built the platform’s support site on my own, in Symfony and Angular.',
         'Developed web applications for partner organisations, along with REST and SOAP API endpoints.',
         'Maintained and extended the organisation’s WordPress sites and intranet, refactored legacy PHP code, and advised other development projects as a technical expert.',
@@ -174,12 +174,12 @@ export const en: SiteContent = {
     },
     fuzzphony: {
       title: 'Fuzzphony',
-      summary: 'My open-source search library for PHP and Symfony, built on PostgreSQL alone. It adds ranked full-text search that tolerates typos and ignores accents, with filters and a query language, and needs no Elasticsearch, Meilisearch or other external service. Existing tables stay as they are: the index lives in a separate table beside them. Built with an AI-agentic workflow; mutation testing keeps its quality in check.',
+      summary: 'My open-source search library for PHP and Symfony, built on PostgreSQL alone. It adds ranked full-text search that tolerates typos and ignores accents, with filters and a query language, and needs no Elasticsearch, Meilisearch or other external service. Existing tables stay as they are: the index lives in a separate table beside them. Built in an AI-agent-assisted workflow; mutation testing keeps its quality in check.',
       points: [],
     },
     slimfony: {
       title: 'Slimfony',
-      summary: 'An ultra-lightweight core for PHP microservices on FrankenPHP worker mode, built from a few Symfony components. The container and the routes are compiled at build time, and nothing is kept between requests. Secure by default: no error details leak out, and with authentication on (JWT), everything is denied until the caller is verified. PostgreSQL access is safe in a long-lived worker, and Prometheus metrics and health checks are built in.',
+      summary: 'An ultra-lightweight core for PHP microservices in FrankenPHP worker mode, built from a few Symfony components. The container and the routes are compiled at build time, and nothing is kept between requests. Secure by default: no error details leak out, and with authentication on (JWT), everything is denied until the caller is verified. PostgreSQL access is safe in a long-lived worker, and Prometheus metrics and health checks are built in.',
       points: [],
     },
     'cv-site': {

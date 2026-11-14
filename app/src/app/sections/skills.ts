@@ -51,7 +51,7 @@ import { FILES, SKILLS, type SiteContent } from '../content/model';
     @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
       /* both exist only while the row is hovered: nothing lies over the text at rest */
       .group:hover::before {
-        content: ''; position: absolute; inset: 0 -0.5rem; z-index: -1; border-radius: 14px; pointer-events: none;
+        content: ''; position: absolute; inset: 0 -0.5rem; z-index: -1; border-radius: var(--r-ctl); pointer-events: none;
         background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 50%), var(--lit), transparent 70%);
         animation: row-lit var(--dur-med) var(--ease-out) both;
       }
@@ -60,15 +60,16 @@ import { FILES, SKILLS, type SiteContent } from '../content/model';
         background: var(--accent); transform-origin: top; animation: row-line var(--dur-med) var(--ease-out) both;
       }
 
-      .pill:hover { border-color: color-mix(in srgb, var(--accent) 50%, transparent); background: color-mix(in srgb, var(--accent) 9%, transparent); }
-      .pill:hover::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 30%, color-mix(in srgb, var(--accent) 38%, transparent) 50%, transparent 70%); background-size: 260% 100%; animation: glint 750ms var(--ease-out) both; }
+      .pill:hover { border-color: var(--ring-accent); background: var(--tint-accent); }
+      .pill:hover::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 30%, var(--glint) 50%, transparent 70%); background-size: 260% 100%; animation: glint var(--dur-long) var(--ease-out) both; }
     }
-    /* the same glint on a touch screen, from the touch: the pill gets .touched for the length of the animation (glint() below) */
+    /* the same glint on a touch screen, from the touch, only quicker: the pill gets .touched for the length of the animation (glint() below); its outline and tint start warm and settle back at once, nothing is left lit */
     @media (prefers-reduced-motion: no-preference) {
       .pill { transition: border-color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out); }
-      .pill.touched { border-color: color-mix(in srgb, var(--accent) 50%, transparent); background: color-mix(in srgb, var(--accent) 9%, transparent); }
-      .pill.touched::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 30%, color-mix(in srgb, var(--accent) 38%, transparent) 50%, transparent 70%); background-size: 260% 100%; animation: glint 750ms var(--ease-out) both; }
+      .pill.touched { animation: tap var(--dur-short) var(--ease-out) both; }
+      .pill.touched::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 30%, var(--glint) 50%, transparent 70%); background-size: 260% 100%; animation: glint var(--dur-short) var(--ease-out) both; }
     }
+    @keyframes tap { from { border-color: var(--ring-accent); background-color: var(--tint-accent); } }
     @keyframes row-lit { from { opacity: 0; } }
     @keyframes row-line { from { transform: scaleY(0); } }
     @keyframes glint { 0% { opacity: 1; background-position: 140% 0; } 100% { opacity: 1; background-position: -40% 0; } }
