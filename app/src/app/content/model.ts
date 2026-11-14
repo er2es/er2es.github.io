@@ -181,6 +181,7 @@ export interface SiteContent {
     education: { heading: string; items: string[] };
     languages: { heading: string; items: string[] };
     award: { heading: string; text: string };
+    soft: { label: string; team: string; comms: string; solo: string; detail: string; solve: string; learn: string };
     research: { heading: string; intro: string };
   };
   contact: { text: string; workMode: string };

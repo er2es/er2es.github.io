@@ -1,10 +1,12 @@
 import { Component, computed, input } from '@angular/core';
 import { EXTRA } from '../content/extra';
+import { Soft } from './soft';
 import { ARTICLES } from '../content/research';
 import { FILES, type SiteContent } from '../content/model';
 
 @Component({
   selector: 'app-about',
+  imports: [Soft],
   template: `
     <section id="about" class="block" tabindex="-1" aria-labelledby="about-h">
       <div class="wrap">
@@ -24,6 +26,7 @@ import { FILES, type SiteContent } from '../content/model';
             <p>{{ c().about.award.text }}</p>
           </div>
         </div>
+        <div id="about-soft" class="soft-row" tabindex="-1"><app-soft [c]="c()" /></div>
         <div id="about-research" class="research" tabindex="-1">
           <h3 class="eyebrow mono">{{ c().about.research.heading }}</h3>
           <p class="intro">{{ c().about.research.intro }}</p>
@@ -46,7 +49,8 @@ import { FILES, type SiteContent } from '../content/model';
     .grid { display: grid; gap: 1.5rem; margin-top: 1.5rem; }
     .grid > div { scroll-margin-top: calc(var(--bar-h) + 1.25rem); outline: none; border-radius: 12px; }
     li + li { margin-top: 0.375rem; }
-    .research { margin-top: 2.5rem; scroll-margin-top: calc(var(--bar-h) + 1.25rem); outline: none; border-radius: 12px; }
+    .soft-row { margin-top: 2.5rem; scroll-margin-top: calc(var(--bar-h) + 1.25rem); outline: none; border-radius: 12px; }
+    .research { margin-top: 3.5rem; scroll-margin-top: calc(var(--bar-h) + 1.25rem); outline: none; border-radius: 12px; }
     .research h3.eyebrow { margin: 0 0 0.75rem; }
     .cards { list-style: none; margin: 1.25rem 0 0; padding: 0; display: grid; gap: 0.75rem; }
     .cards li + li { margin-top: 0; }
