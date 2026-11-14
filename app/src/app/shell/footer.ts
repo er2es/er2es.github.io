@@ -15,6 +15,7 @@ const REPO = 'https://github.com/er2es/er2es.github.io';
         <span>© {{ year }} {{ c().hero.name }}</span>
         <a [attr.href]="release" target="_blank" rel="noopener noreferrer">v{{ version }}<span class="sr-only"> {{ x().newTab }}</span></a>
         <a [attr.href]="licence" target="_blank" rel="noopener noreferrer">{{ x().source }}: MIT<span class="sr-only"> {{ x().newTab }}</span></a>
+        <a [attr.href]="contentLicence" target="_blank" rel="noopener noreferrer">{{ x().contentLicence }}<span class="sr-only"> {{ x().newTab }}</span></a>
       </div>
       <div class="yard" aria-hidden="true"><div class="wrap lot">
         @if (ground().l) { <i class="ground l"></i> }
@@ -87,4 +88,5 @@ export class Footer {
   protected readonly version = BUILD.version || '1';
   protected readonly release = `${REPO}/releases/tag/v${BUILD.version}`;
   protected readonly licence = `${REPO}/blob/main/LICENSE`;
+  protected readonly contentLicence = `${REPO}/blob/main/LICENSE-CONTENT.md`;
 }

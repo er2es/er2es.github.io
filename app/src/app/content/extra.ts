@@ -21,6 +21,8 @@ export interface ExtraText {
   touch: string;
   /** The footer's link to the code and its licence. */
   source: string;
+  /** The footer's link to the licence of the texts and photographs (all rights reserved). */
+  contentLicence: string;
   /** Appended (visually hidden) to links that open in a new tab. */
   newTab: string;
   /** Unfold / fold a long project description on narrow screens (spoken only). */
@@ -52,6 +54,7 @@ export const EXTRA: Record<Locale, ExtraText> = {
     partTime: 'Part-time',
     touch: 'Touch or drag across a year for the details',
     source: 'Source',
+    contentLicence: 'Content: all rights reserved',
     newTab: '(opens in a new tab)',
     more: 'Read more',
     less: 'Show less',
@@ -79,6 +82,7 @@ export const EXTRA: Record<Locale, ExtraText> = {
     partTime: 'Részmunkaidő',
     touch: 'Érints meg egy évet, vagy húzd végig az ujjad a sávon.',
     source: 'Forráskód',
+    contentLicence: 'Tartalom: minden jog fenntartva',
     newTab: '(új lapon nyílik)',
     more: 'Teljes leírás',
     less: 'Kevesebb',
