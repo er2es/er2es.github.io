@@ -57,9 +57,9 @@ import { TabBar } from './shell/tabbar';
         }
       }
     }
-    @if (pup() !== 'off') {
+    @if (pupShown(); as shown) {
       @defer (on immediate) {
-        <app-pup [state]="$any(pup())" [leaving]="pupLeaving()" (advance)="openSheet()" />
+        <app-pup [state]="shown" [leaving]="pupLeaving()" (advance)="openSheet()" />
       }
     }
     @if (eggOpen()) {
@@ -86,6 +86,8 @@ export class Home {
   protected readonly paletteGen = signal(0);
   protected readonly eggGen = signal(0);
   /** While the photo scene is up the page behind it is out of reach (the sheet's dialog makes it inert by itself). */
+  /** The pup's scene or sheet, or null while it is off: narrows the state for the template without a cast. */
+  protected readonly pupShown = computed(() => { const p = this.pup(); return p === 'off' ? null : p; });
   protected readonly behind = computed(() => (this.pup() === 'off' ? null : ''));
   protected readonly mainHref = computed(() => `${this.locale() === 'hu' ? '/hu/' : '/'}#main`);
 

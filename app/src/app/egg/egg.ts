@@ -4,6 +4,10 @@ import { SITE_URL, type SiteContent } from '../content/model';
 import { pagePath } from '../core/nav';
 import { BUILD } from './build-info';
 
+/** The Layout Instability API entry, which lib.dom does not type; `__ck` is the cookie snapshot taken by the inline script in index.html. */
+interface LayoutShift extends PerformanceEntry { value: number; hadRecentInput: boolean }
+declare global { interface Window { __ck?: string } }
+
 interface Row { label: string; value: string }
 
 /** Live measurements of this very page, read from the browser's Performance APIs (nothing is hard-coded). */
@@ -19,7 +23,7 @@ function measure(t: SiteContent['ui']['egg']): Promise<Row[]> {
   const thirdParty = res.filter((r) => { try { return new URL(r.name).origin !== origin; } catch { return false; } }).length;
   // cookies are shared by every site on the same host (all of localhost, for example): count only the ones this page added
   const names = (c: string): string[] => c.split(';').map((x) => x.trim().split('=')[0]!).filter(Boolean);
-  const before = new Set(names((window as unknown as { __ck?: string }).__ck ?? ''));
+  const before = new Set(names(window.__ck ?? ''));
   const cookies = names(document.cookie).filter((n) => !before.has(n)).length;
   const keys = (s: () => Storage): string[] => { try { const st = s(); return Array.from({ length: st.length }, (_, i) => st.key(i) ?? '').filter(Boolean); } catch { return []; } };
   const stored = (list: string[]): string => (list.length ? `${list.length} (${list.join(', ')})` : '0');
@@ -38,7 +42,7 @@ function measure(t: SiteContent['ui']['egg']): Promise<Row[]> {
     };
     watch('largest-contentful-paint', (es) => { lcp = es[es.length - 1]?.startTime ?? lcp; });
     watch('layout-shift', (es) => {
-      cls = (cls ?? 0) + (es as unknown as { value: number; hadRecentInput: boolean }[]).filter((e) => !e.hadRecentInput).reduce((n, e) => n + e.value, 0);
+      cls = (cls ?? 0) + (es as LayoutShift[]).filter((e) => !e.hadRecentInput).reduce((n, e) => n + e.value, 0);
     });
     setTimeout(() => {
       observers.forEach((o) => o.disconnect());
