@@ -54,7 +54,7 @@ export const FACTS: readonly Fact[] = [
   { id: 'wordpress', kind: 'project', main: false, inGraph: false, start: 2016, end: 2021,
     keywords: ['WordPress', 'PHP', 'SEO', 'Caching', 'PageSpeed'] },
   { id: 'sport-programme', kind: 'project', main: false, inGraph: false, start: 2013, end: 2015,
-    keywords: ['Legacy PHP', 'Bootstrap'] },
+    keywords: ['Legacy PHP', 'Bootstrap', 'jQuery'] },
   { id: 'fuzzphony', kind: 'project', main: false, inGraph: false, start: null, end: null,
     url: 'https://github.com/er2es/fuzzphony', keywords: ['PHP', 'Symfony', 'PostgreSQL', 'Mutation testing'] },
   { id: 'slimfony', kind: 'project', main: false, inGraph: false, start: null, end: null,
@@ -72,7 +72,7 @@ export const FACTS: readonly Fact[] = [
 ];
 
 /** Hungarian for the tags that are phrases rather than product names; for a tag that is also a skill, the skill's own label is used. */
-const TAG_HU: Record<string, string> = { 'Legacy PHP refactor': 'Régi PHP-kód refaktorálása', 'Legacy PHP': 'Régi PHP-kód', 'Mutation testing': 'Mutációs tesztelés' };
+const TAG_HU: Record<string, string> = { 'Legacy PHP refactor': 'Legacy PHP refaktorálás', 'Legacy PHP': 'Legacy PHP', 'Mutation testing': 'Mutációs tesztelés' };
 
 /** A tag of a job or project, in the language of the page: the same words as the skills list uses, never English left in the Hungarian page. */
 export function tagLabel(name: string, lang: Locale): string {

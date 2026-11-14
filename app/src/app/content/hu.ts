@@ -120,7 +120,7 @@ export const hu: SiteContent = {
         'Dolgoztam X.509-alapú hitelesítéssel.',
         'PostgreSQL-lekérdezéseket, triggereket és tárolt eljárásokat írtam, bővítettem és optimalizáltam; az adatbázis-tervezésről és az infrastruktúra-igényekről a belső kollégákkal egyeztettem.',
         'Kialakítottam a CI/CD-folyamatokat egy több konténerből és több szerverből álló környezetben, leállás nélküli (zero downtime) kiadásokkal.',
-        'A projektek minőségbiztosítása is hozzám tartozott: SonarQube, e2e és unit tesztek, felhasználói elfogadási teszt (UAT) és CI/CD. Emellett egy régi Java- és Go-alapú mikroszolgáltatás-környezetet is karbantartottam.',
+        'A projektek minőségbiztosítása is hozzám tartozott: SonarQube, e2e és unit tesztek, felhasználói elfogadási teszt (UAT) és CI/CD. Emellett egy legacy Java- és Go-alapú mikroszolgáltatás-környezetet is karbantartottam.',
         'Legutóbb egy Podmanre épülő, több konténeres webalkalmazáson dolgoztam: koordináltam a fejlesztését és a minőségbiztosítását, és kialakítottam a hozzá tartozó PostgreSQL-eljárásokat.',
         'A platform support oldalát egyedül építettem fel, Symfonyban és Angularban.',
         'Partnerszervezeteknek webalkalmazásokat, valamint REST és SOAP API-végpontokat készítettem.',
@@ -179,7 +179,7 @@ export const hu: SiteContent = {
     },
     slimfony: {
       title: 'Slimfony',
-      summary: 'Pehelykönnyű váz PHP-s mikroszolgáltatásokhoz, FrankenPHP worker módban, néhány Symfony-komponensből építve. A konténert és az útvonalakat a build fordítja le, és két kérés között semmi nem marad meg a memóriában. Alapból biztonságos: nem szivárog ki hibainformáció, és bekapcsolt hitelesítés (JWT) mellett minden tiltott, amíg a hívó nincs azonosítva. A PostgreSQL-t biztonságosan kezeli hosszú életű workerben, és be van építve a Prometheus-metrika meg a health check is.',
+      summary: 'Pehelykönnyű váz PHP-s mikroszolgáltatásokhoz, FrankenPHP worker módban, néhány Symfony-komponensből építve. A konténert és az útvonalakat a build fordítja le, és két kérés között semmi nem marad meg a memóriában. Alapból biztonságos: nem szivárog ki hibainformáció, és bekapcsolt hitelesítés (JWT) mellett minden tiltott, amíg a hívó nincs azonosítva. A PostgreSQL-t biztonságosan kezeli hosszú életű workerben, és be van építve a Prometheus-metrika, health check is.',
       points: [],
     },
     'cv-site': {
@@ -214,7 +214,7 @@ export const hu: SiteContent = {
     },
     'admissions-map': {
       title: 'Felvételi adatok vizualizációja',
-      summary: 'Interaktív térkép a 2009 és 2013 közötti felsőoktatási felvételi adatokról, több dimenzió mentén bejárható.',
+      summary: 'Interaktív térkép a 2009 és 2013 közötti felsőoktatási felvételi adatokról, amelyen többféle dimenzió rétege volt megjeleníthető.',
       points: [],
     },
   },

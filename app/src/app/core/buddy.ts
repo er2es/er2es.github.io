@@ -44,6 +44,8 @@ const MAX_LEAP = 560; // over one or two tiles in between
 const LEAP = 0.5; // how often it leaps over two tiles rather than going round behind them
 const CLEAR = 25; // px between the feet and the tops it jumps over
 const STAND_JUMP = 50; // px from the edge, near enough to jump from where it stands
+const WEB_UP = 320; // px, the highest tile it climbs to on the web line
+const CLIMB = 220; // px/s, the line pulled in as it climbs
 const MAX_UP = 90;
 const MAX_DOWN = 170;
 const REACH_UP = 40; // a higher edge more than this above the feet is grabbed with the hands; a lower one is hopped on to
@@ -246,7 +248,7 @@ export interface View {
   web: { x: number; y: number; hx: number; hy: number } | null;
 }
 
-type Mode = 'hidden' | 'rise' | 'idle' | 'move' | 'stop' | 'crouch' | 'air' | 'hang' | 'pull' | 'land' | 'sink' | 'fall' | 'web';
+type Mode = 'hidden' | 'rise' | 'idle' | 'move' | 'stop' | 'crouch' | 'air' | 'hang' | 'pull' | 'land' | 'sink' | 'fall' | 'web' | 'climb';
 type Kind = 'level' | 'up' | 'down';
 /** A step of the run: where the stance foot came down (relative x), the hip's height then, how far back the foot pushes off,
  * the hip's height at the push, how much it dips between, and where the swinging foot was. */
@@ -316,10 +318,18 @@ export class Buddy {
   private land0 = { xf: 0, tx: 0, tv: 0, t1: 0, h0: 0, hl: 0, step: false, to: 0, ref: 0 };
   private spun = 0;
   private rolled = false;
+  private inside = false; // the pointer is over the tiles
+  private via = -1; // the tile it is jumping or climbing to: the pointer's, or one on the way to it
 
   /** `random` decides whether a fall ends with the web line (below RESCUE) or out of sight. */
   constructor(random: () => number = Math.random) {
     this.random = random;
+  }
+
+  /** The (mouse) pointer is over the tiles, or has left them: while it is over them the figure never goes out of sight. */
+  setInside(inside: boolean): void {
+    this.inside = inside;
+    this.quiet = 0;
   }
 
   /** The spots, measured by the component. */
@@ -361,7 +371,7 @@ export class Buddy {
 
   tick(dt: number): void {
     this.t += dt;
-    this.quiet += dt;
+    if (!this.inside) this.quiet += dt; // the pointer resting over the tiles is not the pointer gone
     const before = { ...this.hip };
     switch (this.mode) {
       case 'hidden': this.whenHidden(dt); break;
@@ -374,6 +384,7 @@ export class Buddy {
       case 'land': this.whenLanding(); break;
       case 'fall': this.whenFalling(); break;
       case 'web': this.whenWeb(dt); break;
+      case 'climb': this.whenWebClimb(dt); break;
       default: this.whenClimbing(); // rise, pull, sink
     }
     if (dt > 0) this.vel = { x: ((this.hip.x - before.x) * 1000) / dt, y: ((this.hip.y - before.y) * 1000) / dt };
@@ -537,10 +548,55 @@ export class Buddy {
     // the gap to the tile beside it; over one tile always, over two now and then; never farther, and no grabbing a
     // ledge at the end of a leap
     const reach = n === 0 ? gp <= MAX_GAP : gp <= MAX_LEAP && rise <= REACH_UP && (n === 1 || (n === 2 && this.random() < LEAP));
-    if (!reach || rise > MAX_UP || rise < -MAX_DOWN) {
+    if (reach && rise <= MAX_UP && rise >= -MAX_DOWN) {
+      this.jumpTo(this.want);
+    } else if (!this.inside) {
+      this.sink(); // the pointer has gone: round behind the tiles
+    } else {
+      this.journey();
+    }
+  }
+
+  /**
+   * With the pointer over the tiles it never goes out of sight: to a tile it cannot jump to in one go it goes in stages,
+   * each a jump, a leap over one or two tiles, a drop of any depth or a climb on the web line to a tile far above, to one of
+   * the (up to three) tiles nearest the goal that it can reach, chosen by chance; after each it looks again, as the
+   * pointer may have moved. With no way at all it goes round behind the tiles after all.
+   */
+  private journey(): void {
+    const from = this.spots[this.cur]!;
+    const centre = (s: Spot): V => ({ x: (s.a + s.b) / 2, y: s.fixed });
+    const far = (s: Spot): number => Math.hypot(centre(s).x - centre(this.spots[this.want]!).x, centre(s).y - centre(this.spots[this.want]!).y);
+    const ways = this.spots
+      .map((s, i) => ({ s, i, web: this.canWeb(from, s) }))
+      .filter(({ s, web }) => s !== from && far(s) < far(from) && (web || this.canLeap(from, s)))
+      .sort((p, q) => far(p.s) - far(q.s));
+    if (ways.length === 0) {
       this.sink();
       return;
     }
+    const way = ways[Math.floor(this.random() * Math.min(3, ways.length))]!;
+    if (way.web) this.webTo(way.i);
+    else this.jumpTo(way.i);
+  }
+
+  /** A jump or leap from `from` to `to` on the way somewhere: over at most two tiles, up no higher than its feet can land, down any depth. */
+  private canLeap(from: Spot, to: Spot): boolean {
+    const n = this.between(from, to).length;
+    return n <= 2 && gap(from, to) <= MAX_LEAP && from.fixed - to.fixed <= (n === 0 ? MAX_UP : REACH_UP);
+  }
+
+  /** A climb on the web line: to a tile beside or above it, higher than a jump can reach. */
+  private canWeb(from: Spot, to: Spot): boolean {
+    const rise = from.fixed - to.fixed;
+    return rise > MAX_UP && rise <= WEB_UP && gap(from, to) <= MAX_GAP;
+  }
+
+  private jumpTo(i: number): void {
+    this.via = i;
+    const from = this.spots[this.cur]!;
+    const to = this.spots[i]!;
+    const gp = gap(from, to);
     // across to a tile beside it, or, from one above or below, off the edge the pointer is on the side of
     const side = gp === 0 ? (this.wantPos >= this.hip.x ? 1 : -1) : to.a + to.b > from.a + from.b ? 1 : -1;
     const edge = side > 0 ? from.b : from.a;
@@ -696,7 +752,7 @@ export class Buddy {
   /** Down on the legs and planning the jump: where it goes, how high and how fast it must leave the ground. */
   private crouch(): void {
     const from = this.spots[this.cur]!;
-    const to = this.spots[this.want]!;
+    const to = this.spots[this.via]!;
     const gp = gap(from, to);
     if (gp > 0) this.turn(to.a + to.b > from.a + from.b ? 1 : -1);
     const rise = from.fixed - to.fixed;
@@ -707,7 +763,7 @@ export class Buddy {
     const c = kind === 'up' ? { x: 0.3, y: -9 } : kind === 'down' ? { x: 0.5, y: -12 } : { x: 1, y: -9.5 };
     const feet = [this.rel(this.feet[0]) - this.rel(base), this.rel(this.feet[1]) - this.rel(base)];
     let lift: V = { x: base + this.face * c.x * SCALE, y: by - 13.6 * SCALE };
-    let plan: Plan = { kind, to: this.want, base, h0: { x: 0, y: 0 }, c, d: { x: 0, y: -1 }, len: 0, vel: { x: 0, y: 0 }, time: 0, load: 0 };
+    let plan: Plan = { kind, to: this.via, base, h0: { x: 0, y: 0 }, c, d: { x: 0, y: -1 }, len: 0, vel: { x: 0, y: 0 }, time: 0, load: 0 };
     // what the arc must clear: the tops of the two edges (across a gap) and the whole of every tile it passes over
     const over = this.between(from, to);
     const top = gp === 0 ? Infinity : Math.min(ground(from, this.face > 0 ? from.b : from.a), ground(to, this.face > 0 ? to.a : to.b));
@@ -1011,6 +1067,67 @@ export class Buddy {
     const p = { x: this.hip.x + this.face * q.x * SCALE - c.x, y: this.hip.y + q.y * SCALE - c.y };
     const r = rad(this.spin);
     return { x: c.x + p.x * Math.cos(r) - p.y * Math.sin(r), y: c.y + p.x * Math.sin(r) + p.y * Math.cos(r) };
+  }
+
+  /** Up to a tile far above on the web line: shot at the nearest point of its top edge, a little way in. */
+  private webTo(i: number): void {
+    const s = this.spots[i]!;
+    const x = Math.min(Math.max(this.hip.x, s.a + 10), s.b - 10);
+    this.turn(x >= this.hip.x ? 1 : -1);
+    this.via = i;
+    this.anchor = { x, y: 0 };
+    this.len = 0;
+    this.enter('climb');
+  }
+
+  /**
+   * The climb: standing, it throws an arm up and the line flies to the edge; then the line takes its weight and is pulled
+   * in, the body hanging from it as a pendulum whose length shortens, both hands on the line, until the hands are at the
+   * edge; from there it hangs and pulls itself up as from any ledge.
+   */
+  private whenWebClimb(dt: number): void {
+    const a = { x: this.anchor.x, y: ground(this.spots[this.via]!, this.anchor.x) };
+    const towards = (torso: number): V => {
+      const s = shoulder(torso);
+      const d = sub({ x: ((a.x - this.hip.x) * this.face) / SCALE, y: (a.y - this.hip.y) / SCALE }, s);
+      const n = Math.hypot(d.x, d.y);
+      return add(s, { x: (d.x / n) * (ARM - 0.01), y: (d.y / n) * (ARM - 0.01) });
+    };
+    if (this.t < SHOT_MS) {
+      this.hip.y = this.standY(this.feet);
+      const [up, ra2] = arm(0, towards(0));
+      this.onFeet(mix(this.was, { ...this.was, torso: 0, ra1: near(up, this.was.ra1), ra2 }, smooth(this.t / SHOT_MS)));
+    } else {
+      if (this.len === 0) {
+        // the line is fast: from here it takes the weight
+        this.len = Math.hypot(this.hip.x - a.x, this.hip.y - a.y);
+        this.phi = Math.atan2((this.hip.x - a.x) * this.face, this.hip.y - a.y);
+        this.omega = 0;
+        this.was = this.pose;
+      }
+      const tau = this.t - SHOT_MS;
+      for (let left = dt; left > 0; left -= 4) {
+        const h = Math.min(4, left) / 1000;
+        const next = Math.max(HANG_L * SCALE, this.len - CLIMB * smooth(tau / 200) * h); // the pull starts gently
+        const along = (next - this.len) / h;
+        this.omega += (-(GRAVITY / this.len) * Math.sin(this.phi) - ((2 * along) / this.len) * this.omega - HANG_DAMP * this.omega) * h;
+        this.phi += this.omega * h;
+        this.len = next;
+      }
+      this.hip = { x: a.x + this.face * Math.sin(this.phi) * this.len, y: a.y + Math.cos(this.phi) * this.len };
+      const torso = -deg(this.phi);
+      const [dl, dr] = dangle(torso);
+      this.pose = mix(this.was, { ...P(grip(torso, towards(torso))), ...legs(dl, dr) }, smooth(tau / 150));
+      if (this.len <= HANG_L * SCALE) {
+        this.cur = this.via;
+        this.web = null;
+        this.enter('hang');
+        return;
+      }
+    }
+    const hw = this.world(handsOf(this.pose)[1]!);
+    const reach = Math.min(1, this.t / SHOT_MS);
+    this.web = { x: lerp(hw.x, a.x, reach), y: lerp(hw.y, a.y, reach), hx: hw.x, hy: hw.y };
   }
 
   private release(vel: V): void {

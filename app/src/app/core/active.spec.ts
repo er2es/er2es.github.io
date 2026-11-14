@@ -105,4 +105,27 @@ describe('trackActive without or with partial support', () => {
     expect(on.mock.calls[3]).toEqual(['contact']);
     stop();
   });
+
+  it('keeps the last section while the page grows under a reader at the bottom, and until they scroll away from it', () => {
+    let callback: (entries: { isIntersecting: boolean; target: { id: string } }[]) => void = () => undefined;
+    vi.stubGlobal('IntersectionObserver', class {
+      constructor(cb: typeof callback) { callback = cb; }
+      observe(): void {}
+      disconnect(): void {}
+    });
+    setMetrics(1000, 800, 1800);
+    const on = vi.fn();
+    const stop = trackActive(['about', 'contact'], on);
+    window.dispatchEvent(new Event('scroll')); // at the very end: Contact
+    setMetrics(1000, 800, 1900); // content arrives late: the page is 100px longer, no scroll event
+    callback([{ isIntersecting: true, target: { id: 'about' } }]);
+    expect(on.mock.calls).toEqual([['contact']]); // still Contact: the reader did not leave
+    setMetrics(1070, 800, 1900); // a small scroll, 30px short of the end: still at the bottom
+    window.dispatchEvent(new Event('scroll'));
+    expect(on.mock.calls).toEqual([['contact']]);
+    setMetrics(900, 800, 1900); // a real scroll up, 200px from the end: About is named
+    window.dispatchEvent(new Event('scroll'));
+    expect(on.mock.calls).toEqual([['contact'], ['about']]);
+    stop();
+  });
 });
