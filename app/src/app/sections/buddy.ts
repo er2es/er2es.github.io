@@ -32,6 +32,8 @@ const JOINTS: readonly (keyof Pose)[] = ['torso', 'la1', 'la2', 'ra1', 'ra2', 'l
   styles: [`
     :host { position: absolute; left: 0; top: 0; z-index: 2; transform-origin: 50% 50%; width: 40px; height: 50px; visibility: hidden; pointer-events: none; color: var(--fg); }
     :host(.behind) { z-index: 0; }
+    /* while it falls out of the list it is lifted to the page (fixed, over the sections below, which would paint over it in the list's own layer) */
+    :host(.loose) { position: fixed; z-index: 15; }
     .fig { fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
     .fig g { transform-box: view-box; }
     [data-j='torso'], [data-j='ll1'], [data-j='rl1'] { transform-origin: 16px 23px; }
@@ -85,7 +87,16 @@ export class BuddyFigure {
         buddy.setSpots(spots);
       };
 
+      /** Lifts the figure out of the list to the page while it falls, and puts it back after. */
+      const loose = (on: boolean): void => {
+        if (on === host.classList.contains('loose')) return;
+        host.classList.toggle('loose', on);
+        (on ? document.body : list).appendChild(host);
+      };
+
       const draw = (v: View): void => {
+        const falling = v.visible && v.spin !== 0;
+        loose(falling);
         host.style.visibility = v.visible ? 'visible' : 'hidden';
         overlay.style.visibility = v.web ? 'visible' : 'hidden';
         if (v.web) {
@@ -95,7 +106,9 @@ export class BuddyFigure {
           line.setAttribute('y2', `${v.web.y}`);
         }
         if (!v.visible) return;
-        host.style.translate = `${v.x - 16 * SCALE}px ${v.y - 37 * SCALE}px`; // the feet are at (16, 37) in the drawing
+        // the feet are at (16, 37) in the drawing; loose, the position is the page's, from where the list is now
+        const at = falling ? list.getBoundingClientRect() : { left: 0, top: 0 };
+        host.style.translate = `${at.left + v.x - 16 * SCALE}px ${at.top + v.y - 37 * SCALE}px`;
         host.classList.toggle('behind', v.behind);
         svg.style.transform = v.facing < 0 ? 'scaleX(-1)' : '';
         host.style.rotate = v.spin ? `${v.spin}deg` : '';
@@ -187,6 +200,7 @@ export class BuddyFigure {
         list.removeEventListener('pointerleave', onLeave);
         list.removeEventListener('pointerdown', onDown);
         list.removeEventListener('pointerup', onUp);
+        loose(false);
         overlay.remove();
         cancelAnimationFrame(raf);
       });
