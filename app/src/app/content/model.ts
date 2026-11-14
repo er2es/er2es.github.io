@@ -2,6 +2,7 @@ export type Locale = 'en' | 'hu';
 export const SITE_URL = 'https://er2es.github.io';
 export const EMAIL = 'szabo.jozsef.acc@gmail.com';
 export const GITHUB_URL = 'https://github.com/er2es';
+export const DEVTO_URL = 'https://dev.to/_er2es_';
 export const LINKEDIN_URL = 'https://www.linkedin.com/in/szabo-j%C3%B3zsef-a61156357/';
 
 export type SectionId = 'profile' | 'experience' | 'skills' | 'projects' | 'about' | 'contact';
@@ -180,6 +181,7 @@ export interface SiteContent {
     education: { heading: string; items: string[] };
     languages: { heading: string; items: string[] };
     award: { heading: string; text: string };
+    research: { heading: string; intro: string };
   };
   contact: { text: string; workMode: string };
   items: Record<ItemId, ItemText>;

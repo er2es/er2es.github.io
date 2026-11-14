@@ -765,7 +765,7 @@ test.describe('review fixes', () => {
     await page.setViewportSize({ width: 390, height: 800 });
     await ready(page, '/hu/');
     const lefts = await page.locator('#contact .icon').evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().left)));
-    expect(lefts.length).toBe(3);
+    expect(lefts.length).toBe(4);
     for (const x of lefts) expect(x).toBeGreaterThanOrEqual(16);
   });
 

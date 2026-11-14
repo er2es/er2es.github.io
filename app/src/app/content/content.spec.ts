@@ -1,5 +1,6 @@
 import { FACTS, SKILLS, SECTION_IDS, EMAIL, period } from './model';
 import { getContent } from './index';
+import { ARTICLES } from './research';
 import type { Locale } from './model';
 
 const LOCALES: Locale[] = ['en', 'hu'];
@@ -102,5 +103,16 @@ describe('period with half-known dates', () => {
     const base = FACTS[0];
     expect(period({ ...base, start: 2020, end: null })).toBe('');
     expect(period({ ...base, start: null, end: 2020 })).toBe('');
+  });
+});
+
+describe('research articles', () => {
+  it('are unique https links on dev.to with a title', () => {
+    expect(ARTICLES.length).toBeGreaterThan(0);
+    expect(new Set(ARTICLES.map((a) => a.url)).size).toBe(ARTICLES.length);
+    for (const a of ARTICLES) {
+      expect(a.url).toMatch(/^https:\/\/dev\.to\//);
+      expect(a.title.length).toBeGreaterThan(10);
+    }
   });
 });

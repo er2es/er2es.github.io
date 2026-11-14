@@ -20,7 +20,7 @@ describe('Seo', () => {
     expect(ld['@graph'].map((n: { '@type': string }) => n['@type'])).toEqual(['WebSite', 'ProfilePage', 'Person']);
     const person = node('Person');
     expect(person.email).toBe('szabo.jozsef.acc@gmail.com');
-    expect(person.sameAs).toEqual(['https://github.com/er2es', 'https://www.linkedin.com/in/szabo-j%C3%B3zsef-a61156357/']);
+    expect(person.sameAs).toEqual(['https://github.com/er2es', 'https://www.linkedin.com/in/szabo-j%C3%B3zsef-a61156357/', 'https://dev.to/_er2es_']);
     expect(person.address).toEqual({ '@type': 'PostalAddress', addressLocality: 'Budapest', addressCountry: 'HU' }); // the city only
     expect(person.knowsLanguage).toEqual(['hu', 'en']);
     expect(person.knowsAbout).toContain('Symfony');

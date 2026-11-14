@@ -1,11 +1,11 @@
 import { Component, ElementRef, afterNextRender, inject, input, signal, DestroyRef } from '@angular/core';
 import type { SiteContent } from '../content/model';
 import { Scratch } from '../egg/scratch';
-import { Email } from './email';
+import { Social } from './social';
 
 @Component({
   selector: 'app-hero',
-  imports: [Email, Scratch],
+  imports: [Social, Scratch],
   template: `
     <div class="stage" [class.paused]="paused()">
       <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
@@ -14,7 +14,7 @@ import { Email } from './email';
         <h1 id="hero-title">{{ c().hero.name }}</h1>
         <p class="role">{{ c().hero.role }}</p>
         <p class="meta"><span class="in"><span class="status"><span class="dot" aria-hidden="true"></span>{{ c().hero.status }}</span> <span class="loc">{{ c().hero.location }}</span></span></p>
-        <app-email [c]="c()" />
+        <app-social [c]="c()" />
       </div>
  <div class="portrait">
       <picture>

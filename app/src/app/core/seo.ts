@@ -2,7 +2,7 @@ import { DOCUMENT } from '@angular/common';
 import { Injectable, inject } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { getContent } from '../content';
-import { EMAIL, GITHUB_URL, LINKEDIN_URL, SITE_URL, SKILLS, type Locale, type SiteContent } from '../content/model';
+import { EMAIL, GITHUB_URL, LINKEDIN_URL, DEVTO_URL, SITE_URL, SKILLS, type Locale, type SiteContent } from '../content/model';
 import { BUILD } from '../egg/build-info';
 import { pagePath } from './nav';
 
@@ -98,7 +98,7 @@ export class Seo {
           address: { '@type': 'PostalAddress', addressLocality: 'Budapest', addressCountry: 'HU' },
           knowsAbout: SKILLS.flatMap((g) => g.items.map((s) => s.label?.[locale] ?? s.name)),
           knowsLanguage: ['hu', 'en'],
-          sameAs: [GITHUB_URL, LINKEDIN_URL], // the same person on the two profiles linked from the Contact section
+          sameAs: [GITHUB_URL, LINKEDIN_URL, DEVTO_URL], // the same person on the profiles linked from the hero and the Contact section
         },
       ],
     });

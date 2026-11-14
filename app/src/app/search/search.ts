@@ -1,3 +1,4 @@
+import { ARTICLES } from '../content/research';
 import { EMAIL, FACTS, SKILLS, period, type SectionId, type SiteContent } from '../content/model';
 
 export interface SearchDoc { id: string; section: SectionId; title: string; text: string; anchor: string }
@@ -67,6 +68,7 @@ export function buildDocs(c: SiteContent): SearchDoc[] {
   docs.push(
     { id: 'about:education', section: 'about', title: a.education.heading, text: a.education.items.join(' '), anchor: 'about-education' },
     { id: 'about:languages', section: 'about', title: a.languages.heading, text: a.languages.items.join(' '), anchor: 'about-languages' },
+    { id: 'about:research', section: 'about', title: a.research.heading, text: a.research.intro + ' ' + ARTICLES.map((r) => r.title).join(' '), anchor: 'about-research' },
     { id: 'about:award', section: 'about', title: a.award.heading, text: a.award.text, anchor: 'about-award' },
     { id: 'section:contact', section: 'contact', title: c.ui.sections.contact, text: `${c.contact.text} ${c.contact.workMode} ${EMAIL}`, anchor: 'contact' },
   );
