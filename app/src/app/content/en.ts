@@ -214,7 +214,7 @@ export const en: SiteContent = {
     },
     'admissions-map': {
       title: 'Admission data visualisation',
-      summary: 'An interactive map of higher-education admission data for 2009–2013 that can be explored along several dimensions.',
+      summary: 'An interactive map of higher-education admission data for 2009–2013, on which several dimensions could be shown as layers.',
       points: [],
     },
   },

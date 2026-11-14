@@ -329,6 +329,114 @@ describe('buddy, leaping along a row', () => {
   });
 });
 
+describe('buddy, with the pointer over the tiles', () => {
+  const row = (n: number): Spot[] => Array.from({ length: n }, (_, i) => ({ a: i * 136, b: i * 136 + 120, fixed: 100 }));
+  /** Out on tile 0 at `from`, the pointer over the tiles, the random answering `r`. */
+  const over = (spots: Spot[], from: number, r = 0.99): Buddy => {
+    const b = new Buddy(() => r);
+    b.setSpots(spots);
+    b.setInside(true);
+    run(b, 1500, [0, from]);
+    return b;
+  };
+  const middle = (s: Spot): number => (s.a + s.b) / 2;
+
+  it('stays out however long the pointer rests, and goes only once it has left', () => {
+    const b = over([A, B], 60);
+    const still = seen(b, 10 * TOLERANCE); // not a move for a long time
+    expect(still.every((v) => v.visible && !v.behind)).toBe(true);
+    b.setInside(false);
+    const gone = seen(b, TOLERANCE - 100);
+    expect(gone.every((v) => v.visible)).toBe(true); // the time starts when it leaves
+    run(b, 1500);
+    expect(b.view().visible).toBe(false);
+  });
+
+  it('still goes over the cliff the pointer leaves by', () => {
+    const b = over([{ ...A, cliff: -1 }, B], 60);
+    b.setInside(false);
+    b.pointerOff(-1);
+    run(b, 6000);
+    expect(b.takeDeath()).toBe(-1);
+  });
+
+  it('goes the length of a row in leaps of one to three tiles, in sight all the way, looking again after each', () => {
+    const spots = row(7);
+    for (const r of [0, 0.5, 0.99]) {
+      const b = over(spots, 60, r);
+      const views = seen(b, 12000, [6, middle(spots[6]!)], 4);
+      expect(views.every((v) => v.visible && !v.behind)).toBe(true);
+      // jumps (the feet well up, not a stride), each coming down on a tile
+      const landed: View[] = [];
+      let up = false;
+      views.forEach((v) => {
+        if (low(v) < 100 - 20) up = true;
+        else if (up && Math.abs(low(v) - 100) < 1e-4) {
+          up = false;
+          landed.push(v);
+        }
+      });
+      expect(landed.length).toBeGreaterThanOrEqual(2);
+      landed.forEach((v) => expect(spots.some((s) => feet(v).every((f) => f.x > s.a && f.x < s.b))).toBe(true));
+      expect(low(views[views.length - 1]!)).toBeCloseTo(100, 4);
+      expect(views[views.length - 1]!.x).toBeCloseTo(middle(spots[6]!), -0.8);
+    }
+    // and when the pointer moves on during the journey, it heads for where it is now
+    const b = over(spots, 60, 0);
+    run(b, 1500, [6, middle(spots[6]!)]);
+    run(b, 9000, [3, middle(spots[3]!)]);
+    expect(b.view().x).toBeCloseTo(middle(spots[3]!), -0.8);
+  });
+
+  it('climbs on the web line to a tile far above it, as in the columns of the hobbies, and stands on it', () => {
+    const top: Spot = { a: 0, b: 120, fixed: 100 };
+    const bottom: Spot = { a: 0, b: 120, fixed: 236 };
+    const right: Spot = { a: 136, b: 256, fixed: 236 };
+    const b = new Buddy(() => 0.99);
+    b.setSpots([bottom, top, right]);
+    b.setInside(true);
+    run(b, 1500, [0, 60]);
+    const views = seen(b, 4000, [1, 60], 4);
+    expect(views.every((v) => v.visible && !v.behind)).toBe(true);
+    const webbed = views.filter((v) => v.web);
+    expect(webbed.length).toBeGreaterThan(20);
+    const fast = webbed.filter((v) => v.web!.x === 60); // once the line has reached the edge
+    expect(fast.length).toBeGreaterThan(20);
+    fast.forEach((v) => expect(v.web!.y).toBeCloseTo(top.fixed, 6)); // on the edge above
+    webbed.forEach((v) => {
+      const h = hands(v)[1]!;
+      expect(Math.hypot(h.x - v.web!.hx, h.y - v.web!.hy)).toBeLessThan(1e-6); // from the hand
+    });
+    const climbing = views.slice(views.indexOf(webbed[0]!), views.indexOf(webbed[webbed.length - 1]!));
+    expect(Math.min(...climbing.map((v) => low(v)))).toBeLessThan(bottom.fixed - 60); // lifted off the ground by it
+    expect(jerk(views)).toBeLessThan(2.5);
+    expect(low(views[views.length - 1]!)).toBeCloseTo(top.fixed, 4);
+    // and from the other column, to the tile above and across
+    const c = new Buddy(() => 0.99);
+    c.setSpots([right, top]);
+    c.setInside(true);
+    run(c, 1500, [0, 196]);
+    const across = seen(c, 4000, [1, 60], 4);
+    expect(across.some((v) => v.web && v.facing === -1)).toBe(true);
+    expect(across.every((v) => !v.behind)).toBe(true);
+    expect(low(across[across.length - 1]!)).toBeCloseTo(top.fixed, 4);
+  });
+
+  it('drops to a tile far below rather than going round behind', () => {
+    const b = over([A, { a: 0, b: 120, fixed: 400 }], 60);
+    const views = seen(b, 4000, [1, 60]);
+    expect(views.every((v) => v.visible && !v.behind)).toBe(true);
+    expect(low(views[views.length - 1]!)).toBeCloseTo(400, 4);
+  });
+
+  it('goes round behind after all when there is no way to get there', () => {
+    const b = over([A, { a: 500, b: 620, fixed: -200 }], 60);
+    const views = seen(b, 5000, [1, 560]);
+    expect(views.some((v) => v.behind)).toBe(true);
+    expect(low(views[views.length - 1]!)).toBeCloseTo(-200, 4);
+  });
+});
+
 describe('buddy, physics', () => {
   /** A run from standing at 20 to 800, at 16 ms. */
   const sprint = (step = 16): View[] => seen(standing([LONG], 20), 5000, [0, 800], step);

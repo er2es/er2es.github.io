@@ -131,6 +131,7 @@ export class BuddyFigure {
         // the tile the pointer is over, or the nearest one when it is in a gap
         const dist = (r: (typeof rects)[number]): number => Math.hypot(Math.max(r.left - x, x - r.right, 0), Math.max(r.top - y, y - r.bottom, 0));
         const nearest = rects.reduce((best, r, i) => (dist(r) < dist(rects[best]!) ? i : best), 0);
+        buddy.setInside(true); // also when the page came up under the pointer, with no enter
         buddy.pointer(nearest, x);
         wake();
       };
@@ -159,11 +160,14 @@ export class BuddyFigure {
         wake();
       };
       const onEnter = (e: PointerEvent): void => {
-        if (e.pointerType === 'mouse') measure();
+        if (e.pointerType !== 'mouse') return;
+        measure();
+        buddy.setInside(true); // while the mouse is over the tiles the figure stays out, however still it rests
       };
       /** The pointer left: past an end (or, from a stack, below it) is a cliff; any other way is just leaving. */
       const onLeave = (e: PointerEvent): void => {
         if (e.pointerType !== 'mouse') return;
+        buddy.setInside(false); // from now on the time runs: it goes after a while, or over the cliff the pointer left by
         const r = list.getBoundingClientRect();
         const x = e.clientX - r.left;
         const y = e.clientY - r.top;

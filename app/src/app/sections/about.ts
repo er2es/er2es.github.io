@@ -27,9 +27,8 @@ import { FILES, type SiteContent } from '../content/model';
           </div>
         </div>
         <div id="about-soft" class="soft-row" tabindex="-1"><app-soft [c]="c()" /></div>
-        <div id="about-research" class="research" tabindex="-1">
+        <div id="about-research" class="research" role="group" [attr.aria-label]="c().about.research.heading" tabindex="-1">
           <p class="eyebrow mono" aria-hidden="true">research/</p>
-          <h3 class="rule-fade">{{ c().about.research.heading }}</h3>
           <p class="intro">{{ c().about.research.intro }}</p>
           <ul class="cards">
             @for (a of articles; track a.url) {
