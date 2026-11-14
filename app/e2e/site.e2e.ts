@@ -781,11 +781,12 @@ test.describe('review fixes', () => {
     }
   });
 
-  test('the footer names the release and links to it and to the licence', async ({ page }) => {
+  test('the footer names the release and links to it, to the code licence and to the content licence', async ({ page }) => {
     await ready(page, '/');
     const links = await page.locator('footer a').evaluateAll((els) => els.map((e) => (e as HTMLAnchorElement).href));
     expect(links[0]).toMatch(/\/releases\/tag\/v\d+\.\d+\.\d+$/);
     expect(links[1]).toMatch(/\/blob\/main\/LICENSE$/);
+    expect(links[2]).toMatch(/\/blob\/main\/LICENSE-CONTENT\.md$/); // the texts and photographs have their own licence
   });
 
   test('phone: a long project description folds and unfolds', async ({ page }) => {
