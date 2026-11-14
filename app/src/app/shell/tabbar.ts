@@ -1,4 +1,4 @@
-import { Component, DestroyRef, ElementRef, afterNextRender, effect, inject, input, viewChild } from '@angular/core';
+import { Component, DestroyRef, ElementRef, afterNextRender, computed, effect, inject, input, viewChild } from '@angular/core';
 import { SECTION_IDS, type Locale, type SectionId, type SiteContent } from '../content/model';
 import { anchorHref, inPageClick } from '../core/nav';
 import { SectionIcon } from './section-icon';
@@ -10,7 +10,7 @@ const LABEL_SIZES = [13, 12] as const;
   selector: 'app-tabbar',
   imports: [SectionIcon],
   template: `
-    <nav #nav class="tabs glass" [attr.aria-label]="c().ui.tabsLabel">
+    <nav #nav class="tabs glass" [attr.aria-label]="c().ui.tabsLabel" [style.--i]="index()">
       @for (s of tabs; track s) {
         <a [attr.href]="href(s)" [attr.aria-current]="active() === s ? 'location' : null" (click)="go($event, s)">
           <app-section-icon [id]="s" />
@@ -32,27 +32,22 @@ const LABEL_SIZES = [13, 12] as const;
       display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 0; min-height: 52px; padding: 4px 2px;
       border-radius: 20px; color: var(--fg-2); text-decoration: none; font-size: var(--tab-fs, 12px); font-weight: 600; line-height: 1.1; text-align: center;
     }
-    .sel { display: none; }
     .lbl { display: block; max-width: 100%; overflow: hidden; white-space: nowrap; }
     /* labels that cannot fit at a readable size give way to the icons (still announced to screen readers) */
     .compact .lbl { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-    a[aria-current] { color: var(--fg); background: var(--tint-current); }
+    a[aria-current] { color: var(--fg); }
     a { transition: color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out), scale var(--dur-press) var(--ease-out); }
     @media (hover: hover) { a:not([aria-current]):hover { color: var(--fg); background: var(--tint-hover); } }
     a:active { background: var(--tint-press); scale: 0.95; }
     @media (prefers-reduced-motion: reduce) { a:active { scale: none; } }
     @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) { .tabs.glass { background: var(--bg-2); } }
-    /* the selection glides between tabs (anchor positioning; a static highlight elsewhere) */
-    @supports (anchor-name: --a) {
-      .tabs { isolation: isolate; }
-      a[aria-current] { anchor-name: --tab-current; background: none; }
-      .tabs .sel {
-        display: block; position: absolute; z-index: -1; position-anchor: --tab-current; pointer-events: none; opacity: 1;
-        top: anchor(top); bottom: anchor(bottom); left: anchor(left); right: anchor(right); border-radius: 20px;
-        background: var(--tint-current);
-        transition: left var(--dur-med) var(--ease-spring), right var(--dur-med) var(--ease-spring);
-      }
-      .tabs:not(:has(a[aria-current])) .sel { display: none; }
+    /* the selection glides between tabs: one pill moved by translate, one sixth of the bar (less the gaps) per tab, which is cheap
+       on a phone (no layout each frame) */
+    .tabs { isolation: isolate; }
+    .sel {
+      position: absolute; z-index: -1; pointer-events: none; top: 6px; bottom: 6px; left: 6px; width: calc((100% - 12px - 10px) / 6);
+      border-radius: 20px; background: var(--tint-current);
+      translate: calc(var(--i, 0) * (100% + 2px)) 0; transition: translate var(--dur-med) var(--ease-spring);
     }
     @media (min-width: 900px) { .tabs { display: none; } }
   `],
@@ -62,6 +57,7 @@ export class TabBar {
   readonly locale = input.required<Locale>();
   readonly active = input<SectionId>('profile');
   protected readonly tabs = SECTION_IDS;
+  protected readonly index = computed(() => SECTION_IDS.indexOf(this.active()));
   private readonly nav = viewChild.required<ElementRef<HTMLElement>>('nav');
   private ready = false;
 
