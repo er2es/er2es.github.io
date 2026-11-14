@@ -12,6 +12,8 @@ import type { SiteContent } from '../content/model';
     <p class="eyebrow mono" aria-hidden="true">afk/</p>
     <!-- the tiles are focusable only to show their name: keyboard parity with the hover tooltip -->
     <ul class="afk" [attr.aria-label]="c().profile.hobbies.label" (pointerdown)="reveal($event)">
+      <svg class="trail row" viewBox="0 0 600 121.5" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M37.5 37.5 C90 37.5 90 67.5 142.5 67.5 S195 45 247.5 45 S300 75 352.5 75 S405 41.25 457.5 41.25 S510 63.75 562.5 63.75" vector-effect="non-scaling-stroke" /></svg>
+      <svg class="trail wide" viewBox="0 0 256 416" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M60 60 C128 60 128 84 196 84 C196 140 60 140 60 196 C128 196 128 220 196 220 C196 276 60 276 60 332 C128 332 128 356 196 356" vector-effect="non-scaling-stroke" /></svg>
       <li data-tip-pos="top" tabindex="0" class="tile cinema" [attr.data-tip]="c().profile.hobbies.cinema">
         <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
           <rect x="7" y="20" width="34" height="21" rx="3" />
@@ -70,16 +72,28 @@ import type { SiteContent } from '../content/model';
   styles: [`
     :host { display: block; }
     .eyebrow { margin-bottom: 0.75rem; }
-    .afk { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.5rem; max-width: 36rem; }
+    /* one row on a phone and a tablet, like the soft skills: the same size, tilted and set at different heights (a percentage margin is a share of the tile's own width), led by a dashed line */
+    .afk { position: relative; list-style: none; margin: 0; padding: 0 0 1.5%; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5%; }
+    .trail { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; color: var(--fg-2); pointer-events: none; }
+    .trail path { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-dasharray: 2 7; stroke-linecap: round; opacity: 0.5; }
+    .trail.wide { display: none; }
     .tile {
-      aspect-ratio: 1; display: grid; place-items: center; border-radius: 24px; corner-shape: squircle; color: var(--fg-2);
-      border: 1px solid var(--line); background: color-mix(in srgb, var(--fg) 5%, transparent);
-      transition: color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out), translate var(--dur-med) var(--ease-spring), box-shadow var(--dur-short) var(--ease-out);
+      position: relative; aspect-ratio: 1; display: grid; place-items: center; border-radius: 24px; corner-shape: squircle; color: var(--fg-2);
+      border: 1px solid var(--line); background: linear-gradient(color-mix(in srgb, var(--fg) 5%, transparent), color-mix(in srgb, var(--fg) 5%, transparent)), var(--bg);
+      transition: color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out), translate var(--dur-med) var(--ease-spring), rotate var(--dur-med) var(--ease-spring), box-shadow var(--dur-short) var(--ease-out);
     }
     .tile svg { width: 52%; height: auto; overflow: visible; }
     @media (hover: hover) {
-      .tile:hover { color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); translate: 0 -4px; box-shadow: 0 14px 28px -14px color-mix(in srgb, var(--accent) 55%, transparent); }
+      .tile:hover { color: var(--accent); background: linear-gradient(color-mix(in srgb, var(--accent) 10%, transparent), color-mix(in srgb, var(--accent) 10%, transparent)), var(--bg); translate: 0 -4px; rotate: 0deg; box-shadow: 0 14px 28px -14px color-mix(in srgb, var(--accent) 55%, transparent); }
     }
+
+    .tile:nth-of-type(1) { rotate: -5deg; margin-top: 0; }
+    .tile:nth-of-type(2) { rotate: 4deg; margin-top: 40%; }
+    .tile:nth-of-type(3) { rotate: -3deg; margin-top: 10%; }
+    .tile:nth-of-type(4) { rotate: 6deg; margin-top: 50%; }
+    .tile:nth-of-type(5) { rotate: -4deg; margin-top: 5%; }
+    .tile:nth-of-type(6) { rotate: 3deg; margin-top: 35%; }
+    .tile:focus-visible, .tile.tip-open { rotate: 0deg; } /* the name shown beside a tile stands straight */
 
     /* each icon has one motion of its own, only while the tile is hovered */
     .clap { transform-origin: 8px 18px; transform: rotate(-17deg); transition: transform 160ms ease-in; }
@@ -118,8 +132,11 @@ import type { SiteContent } from '../content/model';
     /* beside the text on wide screens: a sticky 2x2 with the second column dropped, so it does not read as a grid of buttons */
     @media (min-width: 1000px) {
       :host { position: sticky; top: calc(var(--bar-h) + 3rem); }
-      .afk { grid-template-columns: repeat(2, 7.5rem); gap: 1rem; justify-content: start; max-width: none; }
-      .tile:nth-child(even) { margin-top: 1.5rem; }
+      .afk { grid-template-columns: repeat(2, 7.5rem); gap: 1rem; justify-content: start; width: fit-content; padding-bottom: 0; }
+      .trail.row { display: none; }
+      .trail.wide { display: block; }
+      .tile:nth-of-type(odd) { margin-top: 0; }
+      .tile:nth-of-type(even) { margin-top: 1.5rem; }
     }
     @media (prefers-reduced-motion: reduce) { .tile, .clap { transition: none; } }
   `],

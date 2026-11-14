@@ -8,7 +8,7 @@ import type { SiteContent } from '../content/model';
     <p class="eyebrow mono" aria-hidden="true">soft skills/</p>
     <!-- the tiles are focusable only to show their name: keyboard parity with the hover tooltip -->
     <ul class="soft" [attr.aria-label]="c().about.soft.label" (pointerdown)="reveal($event)">
-      <svg class="trail" viewBox="0 0 600 136.5" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M42.5 42.5 C94 42.5 94 76.5 145.5 76.5 S197 51 248.5 51 S300 85 351.5 85 S403 46.8 454.5 46.8 S506 72.3 557.5 72.3" vector-effect="non-scaling-stroke" /></svg>
+      <svg class="trail" viewBox="0 0 600 121.5" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M37.5 37.5 C90 37.5 90 67.5 142.5 67.5 S195 45 247.5 45 S300 75 352.5 75 S405 41.25 457.5 41.25 S510 63.75 562.5 63.75" vector-effect="non-scaling-stroke" /></svg>
       <li data-tip-pos="top" tabindex="0" class="tile team" [attr.data-tip]="c().about.soft.team">
         <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><g class="p-c"><circle cx="24" cy="15" r="5" /><path d="M14 40v-4a10 10 0 0 1 20 0v4" /></g><g class="p-l"><circle cx="8.5" cy="21" r="3.6" /><path d="M3 38v-3a6 6 0 0 1 7.5-5.8" /></g><g class="p-r"><circle cx="39.5" cy="21" r="3.6" /><path d="M45 38v-3a6 6 0 0 0-7.5-5.8" /></g></svg>
         <span class="sr-only">{{ c().about.soft.team }}</span>
@@ -38,7 +38,7 @@ import type { SiteContent } from '../content/model';
   styles: [`
     :host { display: block; }
     .eyebrow { margin-bottom: 0.75rem; }
-    .soft { position: relative; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 3%; padding-bottom: 1.5%; } /* the whole width of the content; the gap is a share of it, which the trail's line is drawn for */
+    .soft { position: relative; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5%; padding-bottom: 1.5%; } /* the whole width of the content; the gap is a share of it, which the trail's line is drawn for */
     .tile {
       aspect-ratio: 1; display: grid; place-items: center; border-radius: 24px; corner-shape: squircle; color: var(--fg-2);
       border: 1px solid var(--line); background: linear-gradient(color-mix(in srgb, var(--fg) 5%, transparent), color-mix(in srgb, var(--fg) 5%, transparent)), var(--bg);
@@ -46,7 +46,7 @@ import type { SiteContent } from '../content/model';
     }
     .tile svg { width: 52%; height: auto; overflow: visible; }
     @media (hover: hover) {
-      .tile:hover { color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); translate: 0 -4px; rotate: 0deg; box-shadow: 0 14px 28px -14px color-mix(in srgb, var(--accent) 55%, transparent); }
+      .tile:hover { color: var(--accent); background: linear-gradient(color-mix(in srgb, var(--accent) 10%, transparent), color-mix(in srgb, var(--accent) 10%, transparent)), var(--bg); translate: 0 -4px; rotate: 0deg; box-shadow: 0 14px 28px -14px color-mix(in srgb, var(--accent) 55%, transparent); }
     }
     /* playful: the tiles are the same size but tilted and set at different heights (a percentage margin is a share of the tile's own width), led by a dashed line through them */
     .trail { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; color: var(--fg-2); pointer-events: none; }

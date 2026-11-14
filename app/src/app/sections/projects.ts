@@ -56,9 +56,10 @@ import { FACT_BY_ID, FILES, PROJECT_ORDER, period, type SiteContent } from '../c
     .more svg { transition: rotate var(--dur-short) var(--ease-out); }
     .more[aria-expanded='true'] svg { rotate: 180deg; }
     /* on a phone a long tile (the text and its list together) is cut off a few lines down, fading out instead of ending mid-word */
+    @property --keep { syntax: '<percentage>'; inherits: false; initial-value: 100%; }
     @media (max-width: 799px) {
-      .fold.cut { max-height: 80em; transition: max-height var(--dur-med) var(--ease-out); }
-      .fold.cut:not(.open) { max-height: 8.5em; overflow: hidden; -webkit-mask-image: linear-gradient(#000 45%, transparent); mask-image: linear-gradient(#000 45%, transparent); }
+      .fold.cut { overflow: hidden; --keep: 100%; -webkit-mask-image: linear-gradient(#000 var(--keep), transparent); mask-image: linear-gradient(#000 var(--keep), transparent); transition: --keep var(--dur-med) var(--ease-out), max-height var(--dur-med) var(--ease-out); }
+      .fold.cut:not(.open) { max-height: 8.5em; --keep: 45%; }
     }
     /* two columns, and every tile as tall as its own text: each tile goes where there is room first, in the order of the list.
        The tiles are measured in script (--rows: how many 4px rows a tile takes) and the grid fills in; without the script the
@@ -98,9 +99,20 @@ export class Projects {
   protected readonly opened = signal<ReadonlySet<string>>(new Set());
   protected long = (id: (typeof PROJECT_ORDER)[number]): boolean => (this.c().items[id].summary ?? '').length > 220;
   protected fold(id: string): void {
+    const el = document.getElementById('sum-' + id);
+    if (el && matchMedia('(max-width: 799px)').matches) this.glide(el, !this.opened().has(id));
     const next = new Set(this.opened());
     if (!next.delete(id)) next.add(id);
     this.opened.set(next);
+  }
+  /** Moves a fold between its cut height and its full height in pixels (max-height cannot animate to "none"), then hands the height back to the stylesheet. */
+  private glide(el: HTMLElement, open: boolean): void {
+    const cut = parseFloat(getComputedStyle(el).fontSize) * 8.5;
+    const full = el.scrollHeight;
+    el.style.maxHeight = `${open ? cut : full}px`;
+    void el.offsetHeight; // the starting height is taken in before the target is set
+    el.style.maxHeight = `${open ? full : cut}px`;
+    setTimeout(() => el.style.removeProperty('max-height'), 450);
   }
   protected kw = (id: (typeof PROJECT_ORDER)[number]) => FACT_BY_ID[id].keywords;
   protected url = (id: (typeof PROJECT_ORDER)[number]) => FACT_BY_ID[id].url ?? null;
