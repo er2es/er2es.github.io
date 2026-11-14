@@ -1,44 +1,47 @@
 import { Component, input } from '@angular/core';
 import type { SiteContent } from '../content/model';
+import { BuddyFigure } from './buddy';
 
 /** Soft skills: six small line-icon tiles in one row, each with its name as a tooltip (and for assistive technology), like the hobbies. */
 @Component({
   selector: 'app-soft',
+  imports: [BuddyFigure],
   template: `
     <p class="eyebrow mono" aria-hidden="true">soft skills/</p>
     <!-- the tiles are focusable only to show their name: keyboard parity with the hover tooltip -->
-    <ul class="soft" [attr.aria-label]="c().about.soft.label" (pointerdown)="reveal($event)">
+    <ul #row class="soft" [attr.aria-label]="c().about.soft.label" (pointerdown)="reveal($event)">
       <svg class="trail" viewBox="0 0 600 121.5" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M37.5 37.5 C90 37.5 90 67.5 142.5 67.5 S195 45 247.5 45 S300 75 352.5 75 S405 41.25 457.5 41.25 S510 63.75 562.5 63.75" vector-effect="non-scaling-stroke" /></svg>
-      <li data-tip-pos="top" tabindex="0" class="tile team" [attr.data-tip]="c().about.soft.team">
+      <li data-tip-pos="bottom" tabindex="0" class="tile team" [attr.data-tip]="c().about.soft.team">
         <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><g class="p-c"><circle cx="24" cy="15" r="5" /><path d="M14 40v-4a10 10 0 0 1 20 0v4" /></g><g class="p-l"><circle cx="8.5" cy="21" r="3.6" /><path d="M3 38v-3a6 6 0 0 1 7.5-5.8" /></g><g class="p-r"><circle cx="39.5" cy="21" r="3.6" /><path d="M45 38v-3a6 6 0 0 0-7.5-5.8" /></g></svg>
         <span class="sr-only">{{ c().about.soft.team }}</span>
       </li>
-      <li data-tip-pos="top" tabindex="0" class="tile comms" [attr.data-tip]="c().about.soft.comms">
+      <li data-tip-pos="bottom" tabindex="0" class="tile comms" [attr.data-tip]="c().about.soft.comms">
         <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><g class="c1"><path d="M7 7h20a3 3 0 0 1 3 3v11a3 3 0 0 1-3 3H15l-7 6v-6H7a3 3 0 0 1-3-3V10a3 3 0 0 1 3-3z" /></g><g class="c2"><path d="M34 19h7a3 3 0 0 1 3 3v11a3 3 0 0 1-3 3h-1v6l-7-6H22a3 3 0 0 1-3-3v-2" /></g></svg>
         <span class="sr-only">{{ c().about.soft.comms }}</span>
       </li>
-      <li data-tip-pos="top" tabindex="0" class="tile solo" [attr.data-tip]="c().about.soft.solo">
+      <li data-tip-pos="bottom" tabindex="0" class="tile solo" [attr.data-tip]="c().about.soft.solo">
         <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="24" cy="24" r="18" /><g class="needle"><path d="M32 16l-5.5 10.5L16 32l5.5-10.5z" /><circle cx="24" cy="24" r="1.4" /></g></svg>
         <span class="sr-only">{{ c().about.soft.solo }}</span>
       </li>
-      <li data-tip-pos="top" tabindex="0" class="tile detail" [attr.data-tip]="c().about.soft.detail">
+      <li data-tip-pos="bottom" tabindex="0" class="tile detail" [attr.data-tip]="c().about.soft.detail">
         <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><g class="lens"><circle cx="21" cy="21" r="13" /><path d="M31 31l12 12" /><path class="tick" d="M15 21.5l4 4 8-8.5" /></g></svg>
         <span class="sr-only">{{ c().about.soft.detail }}</span>
       </li>
-      <li data-tip-pos="top" tabindex="0" class="tile solve" [attr.data-tip]="c().about.soft.solve">
+      <li data-tip-pos="bottom" tabindex="0" class="tile solve" [attr.data-tip]="c().about.soft.solve">
         <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><g class="bulb"><path d="M18 33v-3c-4-2.5-7-6-7-11a13 13 0 0 1 26 0c0 5-3 8.5-7 11v3z" /><path d="M19 39h10M21 44h6" /></g><g class="rays"><path d="M5 16H2M43 16h3M9 5L7 3M39 5l2-2M24 1V-2" /></g></svg>
         <span class="sr-only">{{ c().about.soft.solve }}</span>
       </li>
-      <li data-tip-pos="top" tabindex="0" class="tile learn" [attr.data-tip]="c().about.soft.learn">
+      <li data-tip-pos="bottom" tabindex="0" class="tile learn" [attr.data-tip]="c().about.soft.learn">
         <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M24 13c-4-3-10-4.500-18-4.500V37c8 0 14 1.500 18 4.500z" /><path d="M24 13v28.500" /><g class="page"><path d="M24 13c4-3 10-4.500 18-4.500V37c-8 0-14 1.500-18 4.500z" /><path d="M29 19.500c3-1.500 6-2 8-2M29 26c3-1.500 6-2 8-2" /></g><path d="M11 19.500c3 0 6 .5 8 2M11 26c3 0 6 .5 8 2" /></svg>
         <span class="sr-only">{{ c().about.soft.learn }}</span>
       </li>
+      @defer (on hover(row)) { <app-buddy aria-hidden="true" /> }
     </ul>
   `,
   styles: [`
     :host { display: block; }
     .eyebrow { margin-bottom: 0.75rem; }
-    .soft { position: relative; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5%; padding-bottom: 1.5%; } /* the whole width of the content; the gap is a share of it, which the trail's line is drawn for */
+    .soft { position: relative; isolation: isolate; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5%; padding-bottom: 1.5%; } /* the whole width of the content; the gap is a share of it, which the trail's line is drawn for */
     .tile {
       aspect-ratio: 1; display: grid; place-items: center; border-radius: 24px; corner-shape: squircle; color: var(--fg-2);
       border: 1px solid var(--line); background: linear-gradient(color-mix(in srgb, var(--fg) 5%, transparent), color-mix(in srgb, var(--fg) 5%, transparent)), var(--bg);
@@ -49,9 +52,9 @@ import type { SiteContent } from '../content/model';
       .tile:hover { color: var(--accent); background: linear-gradient(color-mix(in srgb, var(--accent) 10%, transparent), color-mix(in srgb, var(--accent) 10%, transparent)), var(--bg); translate: 0 -4px; rotate: 0deg; box-shadow: 0 14px 28px -14px color-mix(in srgb, var(--accent) 55%, transparent); }
     }
     /* playful: the tiles are the same size but tilted and set at different heights (a percentage margin is a share of the tile's own width), led by a dashed line through them */
-    .trail { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; color: var(--fg-2); pointer-events: none; }
+    .trail { position: absolute; z-index: -1; inset: 0; width: 100%; height: 100%; overflow: visible; color: var(--fg-2); pointer-events: none; }
     .trail path { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-dasharray: 2 7; stroke-linecap: round; opacity: 0.5; }
-    .tile { position: relative; }
+    .tile { position: relative; z-index: 1; }
     .tile:focus-visible, .tile.tip-open { rotate: 0deg; } /* the name shown beside a tile stands straight */
     .tile:nth-of-type(1) { rotate: -5deg; margin-top: 0; }
     .tile:nth-of-type(2) { rotate: 4deg; margin-top: 40%; }
