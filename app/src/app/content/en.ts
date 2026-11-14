@@ -100,6 +100,7 @@ export const en: SiteContent = {
       heading: 'Recognition',
       text: 'Received a public university’s “Person of the Academic Year” award (2016/17) for introducing the IT system that handles its research-grant applications and monitoring.',
     },
+    soft: { label: 'Soft skills', team: 'Team player', comms: 'Communication', solo: 'Independence', detail: 'Attention to detail', solve: 'Problem solving', learn: 'Quick learner' },
     research: {
       heading: 'research/',
       intro: 'I am interested in how to assure quality in a hybrid way: static analysis tools, automation and human review working together across the whole software development cycle. I try it out on my own projects, Fuzzphony among them.',

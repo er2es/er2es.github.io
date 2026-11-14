@@ -100,6 +100,7 @@ export const hu: SiteContent = {
       heading: 'Elismerés',
       text: 'Egy állami egyetem „A tanév embere” díját kaptam (2016/17), mert bevezettem a kutatási pályázatok kezelésére és követésére szolgáló rendszert.',
     },
+    soft: { label: 'Soft skillek', team: 'Csapatjátékos', comms: 'Kommunikáció', solo: 'Önállóság', detail: 'Alaposság', solve: 'Problémamegoldás', learn: 'Tanulékonyság' },
     research: {
       heading: 'research/',
       intro: 'Az érdekel, hogyan lehet a minőséget hibrid módon biztosítani: statikus elemző eszközökkel, automatizálással és emberi átnézéssel együtt, a szoftverfejlesztési ciklus egészén át. Ezt a saját projektjeimen próbálom ki, például a Fuzzphonyn.',
