@@ -97,7 +97,7 @@ function measure(t: SiteContent['ui']['egg']): Promise<Row[]> {
     </dialog>
   `,
   styles: [`
-    .egg { width: min(100% - 24px, 42rem); margin: 14vh auto auto; padding: 0; border-radius: 24px; color: var(--fg); }
+    .egg { width: min(100% - 24px, 42rem); margin: 14vh auto auto; padding: 0; border-radius: var(--radius); color: var(--fg); }
     .egg::backdrop { background: rgba(0, 0, 0, 0.35); }
     .in { padding: 1.5rem; display: grid; gap: 0.75rem; outline: none; }
     h2 { font: 700 var(--t-title2) / 1.2 var(--font); }

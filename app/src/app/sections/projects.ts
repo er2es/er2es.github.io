@@ -1,6 +1,6 @@
 import { Component, DestroyRef, ElementRef, afterNextRender, computed, inject, input, signal } from '@angular/core';
 import { EXTRA } from '../content/extra';
-import { FACT_BY_ID, FILES, PROJECT_ORDER, period, type SiteContent } from '../content/model';
+import { FACT_BY_ID, FILES, PROJECT_ORDER, period, tagLabel, type SiteContent } from '../content/model';
 
 @Component({
   selector: 'app-projects',
@@ -23,12 +23,12 @@ import { FACT_BY_ID, FILES, PROJECT_ORDER, period, type SiteContent } from '../c
               </div>
               @if (long(id)) {
                 <button type="button" class="more" [attr.aria-expanded]="opened().has(id)" [attr.aria-controls]="'sum-' + id" (click)="fold(id)">
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6" /></svg>
-                  <span class="sr-only">{{ opened().has(id) ? x().less : x().more }}</span>
+                  <span class="lbl">{{ opened().has(id) ? x().less : x().more }}</span>
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6" /></svg>
                 </button>
               }
               @if (kw(id).length) {
-                <p class="tags"><span class="sr-only">{{ c().ui.tags }}: </span>@for (k of kw(id); track k) { <span>{{ k }}</span> }<i class="sel" aria-hidden="true"></i></p>
+                <p class="tags"><span class="sr-only">{{ c().ui.tags }}: </span>@for (k of kw(id); track k) { <span>{{ tag(k) }}</span> }<i class="sel" aria-hidden="true"></i></p>
               }
               @if (url(id); as u) {
                 <p><a class="link-action" [attr.href]="u" target="_blank" rel="noopener noreferrer">
@@ -50,11 +50,20 @@ import { FACT_BY_ID, FILES, PROJECT_ORDER, period, type SiteContent } from '../c
     .pts li::before { content: ''; position: absolute; left: 0; top: 0.7em; width: 5px; height: 5px; border-radius: 50%; background: var(--fg-2); }
     /* on narrow screens a long description folds to a few lines, with a chevron to unfold it */
     .fold { display: grid; gap: 0.75rem; }
-    /* a small round button (a 44px target through its ::before) */
-    .more { position: relative; justify-self: center; width: 32px; height: 32px; margin-top: -0.5rem; display: grid; place-items: center; border: 0; border-radius: 999px; background: color-mix(in srgb, var(--fg) 10%, transparent); color: var(--fg); cursor: pointer; }
-    .more::before { content: ''; position: absolute; inset: -6px; }
+    /* a pill in the accent tint, with its words: it sits on the fade where the text trails off, and its chevron nods once in a while */
+    .more {
+      position: relative; justify-self: center; margin-top: -0.375rem; display: inline-flex; align-items: center; gap: 0.4rem; height: 36px; padding: 0 0.85rem 0 1rem;
+      border: 1px solid var(--ring-accent); border-radius: 999px; background: var(--tint-accent); color: var(--fg); font: 600 var(--t-footnote) / 1 var(--font); cursor: pointer;
+      box-shadow: 0 8px 20px -12px var(--ring-accent); transition: scale var(--dur-press) var(--ease-out), background-color var(--dur-short) var(--ease-out);
+    }
+    .more::before { content: ''; position: absolute; inset: -4px -8px; } /* a 44 px target */
+    .more:active { scale: 0.96; background: var(--tint-accent-strong); }
     .more svg { transition: rotate var(--dur-short) var(--ease-out); }
     .more[aria-expanded='true'] svg { rotate: 180deg; }
+    @media (prefers-reduced-motion: no-preference) {
+      .more[aria-expanded='false'] svg { animation: nod 2.8s ease-in-out 1.2s infinite; }
+    }
+    @keyframes nod { 0%, 70%, 100% { translate: 0 0; } 80% { translate: 0 3px; } 90% { translate: 0 0; } }
     /* on a phone a long tile (the text and its list together) is cut off a few lines down, fading out instead of ending mid-word */
     @property --keep { syntax: '<percentage>'; inherits: false; initial-value: 100%; }
     @media (max-width: 799px) {
@@ -114,6 +123,7 @@ export class Projects {
     el.style.maxHeight = `${open ? full : cut}px`;
     setTimeout(() => el.style.removeProperty('max-height'), 450);
   }
+  protected tag = (k: string): string => tagLabel(k, this.c().lang);
   protected kw = (id: (typeof PROJECT_ORDER)[number]) => FACT_BY_ID[id].keywords;
   protected url = (id: (typeof PROJECT_ORDER)[number]) => FACT_BY_ID[id].url ?? null;
 }

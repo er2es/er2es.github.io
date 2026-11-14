@@ -72,12 +72,12 @@ import { Social } from './social';
      * image is never hidden. Plays until html.settled is set, never under reduced motion, and never again on scrolling back.
      */
     @media (prefers-reduced-motion: no-preference) {
-      :host-context(html:not(.settled)) .text > * { animation: settle 420ms var(--ease-out) both; }
+      :host-context(html:not(.settled)) .text > * { animation: settle var(--dur-med) var(--ease-out) both; }
       :host-context(html:not(.settled)) .text > :nth-child(2) { animation-delay: 40ms; }
       :host-context(html:not(.settled)) .text > :nth-child(3) { animation-delay: 80ms; }
       :host-context(html:not(.settled)) .text > :nth-child(4) { animation-delay: 120ms; }
       :host-context(html:not(.settled)) .text > :nth-child(5) { animation-delay: 160ms; }
-      :host-context(html:not(.settled)) .portrait img { animation: settle-in 520ms var(--ease-out) both; }
+      :host-context(html:not(.settled)) .portrait img { animation: settle-in var(--dur-ring) var(--ease-out) both; }
       :host-context(html:not(.settled)) .dot::after { animation: ping var(--dur-ring) var(--ease-out) 180ms both; }
     }
     @keyframes settle { from { transform: translateY(8px); } }

@@ -13,6 +13,12 @@ describe('activeAt', () => {
     expect(activeAt(jobs, 2020)).toEqual(['c']);
   });
 
+  it('keeps the last year with the job that ended, when no main job starts that year', () => {
+    const gap = [{ id: 'a', start: 2010, end: 2013, main: true }, { id: 'b', start: 2014, end: 2016, main: true }, { id: 's', start: 2011, end: 2013, main: false }];
+    expect(activeAt(gap, 2013)).toEqual(['a', 's']); // no job begins in 2013: it is still theirs
+    expect(activeAt(gap, 2014)).toEqual(['b']);
+  });
+
   it('lists overlapping jobs together', () => {
     expect(activeAt([...jobs, { id: 's', start: 2015, end: 2016, main: false }], 2015)).toEqual(['b', 's']);
   });

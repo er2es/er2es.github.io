@@ -1,4 +1,4 @@
-import { FACTS, SKILLS, SECTION_IDS, EMAIL, period } from './model';
+import { FACTS, SKILLS, SECTION_IDS, EMAIL, period, tagLabel } from './model';
 import { getContent } from './index';
 import { ARTICLES } from './research';
 import type { Locale } from './model';
@@ -114,5 +114,15 @@ describe('research articles', () => {
       expect(a.url).toMatch(/^https:\/\/dev\.to\//);
       expect(a.title.length).toBeGreaterThan(10);
     }
+  });
+});
+
+describe('tagLabel', () => {
+  it('leaves the English page as it is and gives the Hungarian page the words the skills list uses', () => {
+    expect(tagLabel('E2E testing', 'en')).toBe('E2E testing');
+    expect(tagLabel('E2E testing', 'hu')).toBe('E2E tesztelés'); // the skill's own label
+    expect(tagLabel('Mutation testing', 'hu')).toBe('Mutációs tesztelés'); // a phrase that is not a skill
+    expect(tagLabel('PHP', 'hu')).toBe('PHP'); // a name that is the same in both
+    expect(tagLabel('Not a known tag', 'hu')).toBe('Not a known tag');
   });
 });

@@ -93,7 +93,7 @@ test('back and forward switch the language in-app, and the switch keeps the scro
   const y = await page.evaluate(() => scrollY);
   await page.getByRole('link', { name: 'Magyar' }).first().click();
   await expect(page.locator('html')).toHaveAttribute('lang', 'hu');
-  await expect(page.locator('#skills h2')).toHaveText('Kompetenciák');
+  await expect(page.locator('#skills h2')).toHaveText('Készségek');
   expect(Math.abs((await page.evaluate(() => scrollY)) - y)).toBeLessThan(400);
   await page.goBack();
   await expect(page).toHaveURL(/\/$/);
@@ -480,7 +480,7 @@ test('palette: empty query lists only the six sections; the placeholder is an ex
     await ready(page, p.url);
     await page.keyboard.press('Control+k');
     const input = page.getByRole('combobox');
-    await expect(input).toHaveAttribute('placeholder', p.lang === 'en' ? 'e.g. PHP' : 'pl. PHP');
+    await expect(input).toHaveAttribute('placeholder', p.lang === 'en' ? 'e.g. PHP, Selenium' : 'pl. PHP, Selenium');
     await expect(page.getByRole('dialog').getByRole('option')).toHaveCount(6);
     await page.keyboard.press('Escape');
   }
@@ -1177,7 +1177,7 @@ test.describe('the menu', () => {
     await expect.poll(() => links.nth(1).evaluate((e) => e.style.getPropertyValue('--tx'))).not.toBe('');
     await page.mouse.move(2, 2); // away from the menu: the lean is let go
     await expect.poll(() => links.nth(1).evaluate((e) => e.style.getPropertyValue('--tx'))).toBe('');
-    expect(await links.evaluateAll((els) => els.map((e) => e.getAttribute('data-tip')))).toEqual(['README.md', 'CHANGELOG', 'tests/', 'projects/', 'ABOUT', 'CONTACT']);
+    expect(await links.evaluateAll((els) => els.map((e) => e.getAttribute('data-tip')))).toEqual(['README.md', 'CHANGELOG', 'tests/', 'projects/', 'AUTHORS', 'MAINTAINERS']);
     await links.nth(0).hover();
     await expect.poll(() => links.nth(0).evaluate((e) => getComputedStyle(e, '::after').fontFamily), { timeout: 3000 }).toMatch(/mono|Consolas|Menlo/i);
   });
@@ -1201,14 +1201,9 @@ test.describe('the menu', () => {
     await expect.poll(p).toBeGreaterThan(0.95); // the last section is full at the bottom of the page
   });
 
-  test('Alt+1 to 6 jump to the sections; a click on a menu item brings its heading a line that goes away', async ({ page }) => {
+  test('a click on a menu item brings its heading a line that goes away', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await ready(page, '/hu/');
-    await page.keyboard.press('Alt+3');
-    await expect(page.locator('app-header .links a[aria-current]')).toContainText('Kompetenci');
-    await page.keyboard.press('Control+Alt+2'); // with another modifier: nothing
-    await page.waitForTimeout(300);
-    await expect(page.locator('app-header .links a[aria-current]')).toContainText('Kompetenci');
     await page.locator('app-header .links a', { hasText: 'Projektek' }).click();
     await expect(page.locator('#projects h2')).toHaveClass(/flash-title/, { timeout: 4000 });
     await expect(page.locator('#projects h2')).not.toHaveClass(/flash-title/, { timeout: 4000 });

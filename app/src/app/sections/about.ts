@@ -28,7 +28,8 @@ import { FILES, type SiteContent } from '../content/model';
         </div>
         <div id="about-soft" class="soft-row" tabindex="-1"><app-soft [c]="c()" /></div>
         <div id="about-research" class="research" tabindex="-1">
-          <h3 class="eyebrow mono">{{ c().about.research.heading }}</h3>
+          <p class="eyebrow mono" aria-hidden="true">research/</p>
+          <h3 class="rule-fade">{{ c().about.research.heading }}</h3>
           <p class="intro">{{ c().about.research.intro }}</p>
           <ul class="cards">
             @for (a of articles; track a.url) {
@@ -47,11 +48,11 @@ import { FILES, type SiteContent } from '../content/model';
   `,
   styles: [`
     .grid { display: grid; gap: 1.5rem; margin-top: 1.5rem; }
-    .grid > div { scroll-margin-top: calc(var(--bar-h) + 1.25rem); outline: none; border-radius: 12px; }
+    .grid > div { scroll-margin-top: calc(var(--bar-h) + 1.25rem); outline: none; border-radius: var(--r-ctl); }
     li + li { margin-top: 0.375rem; }
-    .soft-row { margin-top: 2.5rem; scroll-margin-top: calc(var(--bar-h) + 1.25rem); outline: none; border-radius: 12px; }
-    .research { margin-top: 3.5rem; scroll-margin-top: calc(var(--bar-h) + 1.25rem); outline: none; border-radius: 12px; }
-    .research h3.eyebrow { margin: 0 0 0.75rem; }
+    .soft-row { margin-top: 2.5rem; scroll-margin-top: calc(var(--bar-h) + 1.25rem); outline: none; border-radius: var(--r-ctl); }
+    .research { margin-top: 3.5rem; scroll-margin-top: calc(var(--bar-h) + 1.25rem); outline: none; border-radius: var(--r-ctl); }
+    .research .eyebrow { margin-bottom: 0.75rem; }
     .cards { list-style: none; margin: 1.25rem 0 0; padding: 0; display: grid; gap: 0.75rem; }
     .cards li + li { margin-top: 0; }
     .art { position: relative; display: grid; gap: 0.5rem; height: 100%; padding: 1rem 2.5rem 1rem 1rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-2); color: var(--fg); text-decoration: none; transition: border-color var(--dur-med), transform var(--dur-med); }

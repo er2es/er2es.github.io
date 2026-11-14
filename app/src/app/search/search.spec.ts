@@ -3,6 +3,7 @@ import { FACTS } from '../content/model';
 import { buildDocs, highlight, norm, search, buildCvContext } from './search';
 
 const docs = buildDocs(getContent('en'));
+const huDocs = buildDocs(getContent('hu'));
 
 describe('highlight', () => {
   const marked = (label: string, q: string) => highlight(label, q).filter((s) => s.hit).map((s) => s.text);
@@ -47,6 +48,29 @@ describe('search', () => {
     const ctx = buildCvContext(getContent('en'));
     expect(ctx).toContain('szabo.jozsef.acc@gmail.com');
     expect(ctx).toContain('Symfony');
+  });
+});
+
+describe('search ranking', () => {
+  const docs = huDocs;
+
+  it('matches the start of a word, not the middle of one', () => {
+    const titles = search(docs, 'angol').map((d) => d.title);
+    expect(titles[0]).toBe('Nyelvek'); // the languages, not "hangoltam" in a WordPress project
+    expect(search(docs, 'ngol')).toEqual([]);
+  });
+
+  it('finds the hobbies', () => {
+    expect(search(docs, 'mozi')[0]!.id).toBe('profile:hobbies');
+    expect(search(docs, 'kutya')[0]!.anchor).toBe('profile-afk');
+  });
+
+  it('finds a project by any of its tags', () => {
+    for (const tag of ['limesurvey', 'evasys', 'spss']) expect(search(docs, tag).map((d) => d.id)).toContain('item:surveys');
+  });
+
+  it('puts an entry before a whole section when they score the same', () => {
+    expect(search(docs, 'selenium')[0]!.id).not.toBe('section:profile');
   });
 });
 

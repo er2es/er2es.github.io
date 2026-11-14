@@ -120,9 +120,9 @@ html:has(app-pup .pup, dialog[open]) { overflow: hidden; }
 [data-tip][data-tip-align='start']::after { left: 0; --tip-x: 0px; }
 [data-tip][data-tip-mono]::after { font-family: var(--mono); letter-spacing: 0.02em; }
 @media (hover: hover) {
-  [data-tip]:hover::after { display: block; animation: tip-in 120ms var(--ease-out) 400ms both; }
+  [data-tip]:hover::after { display: block; animation: tip-in var(--dur-press) var(--ease-out) 400ms both; }
 }
-[data-tip]:focus-visible::after, [data-tip].tip-open::after { display: block; animation: tip-in 120ms var(--ease-out) both; }
+[data-tip]:focus-visible::after, [data-tip].tip-open::after { display: block; animation: tip-in var(--dur-press) var(--ease-out) both; }
 html.tips-off [data-tip]::after { display: none !important; }
 @keyframes tip-in { from { opacity: 0; translate: var(--tip-x) var(--tip-dy); } }
 @media (prefers-reduced-motion: reduce) { [data-tip]:hover::after, [data-tip]:focus-visible::after, [data-tip].tip-open::after { animation: none; } }

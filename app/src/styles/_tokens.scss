@@ -85,6 +85,16 @@
   --dur-short: 250ms;
   --dur-med: 400ms;
   --dur-ring: 600ms; /* a one-off ring that spreads out of something (status dot, commit node, avatar arriving) */
+  --dur-long: 700ms; /* something big arriving or leaving, an icon drawing itself */
+  --dur-play: 900ms; /* a small playful motion (an icon's own movement on hover) */
+
+  // Tints and rings, mixed once here: a state (hover, current, pressed) is painted with --tint-*, a resting tile with --veil and --ring.
+  --tint-accent: color-mix(in srgb, var(--accent) 12%, transparent);
+  --tint-accent-strong: color-mix(in srgb, var(--accent) 26%, transparent);
+  --veil: color-mix(in srgb, var(--fg) 5%, transparent);
+  --ring: color-mix(in srgb, var(--fg) 16%, transparent);
+  --ring-accent: color-mix(in srgb, var(--accent) 40%, transparent);
+  --glint: color-mix(in srgb, var(--accent) 38%, transparent);
 }
 
 @media (prefers-color-scheme: dark) {

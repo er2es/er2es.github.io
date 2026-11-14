@@ -75,11 +75,11 @@ export const BASE: ItemId = 'edu-nonprofit';
     .lane:hover { position: relative; z-index: 6; }
     .name {
       text-align: left; font: inherit; color: inherit; background: none; border: 0; cursor: pointer; padding: 0.375rem 0.5rem;
-      margin: 3px -0.5rem; border-radius: 10px; min-height: 44px; display: grid; line-height: 1.2; /* 3px above and below: the labels are tiles with air between them (the row's height is the track's, so the foundation block stays one piece) */
+      margin: 3px -0.5rem; border-radius: var(--r-pop); min-height: 44px; display: grid; line-height: 1.2; /* 3px above and below: the labels are tiles with air between them (the row's height is the track's, so the foundation block stays one piece) */
       transition: background-color var(--dur-short) var(--ease-out);
     }
     .name small { color: var(--fg-2); font-size: var(--t-footnote); font-weight: 500; font-variant-numeric: tabular-nums; }
-    @media (hover: hover) { .name:hover { background: color-mix(in srgb, var(--fg) 6%, transparent); } }
+    @media (hover: hover) { .name:hover { background: var(--tint-hover); } }
     .name[aria-pressed='true'] { background: color-mix(in srgb, var(--accent) 14%, transparent); }
     .name[aria-pressed='true'] small { color: var(--fg); }
 
@@ -139,7 +139,7 @@ export const BASE: ItemId = 'edu-nonprofit';
     }
     .filter::before { content: ''; position: absolute; inset: -6px 0; } /* a 32 px pill with a 44 px target */
     .filter.hide { visibility: hidden; }
-    @media (hover: hover) { .filter:hover { background: color-mix(in srgb, var(--accent) 26%, transparent); } }
+    @media (hover: hover) { .filter:hover { background: var(--tint-accent-strong); } }
 
     @media (max-width: 599px) {
       .arc { --row: 40px; --cell: 26px; }

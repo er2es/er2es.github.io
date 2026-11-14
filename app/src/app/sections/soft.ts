@@ -7,7 +7,7 @@ import { BuddyFigure } from './buddy';
   selector: 'app-soft',
   imports: [BuddyFigure],
   template: `
-    <p class="eyebrow mono" aria-hidden="true">soft skills/</p>
+    <p class="eyebrow mono" aria-hidden="true">soft-skills/</p>
     <!-- the tiles are focusable only to show their name: keyboard parity with the hover tooltip -->
     <ul #row class="soft" [attr.aria-label]="c().about.soft.label" (pointerdown)="reveal($event)">
       <svg class="trail" viewBox="0 0 600 121.5" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M37.5 37.5 C90 37.5 90 67.5 142.5 67.5 S195 45 247.5 45 S300 75 352.5 75 S405 41.25 457.5 41.25 S510 63.75 562.5 63.75" vector-effect="non-scaling-stroke" /></svg>
@@ -43,26 +43,29 @@ import { BuddyFigure } from './buddy';
     .eyebrow { margin-bottom: 0.75rem; }
     .soft { position: relative; isolation: isolate; list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5%; padding-bottom: 1.5%; } /* the whole width of the content; the gap is a share of it, which the trail's line is drawn for */
     .tile {
-      aspect-ratio: 1; display: grid; place-items: center; border-radius: 24px; corner-shape: squircle; color: var(--fg-2);
-      border: 1px solid var(--line); background: linear-gradient(color-mix(in srgb, var(--fg) 5%, transparent), color-mix(in srgb, var(--fg) 5%, transparent)), var(--bg);
+      aspect-ratio: 1; display: grid; place-items: center; border-radius: var(--radius); corner-shape: squircle; color: var(--fg-2);
+      /* the outline is a ring (one path), not a border (four sides, each smoothed on its own, which on a tilted tile comes out patchy) */
+      border: 0; box-shadow: 0 0 0 1px var(--ring), 0 0 8px var(--veil); background: linear-gradient(var(--veil), var(--veil)), var(--bg);
       transition: color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out), translate var(--dur-med) var(--ease-spring), rotate var(--dur-med) var(--ease-spring), box-shadow var(--dur-short) var(--ease-out);
     }
     .tile svg { width: 52%; height: auto; overflow: visible; }
     @media (hover: hover) {
-      .tile:hover { color: var(--accent); background: linear-gradient(color-mix(in srgb, var(--accent) 10%, transparent), color-mix(in srgb, var(--accent) 10%, transparent)), var(--bg); translate: 0 -4px; rotate: 0deg; box-shadow: 0 14px 28px -14px color-mix(in srgb, var(--accent) 55%, transparent); }
+      .tile:hover { color: var(--accent); background: linear-gradient(var(--tint-accent), var(--tint-accent)), var(--bg); translate: 0 -4px; rotate: 0deg; box-shadow: 0 0 0 1px var(--ring-accent), 0 14px 28px -14px color-mix(in srgb, var(--accent) 55%, transparent); }
     }
     /* playful: the tiles are the same size but tilted and set at different heights (a percentage margin is a share of the tile's own width), led by a dashed line through them */
     .trail { position: absolute; z-index: -1; inset: 0; width: 100%; height: 100%; overflow: visible; color: var(--fg-2); pointer-events: none; }
     .trail path { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-dasharray: 2 7; stroke-linecap: round; opacity: 0.5; }
     .tile { position: relative; z-index: 1; }
-    .tile:focus-visible, .tile.tip-open { rotate: 0deg; } /* the name shown beside a tile stands straight */
     .tile:nth-of-type(1) { rotate: -5deg; margin-top: 0; }
     .tile:nth-of-type(2) { rotate: 4deg; margin-top: 40%; }
     .tile:nth-of-type(3) { rotate: -3deg; margin-top: 10%; }
     .tile:nth-of-type(4) { rotate: 6deg; margin-top: 50%; }
     .tile:nth-of-type(5) { rotate: -4deg; margin-top: 5%; }
     .tile:nth-of-type(6) { rotate: 3deg; margin-top: 35%; }
-    @media (max-width: 480px) { .tile { border-radius: 16px; } }
+    /* straight while the pointer is on it, or while its name is shown: these come after the tilts, which are as specific */
+    @media (hover: hover) { .tile:hover { rotate: 0deg; } }
+    .tile:focus-visible, .tile.tip-open { rotate: 0deg; }
+    @media (max-width: 480px) { .tile { border-radius: var(--r-ctl); } }
 
     /* each icon has one small motion of its own, only while the tile is hovered */
     .tile g, .tile .tick { transform-box: fill-box; transform-origin: center; }
@@ -71,15 +74,15 @@ import { BuddyFigure } from './buddy';
     .tile .needle { transform-origin: 24px 24px; transform-box: view-box; }
     @media (hover: hover) { .solve:hover .rays { opacity: 1; } }
     @media (hover: hover) and (prefers-reduced-motion: no-preference) {
-      .team:hover .p-l { animation: toward-r 900ms var(--ease-spring) both; }
-      .team:hover .p-r { animation: toward-l 900ms var(--ease-spring) both; }
-      .team:hover .p-c { animation: bob 900ms var(--ease-spring) both; }
-      .comms:hover .c1 { animation: chat 900ms var(--ease-spring) both; }
-      .comms:hover .c2 { animation: chat 900ms var(--ease-spring) 180ms both; }
+      .team:hover .p-l { animation: toward-r var(--dur-play) var(--ease-spring) both; }
+      .team:hover .p-r { animation: toward-l var(--dur-play) var(--ease-spring) both; }
+      .team:hover .p-c { animation: bob var(--dur-play) var(--ease-spring) both; }
+      .comms:hover .c1 { animation: chat var(--dur-play) var(--ease-spring) both; }
+      .comms:hover .c2 { animation: chat var(--dur-play) var(--ease-spring) 180ms both; }
       .solo:hover .needle { animation: swing 1.4s ease-in-out both; }
       .detail:hover .lens { animation: scan 1.2s ease-in-out both; }
-      .detail:hover .tick { animation: tick 900ms var(--ease-spring) 250ms both; }
-      .solve:hover .bulb { animation: glow 900ms var(--ease-spring) both; }
+      .detail:hover .tick { animation: tick var(--dur-play) var(--ease-spring) 250ms both; }
+      .solve:hover .bulb { animation: glow var(--dur-play) var(--ease-spring) both; }
       .learn:hover .page { animation: flip 1s ease-in-out both; }
     }
     @keyframes toward-r { 40% { translate: 3px 0; } }

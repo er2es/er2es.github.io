@@ -63,7 +63,7 @@ describe('trackActive without or with partial support', () => {
     expect(stop()).toBeUndefined();
   });
 
-  it('reports only the sections in the band, and skips ids that are not on the page', () => {
+  it('reports the section in the band, skips ids that are not on the page, and names a section once', () => {
     let callback: (entries: { isIntersecting: boolean; target: { id: string } }[]) => void = () => undefined;
     const observed: Element[] = [];
     vi.stubGlobal('IntersectionObserver', class {
@@ -74,12 +74,35 @@ describe('trackActive without or with partial support', () => {
     const here = document.createElement('section');
     here.id = 'here';
     document.body.appendChild(here);
+    setMetrics(100, 800, 1800);
     const on = vi.fn();
-    const stop = trackActive(['here', 'gone'], on);
+    const stop = trackActive(['here', 'gone', 'b'], on);
     expect(observed).toEqual([here]);
     callback([{ isIntersecting: false, target: { id: 'a' } }, { isIntersecting: true, target: { id: 'b' } }]);
+    callback([{ isIntersecting: true, target: { id: 'b' } }]);
     expect(on.mock.calls).toEqual([['b']]);
     stop();
     here.remove();
+  });
+
+  it('names the section that stayed in the band again once the page is no longer at the bottom', () => {
+    let callback: (entries: { isIntersecting: boolean; target: { id: string } }[]) => void = () => undefined;
+    vi.stubGlobal('IntersectionObserver', class {
+      constructor(cb: typeof callback) { callback = cb; }
+      observe(): void {}
+      disconnect(): void {}
+    });
+    setMetrics(500, 800, 1800);
+    const on = vi.fn();
+    const stop = trackActive(['about', 'contact'], on);
+    callback([{ isIntersecting: true, target: { id: 'about' } }]); // About is in the band
+    setMetrics(1000, 800, 1800);
+    window.dispatchEvent(new Event('scroll')); // the very bottom: Contact wins
+    setMetrics(900, 800, 1800);
+    window.dispatchEvent(new Event('scroll')); // a little up: About is still in the band, and is named again
+    expect(on.mock.calls).toEqual([['about'], ['contact'], ['about']]);
+    callback([{ isIntersecting: true, target: { id: 'contact' } }]); // two meet at a boundary: the later one
+    expect(on.mock.calls[3]).toEqual(['contact']);
+    stop();
   });
 });

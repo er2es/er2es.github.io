@@ -19,6 +19,8 @@ export interface ExtraText {
   partTime: string;
   /** The line under the career graph on a touch screen, until a year is touched. */
   touch: string;
+  /** The footer's link to the code and its licence. */
+  source: string;
   /** Appended (visually hidden) to links that open in a new tab. */
   newTab: string;
   /** Unfold / fold a long project description on narrow screens (spoken only). */
@@ -49,8 +51,9 @@ export const EXTRA: Record<Locale, ExtraText> = {
     fullTime: 'Full-time',
     partTime: 'Part-time',
     touch: 'Touch or drag across a year for the details',
+    source: 'Source',
     newTab: '(opens in a new tab)',
-    more: 'Show the whole description',
+    more: 'Read more',
     less: 'Show less',
   },
   hu: {
@@ -74,9 +77,10 @@ export const EXTRA: Record<Locale, ExtraText> = {
     claim: 'Az igazi nyeremény átvétele 😁',
     fullTime: 'Teljes munkaidő',
     partTime: 'Részmunkaidő',
-    touch: 'Érints meg egy évet, vagy húzd rajta az ujjad',
+    touch: 'Érints meg egy évet, vagy húzd végig az ujjad a sávon.',
+    source: 'Forráskód',
     newTab: '(új lapon nyílik)',
-    more: 'A teljes leírás megjelenítése',
-    less: 'Kevesebb megjelenítése',
+    more: 'Teljes leírás',
+    less: 'Kevesebb',
   },
 };

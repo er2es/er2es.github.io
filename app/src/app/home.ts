@@ -6,7 +6,6 @@ import { initHash, shownSection } from './core/hash';
 import { initTips } from './core/tips';
 import { LangSwitch } from './core/lang';
 import { initLit } from './core/lit';
-import { scrollToSection } from './core/nav';
 import { Seo } from './core/seo';
 import { onTripleShift } from './core/triple-shift';
 import { Egg } from './egg/egg';
@@ -185,12 +184,6 @@ export class Home {
       e.preventDefault();
       this.openPalette();
       return;
-    }
-    // Alt + 1 to 6: to the section of that place in the menu (with a modifier, so it is never a single-key shortcut)
-    const digit = /^Digit([1-6])$/.exec(e.code);
-    if (digit && e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey && !this.paletteOpen() && !this.eggOpen() && this.pup() === 'off') {
-      e.preventDefault();
-      scrollToSection(SECTION_IDS[Number(digit[1]) - 1]!);
     }
   }
 }

@@ -1,19 +1,12 @@
 import { Component, DestroyRef, ElementRef, afterNextRender, computed, inject, input, output, signal, viewChild } from '@angular/core';
 import { SECTION_IDS, type Locale, type SectionId, type SiteContent } from '../content/model';
 import { scrollToSection } from '../core/nav';
+import { SectionIcon } from '../shell/section-icon';
 import { createCvAssistant, type CvAssistant } from './assistant';
 import { buildCvContext, buildDocs, highlight, norm, search, type SearchDoc, type Segment } from './search';
 
-/** One outline glyph per kind of result, so the list can be scanned by shape (24px grid, stroked). */
-const ICONS = {
-  profile: 'M7 3.5h7l4 4v13H7zM14 3.5V8h4M9.5 12.5h6M9.5 16h6',
-  experience: 'M4 8h16v11H4zM9 8V5.5h6V8',
-  skills: 'M5 12.5l4 4L19 7',
-  projects: 'M3.5 7v11a1.5 1.5 0 0 0 1.5 1.5h14a1.5 1.5 0 0 0 1.5-1.5V9.5A1.5 1.5 0 0 0 19 8h-7l-2-2.5H5A1.5 1.5 0 0 0 3.5 7z',
-  about: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4.5 20a7.5 7.5 0 0 1 15 0',
-  contact: 'M3.5 6.5h17v11h-17zM4 7l8 6 8-6',
-  ask: 'M12 3.5l1.9 5.1 5.1 1.9-5.1 1.9L12 17.5l-1.9-5.1L5 10.5l5.1-1.9z',
-} as const;
+/** The glyph of the "ask" entry; the sections' own glyphs are the menu's (shell/section-icon.ts). */
+const ASK_ICON = 'M12 3.5l1.9 5.1 5.1 1.9-5.1 1.9L12 17.5l-1.9-5.1L5 10.5l5.1-1.9z';
 
 type Entry =
   | { kind: 'section'; id: SectionId; label: string }
@@ -22,6 +15,7 @@ type Entry =
 
 @Component({
   selector: 'app-palette',
+  imports: [SectionIcon],
   template: `
     <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- a click on the dialog's own backdrop closes it; Esc is the keyboard route -->
     <dialog #dlg class="palette glass" [attr.aria-label]="c().ui.palette.open" (close)="closed.emit()" (click)="backdrop($event)">
@@ -45,7 +39,11 @@ type Entry =
             @for (e of entries(); track key(e)) {
               <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- options of a combobox listbox are never focused: the input keeps focus and points at the active option (aria-activedescendant) -->
               <li role="option" [id]="'pal-' + $index" [attr.data-anchor]="anchorOf(e)" [attr.aria-selected]="$index === index()" [style.--i]="$index" (click)="run(e)" (pointermove)="index.set($index)">
-                <svg class="ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path [attr.d]="icon(e)" /></svg>
+                @if (sectionOf(e); as s) {
+                  <app-section-icon class="ico" [id]="s" [size]="18" aria-hidden="true" />
+                } @else {
+                  <svg class="ico" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path [attr.d]="askIcon" /></svg>
+                }
                 <span>@for (g of segments(e); track $index) { <span [class.hit]="g.hit">{{ g.text }}</span> }</span>
               </li>
             }
@@ -59,7 +57,7 @@ type Entry =
   styles: [`
     .palette {
       width: min(100% - 24px, 38rem); max-height: min(70vh, 34rem); margin: 12vh auto auto; padding: 0;
-      border-radius: 24px; color: var(--fg); overflow: hidden;
+      border-radius: var(--radius); color: var(--fg); overflow: hidden;
     }
     /* an opaque panel: translucent glass lets the page text and glow show through the results */
     .palette.glass { background: var(--bg-2); -webkit-backdrop-filter: none; backdrop-filter: none; }
@@ -76,8 +74,8 @@ type Entry =
     .field { display: flex; gap: 0.5rem; align-items: center; padding: 0.75rem 0.75rem 0.75rem 1.25rem; border-bottom: 1px solid var(--line); }
     input { flex: 1; min-width: 0; min-height: 44px; border: 0; outline: none; background: transparent; color: var(--fg); font: inherit; text-overflow: ellipsis; }
     .list { overflow: auto; padding: 0.5rem; }
-    li { display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 1rem; border-radius: 16px; cursor: pointer; min-height: 44px; }
-    li[aria-selected='true'] { background: color-mix(in srgb, var(--fg) 10%, transparent); }
+    li { display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 1rem; border-radius: var(--r-ctl); cursor: pointer; min-height: 44px; }
+    li[aria-selected='true'] { background: var(--tint-hover); }
     .ico { flex: none; color: var(--fg-2); transition: color var(--dur-short) var(--ease-out); }
     li[aria-selected='true'] .ico { color: var(--accent); }
     .hit { font-weight: 700; text-decoration: underline 2px var(--accent); text-underline-offset: 0.2em; }
@@ -174,12 +172,11 @@ export class Palette {
     return `${e.kind}:${this.anchorOf(e) ?? e.label}`;
   }
 
-  protected icon(e: Entry): string {
-    switch (e.kind) {
-      case 'section': return ICONS[e.id];
-      case 'doc': return ICONS[e.doc.section];
-      case 'ask': return ICONS.ask;
-    }
+  protected readonly askIcon = ASK_ICON;
+
+  /** The section an entry belongs to, for its icon (none for the "ask" entry). */
+  protected sectionOf(e: Entry): SectionId | null {
+    return e.kind === 'section' ? e.id : e.kind === 'doc' ? e.doc.section : null;
   }
 
   protected segments(e: Entry): Segment[] {

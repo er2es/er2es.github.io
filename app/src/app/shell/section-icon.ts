@@ -21,7 +21,7 @@ import type { SectionId } from '../content/model';
     svg { display: block; }
     /* the strokes are drawn from nothing to the whole (pathLength 1 on every shape), each time the icon becomes the current one */
     @media (prefers-reduced-motion: no-preference) {
-      svg.on * { stroke-dasharray: 1; animation: draw 700ms var(--ease-out) both; }
+      svg.on * { stroke-dasharray: 1; animation: draw var(--dur-long) var(--ease-out) both; }
     }
     @keyframes draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
   `],

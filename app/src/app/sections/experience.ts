@@ -1,6 +1,6 @@
 import { Component, DestroyRef, ElementRef, afterNextRender, computed, inject, input } from '@angular/core';
 import { EXTRA } from '../content/extra';
-import { FACTS, FACT_BY_ID, FILES, period, type ItemId, type SiteContent } from '../content/model';
+import { FACTS, FACT_BY_ID, FILES, period, tagLabel, type ItemId, type SiteContent } from '../content/model';
 import { railGeometry } from '../graph/geometry';
 import { layoutGraph } from '../graph/layout';
 import { BASE, CareerArc } from './career-arc';
@@ -30,7 +30,7 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
         <ol class="log" (keydown)="onKey($event)">
           <li class="spine" aria-hidden="true"></li>
           @for (r of rows; track r.id) {
-            <li class="row" [id]="'job-' + r.id" tabindex="-1" [class.lit]="lens.ids().has(r.id)" [class.base]="r.id === base">
+            <li class="row" [id]="'job-' + r.id" tabindex="-1" [class.lit]="lens.ids().has(r.id)" [class.base]="r.id === base" [class.side]="!r.fact.main">
               <div class="railcol" [style.width.px]="r.rail.width" aria-hidden="true">
                 <svg class="rail" [attr.width]="r.rail.width" height="100%" focusable="false">
                   @for (l of r.rail.lines; track $index) {
@@ -61,7 +61,7 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
                   </summary>
                   <ul class="pts">@for (p of c().items[r.id].points; track $index) { <li>{{ p }}</li> }</ul>
                   @if (r.fact.keywords.length) {
-                    <p class="tags"><span class="sr-only">{{ c().ui.tags }}: </span>@for (k of r.fact.keywords; track k) { <span>{{ k }}</span> }<i class="sel" aria-hidden="true"></i></p>
+                    <p class="tags"><span class="sr-only">{{ c().ui.tags }}: </span>@for (k of r.fact.keywords; track k) { <span>{{ tag(k) }}</span> }<i class="sel" aria-hidden="true"></i></p>
                   }
                 </details>
               </div>
@@ -74,21 +74,24 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
   styles: [`
     .roles { margin-top: 2rem; }
     .log { position: relative; margin-top: 0.5rem; }
-    .row { display: flex; gap: 0.75rem; scroll-margin-top: calc(var(--bar-h) + 1.25rem); outline: none; border-radius: 12px; }
+    .row { display: flex; gap: 0.75rem; scroll-margin-top: calc(var(--bar-h) + 1.25rem); outline: none; border-radius: var(--r-ctl); }
     .railcol { position: relative; flex: none; }
     .rail { position: absolute; inset: 0; height: 100%; overflow: visible; }
     /* the nodes of the line say, on hover, whether the role was full-time (the main line) or a branch of it (part-time), and open or close their entry */
     .hit { position: absolute; z-index: 2; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; }
     .body { flex: 1; min-width: 0; padding-bottom: 0.25rem; }
+    /* a part-time role is set in a little, as the branch it is: it can be seen at a glance beside which entry it ran */
+    .row.side .body { margin-left: 1.25rem; }
+    @media (max-width: 480px) { .row.side .body { margin-left: 0.75rem; } }
     summary { display: grid; gap: 0.125rem; padding-block: 0.5rem; min-height: 44px; }
-    summary { position: relative; cursor: pointer; margin-inline: -0.5rem; padding-inline: 0.5rem 2rem; border-radius: 10px; }
+    summary { position: relative; cursor: pointer; margin-inline: -0.5rem; padding-inline: 0.5rem 2rem; border-radius: var(--r-pop); }
     summary::after {
       content: ''; position: absolute; right: 1rem; top: 1.125rem; width: 8px; height: 8px;
       border-right: 2px solid var(--fg-2); border-bottom: 2px solid var(--fg-2); rotate: 45deg;
       transition: rotate var(--dur-short) var(--ease-out), translate var(--dur-short) var(--ease-out);
     }
     details[open] > summary::after { rotate: 225deg; translate: 0 4px; }
-    @media (hover: hover) { summary:hover { background: color-mix(in srgb, var(--fg) 6%, transparent); } }
+    @media (hover: hover) { summary:hover { background: var(--tint-hover); } }
     @media (prefers-reduced-motion: reduce) { summary::after { transition: none; } }
     .role { font-weight: 700; }
     .per { color: var(--fg-2); font-size: var(--t-footnote); font-weight: 500; font-variant-numeric: tabular-nums; } /* years in the page's own font, figures of one width */
@@ -111,11 +114,11 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
 
     /* lit by a skill chosen in the Skills section */
     summary { transition: background-color var(--dur-short) var(--ease-out); }
-    .row.lit summary { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+    .row.lit summary { background: var(--tint-accent); }
     .row.lit .per { color: var(--fg); } /* the tint is darker than the page: keep the small text readable */
     .row.lit .dot { scale: 1.3; }
     /* the foundation (the first job) is the same grey as its block in the graph, not the accent tint of the others */
-    .row.lit.base summary { background: color-mix(in srgb, var(--fg) 20%, transparent); }
+    .row.lit.base summary { background: var(--tint-current); }
 
     /* the career line fills with the accent colour as you scroll: one line for the whole log, from the first node to the last
        (scroll-driven, transform only; --tail, the last entry's height less its node, is set in script) */
@@ -148,6 +151,7 @@ export class Experience {
   /** The left half of a node (a half circle), which is drawn in the colour of the main line. */
   protected half = (x: number, y: number, r: number): string => `M${x},${y - r} A${r},${r} 0 0 0 ${x},${y + r} Z`;
   protected readonly x = computed(() => EXTRA[this.c().lang]);
+  protected tag = (k: string): string => tagLabel(k, this.c().lang);
   protected readonly file = FILES.experience;
 
   protected readonly lens = inject(SkillLens);

@@ -1,7 +1,7 @@
 import { railGeometry, LANE_W, NODE_Y } from './geometry';
 import type { GraphRow } from './layout';
 
-const row = (cells: GraphRow['cells'], lane = 0): GraphRow => ({ id: 'x', lane, cells });
+const row = (cells: GraphRow['cells'], lane = 0, hues = cells.map((_, k) => k)): GraphRow => ({ id: 'x', lane, cells, hues });
 
 describe('railGeometry', () => {
   it('draws a main node with a line that starts at the node on the first row', () => {
@@ -32,7 +32,7 @@ describe('railGeometry', () => {
 });
 
 describe('railGeometry side lanes', () => {
-  const row = (cells: GraphRow['cells']): GraphRow => ({ id: 'x', lane: 0, cells });
+  const row = (cells: GraphRow['cells']): GraphRow => ({ id: 'x', lane: 0, cells, hues: cells.map((_, k) => k) });
 
   it('runs a through-line on a side lane, forks back to the main line, and leaves empty lanes alone', () => {
     const r = railGeometry(row(['node', 'pass', 'fork', 'none']), 4, false, false);

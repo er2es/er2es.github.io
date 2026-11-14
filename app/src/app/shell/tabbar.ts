@@ -23,14 +23,14 @@ const LABEL_SIZES = [13, 12] as const;
   styles: [`
     .tabs {
       position: fixed; z-index: 20; left: 50%; translate: -50% 0; bottom: max(10px, env(safe-area-inset-bottom));
-      width: min(100% - 20px, 34rem); min-height: var(--tabbar-h); padding: 6px; border-radius: 26px;
+      width: min(100% - 20px, 34rem); min-height: var(--tabbar-h); padding: 6px; border-radius: var(--radius);
       display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 2px;
     }
     /* content scrolling under the bar must not show through the icons */
     .tabs.glass { background: color-mix(in srgb, var(--bg-2) 92%, transparent); }
     a {
       display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-width: 0; min-height: 52px; padding: 4px 2px;
-      border-radius: 20px; color: var(--fg-2); text-decoration: none; font-size: var(--tab-fs, 12px); font-weight: 600; line-height: 1.1; text-align: center;
+      border-radius: var(--r-ctl); color: var(--fg-2); text-decoration: none; font-size: var(--tab-fs, 12px); font-weight: 600; line-height: 1.1; text-align: center;
     }
     .lbl { display: block; max-width: 100%; overflow: hidden; white-space: nowrap; }
     /* labels that cannot fit at a readable size give way to the icons (still announced to screen readers) */
@@ -46,7 +46,7 @@ const LABEL_SIZES = [13, 12] as const;
     .tabs { isolation: isolate; }
     .sel {
       position: absolute; z-index: -1; pointer-events: none; top: 6px; bottom: 6px; left: 6px; width: calc((100% - 12px - 10px) / 6);
-      border-radius: 20px; background: var(--tint-current);
+      border-radius: var(--r-ctl); background: var(--tint-current);
       translate: calc(var(--i, 0) * (100% + 2px)) 0; transition: translate var(--dur-med) var(--ease-spring);
     }
     @media (min-width: 900px) { .tabs { display: none; } }
