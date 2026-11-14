@@ -179,7 +179,7 @@ export const hu: SiteContent = {
     },
     slimfony: {
       title: 'Slimfony',
-      summary: 'Pehelykönnyű váz PHP-s mikroszolgáltatásokhoz, FrankenPHP worker módban, néhány Symfony-komponensből építve. A konténert és az útvonalakat a build fordítja le, és két kérés között semmi nem marad meg a memóriában. Alapból biztonságos: nem szivárog ki hibainformáció, és bekapcsolt hitelesítés (JWT) mellett minden tiltott, amíg a hívó nincs azonosítva. A PostgreSQL-t biztonságosan kezeli hosszú életű workerben, és be van építve a Prometheus-metrika meg a health check is.',
+      summary: 'Pehelykönnyű váz PHP-s mikroszolgáltatásokhoz, FrankenPHP worker módban, néhány Symfony-komponensből építve. A konténert és az útvonalakat a build fordítja le, és két kérés között semmi nem marad meg a memóriában. Alapból biztonságos: nem szivárog ki hibainformáció, és bekapcsolt hitelesítés (JWT) mellett minden tiltott, amíg a hívó nincs azonosítva. A PostgreSQL-t biztonságosan kezeli hosszú életű workerben, és be van építve a Prometheus-metrika, health check is.',
       points: [],
     },
     'cv-site': {

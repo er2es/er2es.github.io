@@ -841,9 +841,15 @@ test.describe('skill pills on a touch screen', () => {
     await ready(page, '/hu/');
     const pill = page.locator('#skills li.pill', { hasText: 'Symfony' });
     await pill.scrollIntoViewIfNeeded();
+    // the glint is quick now: watch for the class to come (and what it plays) instead of catching it by luck
+    await pill.evaluate((e) => {
+      const w = window as unknown as { __glint?: string };
+      new MutationObserver(() => {
+        if (e.classList.contains('touched') && !w.__glint) w.__glint = getComputedStyle(e, '::after').animationName;
+      }).observe(e, { attributes: true, attributeFilter: ['class'] });
+    });
     await pill.tap();
-    await expect(pill).toHaveClass(/touched/);
-    expect(await pill.evaluate((e) => getComputedStyle(e, '::after').animationName)).toMatch(/glint/);
+    await expect.poll(() => page.evaluate(() => (window as unknown as { __glint?: string }).__glint)).toMatch(/glint/);
     await expect(pill).not.toHaveClass(/touched/, { timeout: 3000 });
   });
 });
