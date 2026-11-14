@@ -1,4 +1,4 @@
-import { Routes } from '@angular/router';
+import type { Routes } from '@angular/router';
 import { Home } from './home';
 
 /** The prerendered pages. Used on the server only, for route discovery; the browser bundle has no router. */

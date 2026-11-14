@@ -23,7 +23,7 @@ export function confetti(x: number, y: number): void {
     return {
       x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed,
       w: 5 + Math.random() * 6, h: 3 + Math.random() * 5, rot: Math.random() * 6.28, spin: (Math.random() - 0.5) * 0.4,
-      colour: colours[k % colours.length], life: 1.6 + Math.random() * 0.9,
+      colour: colours[k % colours.length]!, life: 1.6 + Math.random() * 0.9,
     };
   });
 

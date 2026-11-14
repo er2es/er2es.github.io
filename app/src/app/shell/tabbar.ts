@@ -97,7 +97,7 @@ export class TabBar {
     this.fitted = key;
     const labels = Array.from(nav.querySelectorAll<HTMLElement>('.lbl'));
     nav.classList.remove('compact'); // hidden labels cannot be measured
-    const now = parseFloat(getComputedStyle(labels[0]).fontSize);
+    const now = parseFloat(getComputedStyle(labels[0]!).fontSize);
     // a label is as wide as its text, up to the room its tab gives it: that room is the tab's inner width
     const widths = labels.map((l) => {
       const tab = l.parentElement as HTMLElement;

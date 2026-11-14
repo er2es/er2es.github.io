@@ -18,7 +18,7 @@ function measure(t: SiteContent['ui']['egg']): Promise<Row[]> {
   const scripts = res.filter((r) => r.initiatorType === 'script' || /\.js(\?|$)/.test(r.name)).reduce((n, r) => n + size(r), 0);
   const thirdParty = res.filter((r) => { try { return new URL(r.name).origin !== origin; } catch { return false; } }).length;
   // cookies are shared by every site on the same host (all of localhost, for example): count only the ones this page added
-  const names = (c: string): string[] => c.split(';').map((x) => x.trim().split('=')[0]).filter(Boolean);
+  const names = (c: string): string[] => c.split(';').map((x) => x.trim().split('=')[0]!).filter(Boolean);
   const before = new Set(names((window as unknown as { __ck?: string }).__ck ?? ''));
   const cookies = names(document.cookie).filter((n) => !before.has(n)).length;
   const keys = (s: () => Storage): string[] => { try { const st = s(); return Array.from({ length: st.length }, (_, i) => st.key(i) ?? '').filter(Boolean); } catch { return []; } };

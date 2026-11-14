@@ -15,7 +15,7 @@ export function layoutGraph(items: readonly GraphInput[]): GraphLayout {
 
   const to = sorted.map((it, i) => {
     if (it.main) return i;
-    for (let j = i + 1; j < n; j++) if (sorted[j].end <= it.start) return j;
+    for (let j = i + 1; j < n; j++) if (sorted[j]!.end <= it.start) return j;
     return n - 1;
   });
 
@@ -27,7 +27,7 @@ export function layoutGraph(items: readonly GraphInput[]): GraphLayout {
       k = laneEnd.length;
       laneEnd.push(-1);
     }
-    laneEnd[k] = to[i];
+    laneEnd[k] = to[i]!;
     return k + 1;
   });
 
@@ -37,11 +37,11 @@ export function layoutGraph(items: readonly GraphInput[]): GraphLayout {
     cells[0] = it.main ? 'node' : 'pass';
     sorted.forEach((o, i) => {
       if (o.main) return;
-      if (r === i) cells[lane[i]] = 'node';
-      else if (r === to[i]) cells[lane[i]] = 'fork';
-      else if (r > i && r < to[i]) cells[lane[i]] = 'pass';
+      if (r === i) cells[lane[i]!] = 'node';
+      else if (r === to[i]) cells[lane[i]!] = 'fork';
+      else if (r > i && r < to[i]!) cells[lane[i]!] = 'pass';
     });
-    return { id: it.id, lane: lane[r], cells };
+    return { id: it.id, lane: lane[r]!, cells };
   });
 
   return { laneCount, rows };
