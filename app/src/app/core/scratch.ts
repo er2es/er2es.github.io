@@ -5,7 +5,7 @@ export function clearedShare(rgba: ArrayLike<number>): number {
   const pixels = rgba.length / 4;
   if (!pixels) return 0;
   let cleared = 0;
-  for (let i = 3; i < rgba.length; i += 4) if (rgba[i] < 128) cleared++;
+  for (let i = 3; i < rgba.length; i += 4) if (rgba[i]! < 128) cleared++;
   return cleared / pixels;
 }
 

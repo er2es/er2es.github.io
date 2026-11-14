@@ -1,4 +1,4 @@
-import { mergeApplicationConfig, ApplicationConfig } from '@angular/core';
+import { mergeApplicationConfig, type ApplicationConfig } from '@angular/core';
 import { LocationStrategy, TrailingSlashPathLocationStrategy } from '@angular/common';
 import { provideRouter } from '@angular/router';
 import { provideServerRendering, withRoutes } from '@angular/ssr';

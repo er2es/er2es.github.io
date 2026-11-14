@@ -188,7 +188,7 @@ export class Home {
     const digit = /^Digit([1-6])$/.exec(e.code);
     if (digit && e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey && !this.paletteOpen() && !this.eggOpen() && this.pup() === 'off') {
       e.preventDefault();
-      scrollToSection(SECTION_IDS[Number(digit[1]) - 1]);
+      scrollToSection(SECTION_IDS[Number(digit[1]) - 1]!);
     }
   }
 }

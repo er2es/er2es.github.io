@@ -323,7 +323,7 @@ export class Header {
     const step = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
     if (!step) return;
     e.preventDefault();
-    const to = (e.currentTarget as HTMLElement).querySelectorAll<HTMLElement>('.seg')[step > 0 ? 1 : 0];
+    const to = (e.currentTarget as HTMLElement).querySelectorAll<HTMLElement>('.seg')[step > 0 ? 1 : 0]!;
     this.pick(e, step > 0 ? 'other' : 'auto', to);
     to.focus();
   }

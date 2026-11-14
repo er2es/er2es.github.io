@@ -70,8 +70,8 @@ export class Backdrop {
           segs.length = 0;
           contourSegments(f, cols, rows, CELL, level, segs);
           for (let i = 0; i < segs.length; i += 4) {
-            ctx.moveTo(segs[i], segs[i + 1]);
-            ctx.lineTo(segs[i + 2], segs[i + 3]);
+            ctx.moveTo(segs[i]!, segs[i + 1]!);
+            ctx.lineTo(segs[i + 2]!, segs[i + 3]!);
           }
         }
         ctx.stroke();

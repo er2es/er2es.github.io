@@ -26,14 +26,14 @@ export function highlight(label: string, query: string): Segment[] {
   const hit = new Array<boolean>(chars.length).fill(false);
   for (const q of qt) {
     for (let at = flat.indexOf(q); at !== -1; at = flat.indexOf(q, at + q.length)) {
-      for (let k = at; k < at + q.length; k++) hit[from[k]] = true;
+      for (let k = at; k < at + q.length; k++) hit[from[k]!] = true;
     }
   }
   const out: Segment[] = [];
   chars.forEach((ch, i) => {
     const last = out[out.length - 1];
     if (last && last.hit === hit[i]) last.text += ch;
-    else out.push({ text: ch, hit: hit[i] });
+    else out.push({ text: ch, hit: hit[i]! });
   });
   return out;
 }

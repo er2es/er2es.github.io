@@ -14,7 +14,7 @@ export function spacingAt(p: number): number {
   const clamped = Math.min(last, Math.max(0, p));
   const i = Math.min(last - 1, Math.floor(clamped));
   const f = smooth(clamped - i);
-  return SPACING[i] + (SPACING[i + 1] - SPACING[i]) * f;
+  return SPACING[i]! + (SPACING[i + 1]! - SPACING[i]!) * f;
 }
 
 /** A pointer that bends the field: a soft bump of strength `k` (0 to 1) at (`x`, `y`). */
@@ -35,10 +35,10 @@ export function fieldAt(x: number, y: number, t: number, bump?: Bump): number {
 export function contourSegments(f: ArrayLike<number>, cols: number, rows: number, cell: number, level: number, out: number[]): void {
   for (let r = 0; r < rows - 1; r++) {
     for (let c = 0; c < cols - 1; c++) {
-      const a = f[r * cols + c];
-      const b = f[r * cols + c + 1];
-      const d = f[(r + 1) * cols + c];
-      const e = f[(r + 1) * cols + c + 1];
+      const a = f[r * cols + c]!;
+      const b = f[r * cols + c + 1]!;
+      const d = f[(r + 1) * cols + c]!;
+      const e = f[(r + 1) * cols + c + 1]!;
       const idx = (a > level ? 8 : 0) | (b > level ? 4 : 0) | (e > level ? 2 : 0) | (d > level ? 1 : 0);
       if (idx === 0 || idx === 15) continue;
       const x = c * cell;

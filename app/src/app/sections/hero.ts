@@ -109,7 +109,7 @@ export class Hero {
     const destroy = inject(DestroyRef);
     afterNextRender(() => {
       if (typeof IntersectionObserver === 'undefined') return;
-      const io = new IntersectionObserver(([e]) => this.paused.set(!e.isIntersecting));
+      const io = new IntersectionObserver(([e]) => this.paused.set(!e!.isIntersecting));
       io.observe(host.nativeElement);
       destroy.onDestroy(() => io.disconnect());
       destroy.onDestroy(tilt(host.nativeElement));

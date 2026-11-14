@@ -63,7 +63,7 @@ export class Scratch {
   protected readonly state = signal<'idle' | 'scratching' | 'won'>('idle');
   /** Which prize it is; the words come from the language the page is in now, so a switch of language changes them too. */
   private readonly which = signal(0);
-  protected readonly prize = computed(() => this.x().prizes[this.which()]);
+  protected readonly prize = computed(() => this.x().prizes[this.which()]!);
   private last: number | null = null;
 
   constructor() {
@@ -230,7 +230,7 @@ export class Scratch {
       };
 
       const watch = new IntersectionObserver(([entry]) => {
-        if (!entry.isIntersecting && this.state() !== 'idle') reset();
+        if (!entry!.isIntersecting && this.state() !== 'idle') reset();
       });
       watch.observe(box);
       box.addEventListener('pointerdown', onDown);
