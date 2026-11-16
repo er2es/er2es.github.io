@@ -65,7 +65,7 @@ const ORDER = ['backend', 'frontend', 'quality', 'database', 'devops'];
     /* the row that shows the card is in front of the rows below it: under the pointer, and for a touch, where the card stays after the finger has lifted (there is no hover then) */
     .lane:hover, .lane.shows { position: relative; z-index: 6; }
     .name {
-      padding: 0.375rem 0; min-height: 44px; display: grid; align-content: center; line-height: 1.2;
+      padding: 0.375rem 0; min-height: 44px; display: grid; align-content: center; line-height: 1.2; font-weight: 600;
     }
     .name small { color: var(--fg-2); font-size: var(--t-footnote); font-weight: 500; font-variant-numeric: tabular-nums; }
 

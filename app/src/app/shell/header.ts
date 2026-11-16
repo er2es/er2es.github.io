@@ -4,7 +4,7 @@ import { LangSwitch } from '../core/lang';
 import { anchorHref, inPageClick, pagePath } from '../core/nav';
 import { squirclePath } from '../core/squircle';
 import { Theme } from '../core/theme';
-import { MONOGRAM } from './monogram';
+import { MONOGRAM, MONOGRAM_EN } from './monogram';
 import { SectionIcon } from './section-icon';
 
 @Component({
@@ -14,7 +14,7 @@ import { SectionIcon } from './section-icon';
     <div class="edge" aria-hidden="true"></div>
     <header class="bar glass">
       <a class="brand" [attr.href]="home()" (click)="top($event)">
-        <span class="avatar-slot" aria-hidden="true"><svg class="sz" [attr.viewBox]="mono.box" focusable="false"><path [attr.d]="mono.d" /></svg></span>
+        <span class="avatar-slot" aria-hidden="true"><svg class="sz" [attr.viewBox]="mono().box" focusable="false"><path [attr.d]="mono().d" /></svg></span>
         <span class="mark">{{ c().hero.name }}</span>
       </a>
       <nav class="links" [attr.aria-label]="c().ui.navLabel" [attr.data-dir]="dir()" (pointerover)="over($event)" (pointermove)="pull($event)" (pointerleave)="out()">
@@ -184,7 +184,7 @@ export class Header {
   readonly active = input<SectionId>('profile');
   readonly palette = output<void>();
 
-  protected readonly mono = MONOGRAM;
+  protected readonly mono = computed(() => (this.locale() === 'en' ? MONOGRAM_EN : MONOGRAM));
   /** The file name each section is known by (the tooltip of its menu item). */
   protected readonly files = FILES;
   /** Which way the pill is heading (it stretches towards it): towards a later section is "right". */

@@ -755,6 +755,15 @@ test.describe('content security policy', () => {
   });
 });
 
+test('the header monogram follows the order of the name: SzJ in Hungarian, JSz in English', async ({ page }) => {
+  const path = async (url: string) => { await ready(page, url); return page.locator('app-header .sz path').getAttribute('d'); };
+  const hu = await path('/hu/');
+  const en = await path('/');
+  expect(en).not.toBe(hu);
+  expect(en!.startsWith('M26.9 1.4')).toBe(true); // the J first
+  expect(hu!.startsWith('M30.9 1.4')).toBe(true); // the S first
+});
+
 test('the portrait and the name in the header lead back to the very top of the page, and the hash goes', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await ready(page, '/');
