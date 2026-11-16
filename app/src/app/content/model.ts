@@ -185,7 +185,7 @@ export interface SiteContent {
   };
   hero: { name: string; role: string; location: string; status: string; cta: string; portraitAlt: string };
   profile: { paragraphs: string[]; hobbies: { label: string; cinema: string; woods: string; dog: string; walk: string; pho: string; games: string } };
-  experience: { intro: string; arc: string };
+  experience: { arc: string };
   skills: { intro: string; groups: Record<SkillGroupId, string> };
   projects: { intro: string; open: string };
   about: {

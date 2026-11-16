@@ -183,18 +183,22 @@ describe('buddy, in a row', () => {
     expect(low(b.view())).toBeCloseTo(A.fixed, 4);
   });
 
-  it('goes back behind the tile when the pointer has been still for a while, and stays away until it comes again', () => {
+  it('sits down on the edge when the pointer has been still for a while, waits there, and gets up when it moves', () => {
     const b = standing([A, B], 60);
     const views = seen(b, TOLERANCE + 1500);
-    expect(views.some((v) => v.behind)).toBe(true);
-    expect(views[views.length - 1]!.visible).toBe(false);
-    run(b, 3000);
-    expect(b.view().visible).toBe(false); // nothing brings it back by itself
-    run(b, 1500, [1, 200]);
-    const v = b.view();
-    expect(v.visible).toBe(true);
-    expect(v.x).toBeCloseTo(200, 5);
-    expect(low(v)).toBeCloseTo(B.fixed, 4);
+    expect(views.every((v) => v.visible && !v.behind)).toBe(true);
+    const seat = views[views.length - 1]!;
+    expect(hipOf(seat).y).toBeGreaterThan(A.fixed - 2 * SCALE); // on the seat, on the edge
+    expect(hipOf(seat).y).toBeLessThan(A.fixed);
+    feet(seat).forEach((f) => expect(f.y).toBeGreaterThan(A.fixed + 4)); // the legs over the front
+    const wait = seen(b, 60000, undefined, 50);
+    expect(wait.every((v) => v.visible && !v.behind && hipOf(v).y > A.fixed - 2 * SCALE)).toBe(true); // a minute, still there
+    const swing = wait.map((v) => v.pose.ll2);
+    expect(Math.max(...swing) - Math.min(...swing)).toBeGreaterThan(10); // swinging its legs
+    const up = seen(b, 5000, [1, 200]);
+    expect(up.every((v) => v.visible && !v.behind)).toBe(true);
+    expect(up[up.length - 1]!.x).toBeCloseTo(200, -0.8);
+    expect(low(up[up.length - 1]!)).toBeCloseTo(B.fixed, 4);
   });
 
   it('jumps across to a tile beside it that is a little lower, as between the two columns of the hobbies', () => {
@@ -222,19 +226,19 @@ describe('buddy, in a row', () => {
     expect(low(views[views.length - 1]!)).toBeCloseTo(A.fixed, 4);
   });
 
-  it('goes behind its tile and comes out of the other one when that is too far or too high to jump to', () => {
+  it('gets to a tile too far or too high to jump to in sight: a long leap, the web line, a long drop', () => {
     const b = standing([A, HIGH], 60);
     const up = seen(b, 4000, [1, 60]);
-    expect(up.some((v) => v.behind)).toBe(true); // slipped behind A
-    expect(up.some((v) => Math.abs(v.pose.la1 - CLIPS.reach[0]!.pose.la1) < 0.01)).toBe(false); // without a jump
+    expect(up.every((v) => !v.behind)).toBe(true);
+    expect(up.some((v) => v.web)).toBe(true); // on the web line
     expect(low(up[up.length - 1]!)).toBeCloseTo(HIGH.fixed, 4);
     const far = standing([A, { a: 400, b: 520, fixed: 100 }], 60);
     const across = seen(far, 4000, [1, 450]);
-    expect(across.some((v) => v.behind)).toBe(true);
-    expect(across[across.length - 1]!.x).toBeCloseTo(450, 5);
+    expect(across.every((v) => !v.behind)).toBe(true);
+    expect(across[across.length - 1]!.x).toBeCloseTo(450, -0.8);
     const deep = standing([A, { a: 0, b: 120, fixed: 600 }], 60);
     const below = seen(deep, 4000, [1, 60]);
-    expect(below.some((v) => v.behind)).toBe(true);
+    expect(below.every((v) => !v.behind)).toBe(true);
     expect(low(below[below.length - 1]!)).toBeCloseTo(600, 4);
   });
 
@@ -278,25 +282,33 @@ describe('buddy, leaping along a row', () => {
     }
   });
 
-  it('leaps over two tiles about half the time, and otherwise goes round behind them; never over three', () => {
+  /** How many jumps (the feet well off the ground, not a stride) there are. */
+  const jumps = (views: View[]): number => views.filter((v, i) => i > 0 && low(v) < 100 - 20 && low(views[i - 1]!) >= 100 - 20).length;
+
+  it('leaps over two tiles about half the time, and otherwise goes in shorter jumps; over three never in one', () => {
     const spots = row(5);
     const leap = go(spots, 20, 3, 0.1);
     expect(leap.some((v) => v.behind)).toBe(false);
+    expect(jumps(leap)).toBe(1);
     expect(Math.max(...flight(leap).map((v) => 100 - low(v)))).toBeGreaterThan(25);
     expect(low(leap[leap.length - 1]!)).toBeCloseTo(100, 4);
-    const round = go(spots, 20, 3, 0.9);
-    expect(round.some((v) => v.behind)).toBe(true);
-    expect(round[round.length - 1]!.x).toBeCloseTo(spots[3]!.a + 60, 5);
+    const steps = go(spots, 20, 3, 0.9);
+    expect(steps.some((v) => v.behind)).toBe(false);
+    expect(jumps(steps)).toBeGreaterThan(1);
+    expect(steps[steps.length - 1]!.x).toBeCloseTo(spots[3]!.a + 60, -0.8);
     const far = go(spots, 20, 4, 0.1);
-    expect(far.some((v) => v.behind)).toBe(true);
+    expect(far.some((v) => v.behind)).toBe(false);
+    expect(jumps(far)).toBeGreaterThan(1);
   });
 
-  it('goes round instead when the leap would be too long, or up to a ledge it would have to grab', () => {
+  it('goes in stages when the leap would be too long, or up to a ledge it would have to grab', () => {
     const wide = row(3, (i) => ({ a: i * 400, b: i * 400 + 120 }));
-    expect(go(wide, 100, 2, 0.1).some((v) => v.behind)).toBe(true);
+    const across = go(wide, 100, 2, 0.1);
+    expect(across.some((v) => v.behind)).toBe(false);
+    expect(across[across.length - 1]!.x).toBeCloseTo(860, -0.8);
     const high = row(3, (i) => (i === 2 ? { fixed: 40 } : {}));
     const views = go(high, 100, 2, 0.1);
-    expect(views.some((v) => v.behind)).toBe(true);
+    expect(views.some((v) => v.behind)).toBe(false);
     expect(low(views[views.length - 1]!)).toBeCloseTo(40, 4);
   });
 
@@ -341,15 +353,31 @@ describe('buddy, with the pointer over the tiles', () => {
   };
   const middle = (s: Spot): number => (s.a + s.b) / 2;
 
-  it('stays out however long the pointer rests, and goes only once it has left', () => {
+  it('stands ready however long the pointer rests over the tiles, and sits down a while after it has left', () => {
+    const seated = (v: View): boolean => hipOf(v).y > A.fixed - 2 * SCALE;
     const b = over([A, B], 60);
     const still = seen(b, 10 * TOLERANCE); // not a move for a long time
-    expect(still.every((v) => v.visible && !v.behind)).toBe(true);
+    expect(still.every((v) => v.visible && !v.behind && !seated(v))).toBe(true);
     b.setInside(false);
     const gone = seen(b, TOLERANCE - 100);
-    expect(gone.every((v) => v.visible)).toBe(true); // the time starts when it leaves
-    run(b, 1500);
-    expect(b.view().visible).toBe(false);
+    expect(gone.every((v) => !seated(v))).toBe(true); // the time starts when it leaves
+    const later = seen(b, 1500);
+    expect(later.every((v) => v.visible && !v.behind)).toBe(true);
+    expect(seated(later[later.length - 1]!)).toBe(true);
+    b.setInside(true); // back: up at once, before it has even moved
+    const back = seen(b, 1200);
+    expect(seated(back[back.length - 1]!)).toBe(false);
+  });
+
+  it('gets up off its seat and goes over the cliff the pointer leaves by', () => {
+    const b = over([{ ...A, cliff: -1 }, B], 60);
+    b.setInside(false);
+    run(b, TOLERANCE + 1500); // sitting
+    expect(hipOf(b.view()).y).toBeGreaterThan(A.fixed - 2 * SCALE);
+    b.pointerOff(-1);
+    const views = seen(b, 6000);
+    expect(views.every((v) => !v.behind)).toBe(true);
+    expect(b.takeDeath()).toBe(-1);
   });
 
   it('still goes over the cliff the pointer leaves by', () => {
@@ -434,6 +462,41 @@ describe('buddy, with the pointer over the tiles', () => {
     const views = seen(b, 5000, [1, 560]);
     expect(views.some((v) => v.behind)).toBe(true);
     expect(low(views[views.length - 1]!)).toBeCloseTo(-200, 4);
+  });
+});
+
+describe('buddy, on a touch screen', () => {
+  it('comes out of a tapped tile, sits and waits, and goes to the next tile tapped, however much later', () => {
+    const b = new Buddy(() => 0.99);
+    b.setSpots([A, B]);
+    b.pointer(0, 60); // a tap: once, no moves after it
+    const first = seen(b, 2000);
+    expect(first[first.length - 1]!.visible).toBe(true);
+    const wait = seen(b, 60000, undefined, 50);
+    expect(wait.every((v) => v.visible && !v.behind)).toBe(true);
+    expect(hipOf(wait[wait.length - 1]!).y).toBeGreaterThan(A.fixed - 2 * SCALE); // sitting
+    b.pointer(1, 200); // the next tap
+    const views = seen(b, 4000);
+    expect(views.every((v) => v.visible && !v.behind)).toBe(true);
+    expect(views.some((v) => low(v) < A.fixed - 20)).toBe(true); // up, and over
+    expect(views[views.length - 1]!.x).toBeGreaterThan(B.a);
+  });
+});
+
+describe('buddy, a far tap on a touch screen', () => {
+  const ROW: Spot[] = Array.from({ length: 6 }, (_, i) => ({ a: i * 136, b: i * 136 + 120, fixed: 100 }));
+
+  it('goes all the way to a tile far away before it sits, however long the journey takes', () => {
+    const b = new Buddy(() => 0.99);
+    b.setSpots(ROW);
+    b.pointer(0, 60); // the first tap, on the first tile
+    seen(b, 2000);
+    b.pointer(5, 5 * 136 + 60); // one tap on the last tile: no moves after it
+    const views = seen(b, 30000, undefined, 50);
+    const end = views[views.length - 1]!;
+    expect(end.x).toBeGreaterThan(5 * 136); // on the last tile
+    expect(views.every((v) => v.visible && !v.behind)).toBe(true); // in sight all the way
+    expect(hipOf(end).y).toBeGreaterThan(100 - 2 * SCALE); // and sitting there
   });
 });
 
@@ -617,8 +680,8 @@ describe('buddy, at a cliff', () => {
     none.pointerOff(-1);
     run(none, 3000);
     expect(none.view().visible).toBe(false);
-    const sinking = standing([L, R], 60);
-    run(sinking, TOLERANCE + 200); // behind the tile and going
+    const sinking = standing([L, R, { a: 900, b: 1020, fixed: -300 }], 60);
+    run(sinking, 300, [2, 960]); // no way there in sight: behind the tile and going
     sinking.pointerOff(1);
     run(sinking, 3000);
     expect(sinking.takeDeath()).toBe(0);
@@ -692,8 +755,9 @@ describe('buddy, at a cliff', () => {
     expect(views[views.length - 1]!.spin).toBe(0);
     expect(jerk(views.slice(views.indexOf(webbed[0]!)))).toBeLessThan(3); // no pops; the jerk of the line going taut is the most
     expect(b.takeDeath()).toBe(0); // not a death
-    run(b, 3000);
-    expect(b.view().visible).toBe(false); // and, the pointer gone, back behind the tile in time
+    const after = seen(b, 3000);
+    expect(after.every((v) => v.visible && !v.behind)).toBe(true); // and, the pointer gone, it sits down there and waits
+    expect(hipOf(after[after.length - 1]!).y).toBeGreaterThan(L.fixed - 2 * SCALE);
     expect(b.takeDeath()).toBe(0);
   });
 
@@ -745,8 +809,13 @@ describe('buddy, continuity', () => {
     run(turn, 1200, [0, 600]);
     expect(jerk(seen(turn, 2000, [0, 100], 4))).toBeLessThan(2.5);
     const rest = standing([A, B], 60);
-    const out = seen(rest, TOLERANCE + 1500, undefined, 4); // standing, then sinking back behind the tile
-    expect(jerk(out)).toBeLessThan(2.5);
+    const out = seen(rest, TOLERANCE + 3000, undefined, 4); // standing, sitting down, sitting
+    expect(jerk([...out, ...seen(rest, 2500, [1, 200], 4)])).toBeLessThan(2.5); // and up again, and off
+    const early = standing([A, B], 60);
+    run(early, TOLERANCE + 300, undefined, 4); // half way down
+    expect(jerk(seen(early, 1500, [0, 60], 4))).toBeLessThan(2.5); // up again from there
+    const sinking = standing([A, B, { a: 900, b: 1020, fixed: -300 }], 60);
+    expect(jerk(seen(sinking, 1500, [2, 960], 4))).toBeLessThan(2.5); // behind the tile, the last resort
     const cliff = standing([{ ...A, cliff: -1 }, B], 60);
     cliff.pointerOff(-1);
     expect(jerk(seen(cliff, 1400, undefined, 4))).toBeLessThan(2.5);

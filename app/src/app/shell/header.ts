@@ -99,6 +99,7 @@ import { SectionIcon } from './section-icon';
     @supports (anchor-name: --a) {
       .links { position: relative; isolation: isolate; }
       .links a[aria-current] { anchor-name: --nav-target; background: none; }
+      .links a { transition: color var(--dur-press) var(--ease-out), scale var(--dur-press) var(--ease-out); } /* the pill is the background: the link's own must not fade out beside it */
       .links .sel {
         display: block; position: absolute; z-index: -1; position-anchor: --nav-target; pointer-events: none;
         top: anchor(top); bottom: anchor(bottom); left: anchor(left); right: anchor(right); border-radius: var(--r-ctl);

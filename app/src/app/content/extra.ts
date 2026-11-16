@@ -3,7 +3,6 @@ import type { Locale } from './model';
 /** Interface strings added with the interaction layer (kept apart from the CV copy in en.ts / hu.ts). */
 export interface ExtraText {
   /** Spoken on the button that clears the chosen skill family in the career graph. */
-  clearFilter: string;
   /** Spoken after the address on the copy button. */
   copy: string;
   /** Spoken after copying the address, and what the bubble over the button says (the short one). */
@@ -32,7 +31,6 @@ export interface ExtraText {
 
 export const EXTRA: Record<Locale, ExtraText> = {
   en: {
-    clearFilter: 'Clear the filter',
     copy: 'copy',
     copied: 'Email address copied to clipboard',
     copiedShort: 'Copied',
@@ -60,7 +58,6 @@ export const EXTRA: Record<Locale, ExtraText> = {
     less: 'Show less',
   },
   hu: {
-    clearFilter: 'Szűrő törlése',
     copy: 'másolás',
     copied: 'Az email cím a vágólapra másolva',
     copiedShort: 'Másolva',

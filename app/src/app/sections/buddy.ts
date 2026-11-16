@@ -8,7 +8,8 @@ const JOINTS: readonly (keyof Pose)[] = ['torso', 'la1', 'la2', 'ra1', 'ra2', 'l
  * The little figure on a row of tiles: it comes out from behind a tile when the mouse rests on it and moves after the
  * mouse, in the manner of Prince of Persia (core/buddy.ts is its movement, this is the drawing and the wiring). On a touch
  * screen a tap on a tile is the pointer: it comes out of that tile, the next tap sends it to another one, and with nothing
- * to follow it goes back behind a tile after a while (no cliffs there: a finger never leaves past the end of the row).
+ * to follow it sits down on the edge of its tile and waits for the next one (no cliffs there: a finger never leaves past
+ * the end of the row). Once out it stays out: with a mouse too it sits and waits when the pointer has gone or rests.
  * It is not there with reduced motion, it is hidden from assistive technology, and it never takes the pointer, so a tap
  * still does what it did. It lives inside the list of tiles, which must be a positioned stacking context with the tiles
  * above it; the web line it may shoot is drawn in an overlay of the same list.
@@ -92,6 +93,7 @@ export class BuddyFigure {
         if (on === host.classList.contains('loose')) return;
         host.classList.toggle('loose', on);
         (on ? document.body : list).appendChild(host);
+        if (!on) host.style.translate = '0 0'; // the page's coordinates of the fall mean nothing in the list: a hidden figure far outside it would still stretch the page
       };
 
       const draw = (v: View): void => {
@@ -105,7 +107,10 @@ export class BuddyFigure {
           line.setAttribute('x2', `${v.web.x}`);
           line.setAttribute('y2', `${v.web.y}`);
         }
-        if (!v.visible) return;
+        if (!v.visible) {
+          host.style.translate = '0 0'; // hidden, it stays inside the list (a hidden element outside the page would still make it scroll sideways)
+          return;
+        }
         // the feet are at (16, 37) in the drawing; loose, the position is the page's, from where the list is now
         const at = falling ? list.getBoundingClientRect() : { left: 0, top: 0 };
         host.style.translate = `${at.left + v.x - 16 * SCALE}px ${at.top + v.y - 37 * SCALE}px`;

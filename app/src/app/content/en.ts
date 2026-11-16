@@ -68,7 +68,6 @@ export const en: SiteContent = {
     hobbies: { label: 'Away from keyboard', cinema: 'Cinema', woods: 'Hiking in the woods', dog: 'Dogs', walk: 'Walks', pho: 'Pho soup', games: 'Video games' },
   },
   experience: {
-    intro: 'Employers are described by type, not by name. The full CV is available by email.',
     arc: 'Grid of years and skill families: the stronger the colour, the more skills of that family I used that year.',
   },
   skills: {
@@ -77,8 +76,8 @@ export const en: SiteContent = {
       backend: 'Back end',
       frontend: 'Front end',
       database: 'Databases',
-      devops: 'DevOps and infrastructure',
-      quality: 'Testing and QA',
+      devops: 'DevOps / Infra',
+      quality: 'Testing / QA',
       other: 'Other',
     },
   },
@@ -124,7 +123,7 @@ export const en: SiteContent = {
         'Most recently, coordinated the development and quality assurance of a multi-container web application running on Podman, and built the PostgreSQL procedures it needed.',
         'Built the platform’s support site on my own, in Symfony and Angular.',
         'Developed web applications for partner organisations, along with REST and SOAP API endpoints.',
-        'Maintained and extended the organisation’s WordPress sites and intranet, refactored legacy PHP code, and advised other development projects as a technical expert.',
+        'Developed and maintained the organisation’s WordPress sites and intranet, refactored legacy PHP code, and advised other development projects as a technical expert.',
       ],
     },
     'uni-med': {
