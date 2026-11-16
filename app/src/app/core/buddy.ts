@@ -11,8 +11,10 @@
  * A tile with one tile between it always leaps over that one, with two between now and then (otherwise it goes round
  * behind), and every jump arcs well above whatever it passes over; whether it runs up or jumps from where it stands, where
  * it takes off and how high it goes vary by chance, so that it does not look scripted.
- * It comes out from behind a tile by pulling itself up onto the ledge, and when the pointer has been still or gone for
- * a while it goes back the same way. Where the pointer leaves past the end of the tiles, at a cliff, it runs off the edge and
+ * It comes out from behind a tile by pulling itself up onto the ledge, and once out it stays out: when the pointer has
+ * gone (or, on a touch screen, no tap has come) for a while it sits down on the edge of its tile and waits, swinging its
+ * legs, until the pointer comes back; it goes behind a tile again only when there is no way at all to where the pointer
+ * is. Where the pointer leaves past the end of the tiles, at a cliff, it runs off the edge and
  * falls: the component then lays its body at the foot of the page (`takeDeath()`). Now and then it saves itself on the way
  * down: it shoots a web line at the corner it fell from, swings on it and lands back on the tile.
  *
@@ -30,7 +32,7 @@ export const SCALE = 1.25;
 /** How far, in px, the figure sinks behind a tile to be out of sight. */
 export const HIDE = 46 * SCALE;
 /** How long the pointer may be still or away before the figure leaves. */
-export const TOLERANCE = 1600;
+export const TOLERANCE = 1000;
 /** How often a fall off a cliff ends with the web line instead of out of sight. */
 export const RESCUE = 0.25;
 /** How long the pointer rests on a tile before the figure comes out. */
@@ -62,6 +64,8 @@ const LAND_HOLD = 90; // ms down in the landing crouch
 const LAND_RISE = 330; // ms to stand up out of it
 const STOP_MS = 2 * FRAME_MS; // the last step of a stop, the trailing foot brought up
 const BREATH_MS = 2600;
+const SIT_MS = 650; // sitting down on the edge, and getting up again
+const SIT_TS = [0, 0.55, 1]; // standing, down in a squat, on the seat
 const AIR_IN = 110; // ms from the take-off pose to the pose in the air
 const HANG_MS = 420; // hanging from a ledge before the pull-up
 const HANG_DAMP = 4.5; // 1/s, the sway dying out
@@ -211,6 +215,8 @@ export const CLIPS = {
   land: [F(P({ torso: 22, la1: -40, la2: -40, ra1: -55, ra2: -35 }))] as Clip,
   /** Letting go of a ledge on the way up, the hands on the knee. */
   push: [F(P({ torso: 20, la1: -15, la2: -40, ra1: -25, ra2: -40 }))] as Clip,
+  /** Sitting on the edge of a tile: the thighs along the top, the shins hanging over the front, one hand on the edge, one on a knee. */
+  sit: [F(P({ torso: 6, la1: 28, la2: -12, ra1: -20, ra2: -45, ll1: -86, ll2: 92, rl1: -80, rl2: 84 }))] as Clip,
   /** Falling into the abyss, flailing. */
   tumble: [
     F(P({ la1: 160, la2: 20, ra1: -120, ra2: -30, ll1: 30, ll2: 30, rl1: -30, rl2: 50 })),
@@ -218,6 +224,7 @@ export const CLIPS = {
   ] as Clip,
 };
 const STAND = CLIPS.stand[0]!.pose;
+const SEAT = CLIPS.sit[0]!.pose;
 
 // The pull-up from hanging to standing, relative to the hands on the ledge (units, facing right, y down): a slow heavy pull
 // to the chin, the chest over the edge with the arms pushing down, a knee on the ledge, and up on to that foot.
@@ -248,7 +255,7 @@ export interface View {
   web: { x: number; y: number; hx: number; hy: number } | null;
 }
 
-type Mode = 'hidden' | 'rise' | 'idle' | 'move' | 'stop' | 'crouch' | 'air' | 'hang' | 'pull' | 'land' | 'sink' | 'fall' | 'web' | 'climb';
+type Mode = 'hidden' | 'rise' | 'idle' | 'move' | 'stop' | 'crouch' | 'air' | 'hang' | 'pull' | 'land' | 'sink' | 'fall' | 'web' | 'climb' | 'sit' | 'stand';
 type Kind = 'level' | 'up' | 'down';
 /** A step of the run: where the stance foot came down (relative x), the hip's height then, how far back the foot pushes off,
  * the hip's height at the push, how much it dips between, and where the swinging foot was. */
@@ -318,6 +325,7 @@ export class Buddy {
   private land0 = { xf: 0, tx: 0, tv: 0, t1: 0, h0: 0, hl: 0, step: false, to: 0, ref: 0 };
   private spun = 0;
   private rolled = false;
+  private seat = { base: 0, h0: { x: 0, y: 0 }, from: STAND, p: 0 }; // where it sat down from, and how far down it is
   private inside = false; // the pointer is over the tiles
   private via = -1; // the tile it is jumping or climbing to: the pointer's, or one on the way to it
 
@@ -385,6 +393,8 @@ export class Buddy {
       case 'fall': this.whenFalling(); break;
       case 'web': this.whenWeb(dt); break;
       case 'climb': this.whenWebClimb(dt); break;
+      case 'sit': this.whenSitting(); break;
+      case 'stand': this.whenStanding(); break;
       default: this.whenClimbing(); // rise, pull, sink
     }
     if (dt > 0) this.vel = { x: ((this.hip.x - before.x) * 1000) / dt, y: ((this.hip.y - before.y) * 1000) / dt };
@@ -519,8 +529,9 @@ export class Buddy {
     const k = 0.5 - 0.5 * Math.cos((2 * Math.PI * this.t) / BREATH_MS);
     this.hip.y = this.standY(this.feet);
     this.onFeet(mix(STAND, CLIPS.stand[1]!.pose, k));
-    if (this.quiet >= TOLERANCE && this.plunge === 0) {
-      this.sink();
+    // it sits only when it has got where the pointer last was: a journey, or a run along the tile, is finished first
+    if (this.quiet >= TOLERANCE && this.plunge === 0 && this.want === this.cur && Math.abs(this.goal - this.hip.x) <= 5) {
+      this.sit();
     } else if (this.want !== this.cur) {
       this.depart();
     } else if (this.plunge !== 0) {
@@ -528,6 +539,53 @@ export class Buddy {
     } else if (Math.abs(this.goal - this.hip.x) > 5) {
       this.run();
     }
+  }
+
+  // ---- sitting
+
+  /** Nothing to follow for a while: it sits down on the edge of its tile and waits there, however long it takes. */
+  private sit(): void {
+    const base = (this.feet[0] + this.feet[1]) / 2;
+    this.seat = { base, h0: { x: this.rel(this.hip.x) - this.rel(base), y: (this.hip.y - this.gy(base)) / SCALE }, from: this.pose, p: 0 };
+    this.enter('sit');
+  }
+
+  /**
+   * `p` of the way from standing to sitting: the feet stay put as it goes down into a squat and back, then the seat
+   * comes down on the edge and the legs swing out over it; run backwards, it gets up the same way.
+   */
+  private seated(p: number): Pose {
+    const s = this.seat;
+    const h = { x: curve([s.h0.x, -1.5, -3], SIT_TS, p), y: curve([s.h0.y, -6.5, -0.8], SIT_TS, p) };
+    this.hip = { x: s.base + this.face * h.x * SCALE, y: this.gy(s.base) + h.y * SCALE };
+    const planted = { ...mix(s.from, SEAT, smooth(p)), ...legs(this.foot(0), this.foot(1)) };
+    return mix(planted, { ...planted, ll1: SEAT.ll1, ll2: SEAT.ll2, rl1: SEAT.rl1, rl2: SEAT.rl2 }, smooth((p - 0.55) / 0.45));
+  }
+
+  /** Sitting down, then sitting: breathing slowly and swinging the legs; on any sign of the pointer, up again. */
+  private whenSitting(): void {
+    const p = Math.min(1, this.t / SIT_MS);
+    this.seat.p = p;
+    const pose = this.seated(p);
+    // the idle loop on the seat, fading in once it is down
+    const w = smooth((this.t - SIT_MS) / 600);
+    const swing = (2 * Math.PI * this.t) / 1700;
+    const breath = (2 * Math.PI * this.t) / 3200;
+    this.pose = {
+      ...pose, la1: pose.la1 + 2 * w * Math.sin(breath), ra1: pose.ra1 - 2 * w * Math.sin(breath), torso: pose.torso + w * Math.sin(breath),
+      ll1: pose.ll1 + 4 * w * Math.sin(swing), ll2: pose.ll2 + 10 * w * Math.sin(swing + 0.7),
+      rl1: pose.rl1 + 4 * w * Math.sin(swing + 2.4), rl2: pose.rl2 + 10 * w * Math.sin(swing + 3.1),
+    };
+    if (this.quiet < TOLERANCE || this.plunge !== 0 || this.want !== this.cur) this.enter('stand');
+  }
+
+  /** Getting up off the edge the way it sat down, from wherever it had got to, and on as before. */
+  private whenStanding(): void {
+    const p = Math.max(0, this.seat.p - this.t / SIT_MS);
+    this.pose = mix(this.was, this.seated(p), smooth(this.t / 150));
+    if (p > 0) return;
+    this.enter('idle');
+    this.whenIdle();
   }
 
   /** Off the end of the tiles: a few steps beyond the edge. */
@@ -548,13 +606,8 @@ export class Buddy {
     // the gap to the tile beside it; over one tile always, over two now and then; never farther, and no grabbing a
     // ledge at the end of a leap
     const reach = n === 0 ? gp <= MAX_GAP : gp <= MAX_LEAP && rise <= REACH_UP && (n === 1 || (n === 2 && this.random() < LEAP));
-    if (reach && rise <= MAX_UP && rise >= -MAX_DOWN) {
-      this.jumpTo(this.want);
-    } else if (!this.inside) {
-      this.sink(); // the pointer has gone: round behind the tiles
-    } else {
-      this.journey();
-    }
+    if (reach && rise <= MAX_UP && rise >= -MAX_DOWN) this.jumpTo(this.want);
+    else this.journey();
   }
 
   /**

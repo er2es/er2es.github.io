@@ -68,7 +68,6 @@ export const hu: SiteContent = {
     hobbies: { label: 'Szabadidőben', cinema: 'Mozi', woods: 'Erdei kirándulás', dog: 'Kutyák', walk: 'Séta', pho: 'Pho leves', games: 'Videójátékok' },
   },
   experience: {
-    intro: 'A munkahelyeket név nélkül, a jellegükkel írom le. A teljes önéletrajzot emailben kérheted.',
     arc: 'Évek és szakmai területek rácsa: minél erősebb a szín, annál több technológiát és módszert használtam abban az évben.',
   },
   skills: {
@@ -77,8 +76,8 @@ export const hu: SiteContent = {
       backend: 'Backend',
       frontend: 'Frontend',
       database: 'Adatbázis',
-      devops: 'DevOps és infrastruktúra',
-      quality: 'Tesztelés és minőségbiztosítás',
+      devops: 'DevOps / Infra',
+      quality: 'Tesztelés / QA',
       other: 'Egyéb',
     },
   },
@@ -124,7 +123,7 @@ export const hu: SiteContent = {
         'Legutóbb egy Podmanre épülő, több konténeres webalkalmazáson dolgoztam: koordináltam a fejlesztését és a minőségbiztosítását, és kialakítottam a hozzá tartozó PostgreSQL-eljárásokat.',
         'A platform support oldalát egyedül építettem fel, Symfonyban és Angularban.',
         'Partnerszervezeteknek webalkalmazásokat, valamint REST és SOAP API-végpontokat készítettem.',
-        'Gondoztam és bővítettem a szervezet WordPress-oldalait és intranetét, refaktoráltam legacy PHP-kódot, és technikai szakértőként más fejlesztési projekteket is támogattam.',
+        'Fejlesztettem és karbantartottam a szervezet WordPress-oldalait és intranetét, refaktoráltam legacy PHP-kódot, és technikai szakértőként más fejlesztési projekteket is támogattam.',
       ],
     },
     'uni-med': {

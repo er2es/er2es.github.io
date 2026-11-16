@@ -106,14 +106,19 @@ html:has(app-pup .pup, dialog[open]) { overflow: hidden; }
  * focus moves (`html.tips-off`, core/tips.ts). `data-tip-pos="top"` puts it above, `data-tip-align="end"` lines it up
  * with the element's right edge (for controls at the edge of the screen).
  */
+/* the one look of a tip: the small label of data-tip and the card of the career grid (.tip-card) are made from the same declarations */
+@mixin tip-card {
+  background: var(--bg-2); color: var(--fg); border: 1px solid var(--line); border-radius: var(--r-pop); box-shadow: var(--glass-shadow);
+  font: 500 var(--t-footnote) / 1.3 var(--font); letter-spacing: 0;
+}
+.tip-card { @include tip-card; padding: 0.5rem 0.75rem; text-align: left; }
 [data-tip] { position: relative; }
 /* it does not exist until it is shown, so it can never widen the page */
 [data-tip]::after {
   --tip-x: -50%; --tip-dy: -4px;
   content: attr(data-tip); display: none; position: absolute; z-index: 40; top: calc(100% + 8px); left: 50%; translate: var(--tip-x) 0;
-  width: max-content; max-width: 14rem; padding: 0.375rem 0.625rem; border-radius: var(--r-pop); pointer-events: none; text-align: center; white-space: normal;
-  background: var(--bg-2); color: var(--fg); border: 1px solid var(--line); box-shadow: var(--glass-shadow);
-  font: 500 var(--t-footnote) / 1.3 var(--font); letter-spacing: 0;
+  width: max-content; max-width: 14rem; padding: 0.375rem 0.625rem; pointer-events: none; text-align: center; white-space: normal;
+  @include tip-card;
 }
 [data-tip][data-tip-pos='top']::after { top: auto; bottom: calc(100% + 8px); --tip-dy: 4px; }
 [data-tip][data-tip-align='end']::after { left: auto; right: 0; --tip-x: 0px; }

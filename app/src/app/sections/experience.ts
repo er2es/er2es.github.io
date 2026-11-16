@@ -6,9 +6,8 @@ import { layoutGraph } from '../graph/layout';
 import { BASE, CareerArc } from './career-arc';
 import { SkillLens } from './uses';
 
-const LAYOUT = layoutGraph(
-  FACTS.filter((f) => f.inGraph).map((f) => ({ id: f.id, main: f.main, start: f.start!, end: f.end! })),
-);
+const INPUTS = FACTS.filter((f) => f.inGraph).map((f) => ({ id: f.id, main: f.main, start: f.start!, end: f.end! }));
+const LAYOUT = layoutGraph(INPUTS);
 const ROWS = LAYOUT.rows.map((row, i) => ({
   id: row.id as ItemId,
   fact: FACT_BY_ID[row.id as ItemId],
@@ -23,7 +22,6 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
       <div class="wrap">
         <p class="eyebrow mono">{{ file }}</p>
         <h2 id="experience-h">{{ c().ui.sections.experience }}</h2>
-        <p class="intro">{{ c().experience.intro }}</p>
         <app-career-arc [c]="c()" />
         <p class="eyebrow mono roles" aria-hidden="true">roles/</p>
         <!-- eslint-disable-next-line @angular-eslint/template/interactive-supports-focus -- one delegated keydown handler for the summaries inside (roving arrow keys); the list itself is not an interactive element -->
@@ -37,7 +35,7 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
                     <line [attr.x1]="l.x" [attr.x2]="l.x" [attr.y1]="l.y1" [attr.y2]="l.y2" [style.stroke]="'var(--lane-' + l.lane + ')'" stroke-width="2" />
                   }
                   @for (cv of r.rail.curves; track $index) {
-                    <path [attr.d]="cv.d" fill="none" stroke-width="2" [style.stroke]="'var(--lane-' + cv.lane + ')'" />
+                    <path [attr.d]="cv.d" fill="none" [attr.stroke-width]="cv.dashed ? 1 : 2" [attr.stroke-dasharray]="cv.dashed ? '2 3' : null" [style.stroke]="'var(--lane-' + cv.lane + ')'" />
                   }
                   @for (d of r.rail.dots; track $index) {
                     <circle class="halo" [attr.cx]="d.x" [attr.cy]="d.y" [attr.r]="d.r" [style.fill]="'var(--lane-' + d.lane + ')'" />
@@ -92,12 +90,18 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
     }
     details[open] > summary::after { rotate: 225deg; translate: 0 4px; }
     @media (hover: hover) { summary:hover { background: var(--tint-hover); } }
+    /* the colours of a skill pill's hover, without its glint: the outline warms to the accent */
+    @media (hover: hover) { summary:hover { background: var(--tint-accent); box-shadow: inset 0 0 0 1px var(--ring-accent); } }
+    /* an open entry is a card of its own: readable on the busy backdrop, and its summary keeps the hover and lit tints inside it */
+    details[open] { margin-inline: -0.5rem; padding-bottom: 0.25rem; border-radius: var(--r-pop); background: color-mix(in srgb, var(--bg-2) 72%, transparent); box-shadow: 0 0 0 1px var(--ring); }
+    details[open] > summary { margin-inline: 0; border-radius: var(--r-pop) var(--r-pop) 0 0; } /* flush with the card's top, so its tint does not round off inside it */
+    details[open] > :not(summary) { margin-inline: 0.5rem; }
     @media (prefers-reduced-motion: reduce) { summary::after { transition: none; } }
     .role { font-weight: 700; }
     .per { color: var(--fg-2); font-size: var(--t-footnote); font-weight: 500; font-variant-numeric: tabular-nums; } /* years in the page's own font, figures of one width */
     .pts { margin: 0.25rem 0 0.75rem; display: grid; gap: 0.5rem; }
-    .pts li { padding-left: 1rem; position: relative; }
-    .pts li::before { content: ''; position: absolute; left: 0; top: 0.7em; width: 5px; height: 5px; border-radius: 50%; background: var(--fg-2); }
+    .pts { list-style: none; padding: 0; }
+    .pts { gap: 0.75rem; } /* no bullet, dash or line: the spacing alone separates the points */
     .tags { padding-bottom: 0.5rem; }
 
     /* the commit node answers its row: grows a little on hover/focus, sends one ring out when the entry opens */

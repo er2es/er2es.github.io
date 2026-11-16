@@ -1,5 +1,5 @@
 import { FACTS } from '../content/model';
-import { layoutGraph, type GraphInput } from './layout';
+import { layoutGraph, type Cell, type GraphInput } from './layout';
 
 const real: GraphInput[] = FACTS.filter((f) => f.inGraph).map((f) => ({
   id: f.id, main: f.main, start: f.start!, end: f.end!,
@@ -30,12 +30,47 @@ describe('layoutGraph', () => {
     expect(lane['health-inst']).toBe(1);
   });
 
-  it('draws a side lane through the rows it spans and forks it where the main line was when the side job began', () => {
+  it('draws a side line next to exactly the main entries it ran beside: out of the main line at the first, in again (or ending at its own node) at the last', () => {
+    const { rows } = layoutGraph(real);
+    const on = (id: string): Cell => rows.find((r) => r.id === id)!.cells[1]!;
+    // the 2018–2019 job ran beside the 2016–2020 one, directly above it: out of that node, ending at its own
+    expect(on('uni-admin')).toBe('split');
+    expect(on('welfare')).toBe('tip');
+    // the 2014–2015 job ran beside the 2012–2015 one: the same, a little lower down, on the same lane
+    expect(on('edu-authority')).toBe('split');
+    expect(on('health-inst')).toBe('tip');
+    expect(['chamber', 'uni-med', 'pricing-co', 'edu-nonprofit'].map(on)).toEqual(['none', 'none', 'none', 'none']);
+  });
+
+  it('runs a side line through its own node and the rows between, when it ran beside entries above and below it', () => {
     const { rows } = layoutGraph([item('m1', true, 2018, 2022), item('s', false, 2010, 2021), item('m2', true, 2014, 2018), item('m3', true, 2010, 2014)]);
     expect(rows.map((r) => r.id)).toEqual(['m1', 's', 'm2', 'm3']);
-    expect(rows[1]!.cells[1]).toBe('node');
-    expect(rows[2]!.cells[1]).toBe('pass'); // the lane runs on past m2
-    expect(rows[3]!.cells[1]).toBe('fork'); // and joins the main line at the last row
+    expect(rows.map((r) => r.cells[1])).toEqual(['split', 'mid', 'pass', 'fork']);
+  });
+
+  it('starts a side line at its own node and joins it to the main entry below it that it ran beside', () => {
+    const { rows } = layoutGraph([item('s', false, 2010, 2015), item('m', true, 2009, 2012)]);
+    expect(rows.map((r) => r.cells[1])).toEqual(['node', 'fork']);
+  });
+
+  it('draws a side entry that ran beside no main entry as in a git log, down to where the main line was when it began', () => {
+    const { rows } = layoutGraph([item('s', false, 2015, 2016), item('m', true, 2010, 2012)]);
+    expect(rows.map((r) => r.cells[1])).toEqual(['node', 'fork']);
+    expect(layoutGraph([item('only', false, 2010, 2012)]).rows[0]!.cells).toEqual(['pass', 'node']);
+  });
+
+  it('gives overlapping side lines lanes of their own', () => {
+    const l = layoutGraph([item('m', true, 2000, 2005), item('s', false, 2010, 2012), item('s2', false, 2008, 2011)]);
+    expect(l.rows.map((r) => r.id)).toEqual(['s', 's2', 'm']);
+    expect(l.laneCount).toBe(3);
+    expect(new Set(l.rows.flatMap((r) => r.cells.map((c, k) => (c === 'node' ? k : 0))).filter(Boolean)).size).toBe(2);
+  });
+
+  it('gives two side lines that leave the same main entry lanes of their own, in the order of their rows', () => {
+    const l = layoutGraph([item('m', true, 2000, 2020), item('s1', false, 2005, 2010), item('s2', false, 2006, 2011)]);
+    expect(l.rows.map((r) => r.id)).toEqual(['m', 's2', 's1']);
+    expect(l.rows.map((r) => r.lane)).toEqual([0, 1, 2]);
+    expect(l.rows[0]!.cells).toEqual(['node', 'split', 'split']);
   });
 
   it('draws a side lane that is used again in another colour, and a lane used for the first time in its own', () => {
@@ -54,16 +89,19 @@ describe('layoutGraph', () => {
     expect(rows).toEqual(['main', 'side']);
   });
 
-  it('never lets two side branches overlap on the same lane', () => {
-    const { rows } = layoutGraph(real);
-    for (let k = 1; k < layoutGraph(real).laneCount; k++) {
-      let open = false;
-      for (const r of rows) {
-        const c = r.cells[k];
-        if (c === 'node') { expect(open).toBe(false); open = true; }
-        if (c === 'fork') { expect(open).toBe(true); open = false; }
+  it('never lets two side lines overlap on the same lane', () => {
+    for (const input of [real, [item('m1', true, 2018, 2022), item('s', false, 2010, 2021), item('m2', true, 2014, 2018), item('m3', true, 2010, 2014)]]) {
+      const { rows, laneCount } = layoutGraph(input);
+      for (let k = 1; k < laneCount; k++) {
+        let open = false;
+        for (const r of rows) {
+          const c = r.cells[k];
+          if (c === 'split' || c === 'node') { expect(open).toBe(false); open = true; }
+          if (c === 'mid' || c === 'pass') expect(open).toBe(true);
+          if (c === 'fork' || c === 'tip') { expect(open).toBe(true); open = false; }
+        }
+        expect(open).toBe(false);
       }
-      expect(open).toBe(false);
     }
   });
 
@@ -96,3 +134,4 @@ describe('layoutGraph ordering and lanes', () => {
     expect(l.laneCount).toBe(2);
   });
 });
+

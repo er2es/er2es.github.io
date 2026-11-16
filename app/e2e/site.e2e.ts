@@ -336,8 +336,7 @@ test.describe('interaction layer', () => {
     await expect(page.locator('#skills button')).toHaveCount(0);
     await expect(page.locator('#skills li.pill').first()).toHaveText('PHP');
     await page.locator('#skills li.pill', { hasText: 'PHP' }).first().click();
-    await expect(page.locator('.row.lit, .card.lit').first()).toBeVisible(); // only the career graph's own choice (Backend) is lit
-    expect(await page.locator('#projects .card.lit').count()).toBe(0); // and never a project card
+    expect(await page.locator('.row.lit, .card.lit').count()).toBe(0); // nothing is lit, neither a role nor a project card
     expect(await page.locator('#skills li.pill[title]').count()).toBe(0); // no tooltips: a label is just a label
     const r = await new AxeBuilder({ page }).include('#skills').analyze();
     expect(r.violations).toEqual([]);
@@ -623,62 +622,53 @@ test.describe('career graph', () => {
     await ready(page, '/hu/');
     return {
       lit: page.locator('#experience .row.lit'),
-      chips: page.locator('.arc .filter'),
       lane: (name: string) => page.locator('.arc .name', { hasText: name }),
     };
   };
 
-  test('the log starts collapsed with every family chosen, the foundation in grey; chips appear once only some are chosen', async ({ page }) => {
-    const { lit, chips, lane } = await setup(page);
+  test('the log starts collapsed and nothing is lit; the family names are labels, not buttons', async ({ page }) => {
+    const { lit, lane } = await setup(page);
     await expect(page.locator('#experience details[open]')).toHaveCount(0);
-    for (const name of ['Backend', 'Adatb\u00e1zis', 'Tesztel\u00e9s', 'Frontend', 'DevOps']) await expect(lane(name)).toHaveAttribute('aria-pressed', 'true');
-    await expect(chips).toHaveCount(0); // all chosen: the names say it
-    const all = await lit.count();
-    expect(all).toBeGreaterThan(5);
-    const base = page.locator('#experience .row.base');
-    await expect(base).toHaveClass(/lit/); // the foundation is lit with the whole graph...
-    const grey = await base.locator('summary').evaluate((e) => getComputedStyle(e).backgroundColor);
-    const tint = await page.locator('#experience .row.lit:not(.base) summary').first().evaluate((e) => getComputedStyle(e).backgroundColor);
-    expect(grey).not.toBe(tint); // ...in grey, not in the accent tint of the others
-
-    await lane('Backend').click(); // one leaves: the chips appear for the four that stay
-    await expect(lane('Backend')).toHaveAttribute('aria-pressed', 'false');
-    await expect(chips).toHaveCount(4);
-    expect(await lit.count()).toBeLessThan(all);
-    await expect(base).not.toHaveClass(/lit/);
-
-    for (const name of ['Adatb\u00e1zis', 'Tesztel\u00e9s', 'DevOps']) await lane(name).click(); // only the two front-end jobs stay lit
-    await expect(chips).toHaveCount(1);
-    await expect(lit).toHaveCount(2);
-
-    await chips.first().click(); // a chip removes its family
-    await expect(chips).toHaveCount(0);
     await expect(lit).toHaveCount(0);
+    await expect(page.locator('.arc button')).toHaveCount(0);
+    await expect(lane('Backend')).toBeVisible();
   });
 
-  test('pointing at a year lights that year, and the chosen families come back afterwards', async ({ page }) => {
-    const { lit, lane } = await setup(page);
-    for (const name of ['Backend', 'Adatb\u00e1zis', 'Tesztel\u00e9s', 'DevOps']) await lane(name).click(); // only Frontend
-    await expect(lit).toHaveCount(2);
+  test('a square with nothing in it is not a place to point at: no card, no highlight', async ({ page }) => {
+    await setup(page);
+    const frontend = page.locator('.arc .lane').nth(1);
+    await frontend.scrollIntoViewIfNeeded();
+    const empty = (await frontend.locator('.cell[data-l="0"]').first().boundingBox())!;
+    await page.mouse.move(empty.x + empty.width / 2, empty.y + empty.height / 2);
+    await page.waitForTimeout(200);
+    await expect(page.locator('.arc .tip')).toHaveCount(0);
+    await expect(page.locator('.arc .head')).toHaveCount(0);
+    const lit = (await frontend.locator('.cell:not([data-l="0"])').last().boundingBox())!;
+    await page.mouse.move(lit.x + lit.width / 2, lit.y + lit.height / 2);
+    await expect(page.locator('.arc .tip')).toBeVisible(); // a square with something in it is
+    await page.mouse.move(empty.x + empty.width / 2, empty.y + empty.height / 2);
+    await expect(page.locator('.arc .tip')).toHaveCount(0); // and moving onto an empty one puts the card away
+  });
+
+  test('pointing at a year shows its card and leaves the roles log alone', async ({ page }) => {
+    const { lit } = await setup(page);
     const track = page.locator('.arc .lane').first().locator('.track');
     await track.scrollIntoViewIfNeeded();
     const box = (await track.boundingBox())!;
     await page.mouse.move(box.x + box.width * 0.5, box.y + box.height / 2);
-    await expect(page.locator('.arc .readout:not(.touch)')).toContainText('2017');
-    await expect(lit).toHaveCount(1);
+    await expect(page.locator('.arc .tip b')).toHaveText('2017'); // the card is where the year is told
+    await expect(lit).toHaveCount(0);
     await page.mouse.move(2, 2);
-    await expect(page.locator('.arc .readout:not(.touch)')).not.toContainText('2017');
-    await expect(lit).toHaveCount(2);
+    await expect(page.locator('.arc .tip')).toHaveCount(0);
   });
 
-  test('nothing in the graph moves the page or the URL: not a square, not the foundation, not a family', async ({ page }) => {
-    const { lane } = await setup(page);
+  test('nothing in the graph moves the page or the URL: not a square, not the foundation', async ({ page }) => {
+    await setup(page);
     await page.locator('.arc').scrollIntoViewIfNeeded();
     await page.waitForTimeout(300);
     const y = await page.evaluate(() => scrollY);
     await page.locator('.arc .lane').first().locator('.cell[data-l="4"]').last().click();
     await page.locator('.arc .base').first().click();
-    await lane('Frontend').click();
     await page.waitForTimeout(500);
     expect(await page.evaluate(() => scrollY)).toBe(y);
     expect(await page.evaluate(() => location.hash)).toBe('');
@@ -695,8 +685,24 @@ test.describe('career graph', () => {
       const y = await page.evaluate(() => scrollY);
       const box = (await page.locator('.arc .lane').first().locator('.cell[data-l="4"]').last().boundingBox())!;
       await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
-      await expect(page.locator('.arc .readout:not(.touch)')).toContainText('2026');
+      await expect(page.locator('.arc .tip b')).toHaveText('2026'); // the card above the row: the one place the year is told
       expect(await page.evaluate(() => scrollY)).toBe(y);
+    });
+
+    test('touching the same year again puts it away, and so does a touch elsewhere', async ({ page }) => {
+      await setup(page, 390);
+      await page.locator('.arc').scrollIntoViewIfNeeded();
+      await page.waitForTimeout(300);
+      const box = (await page.locator('.arc .lane').first().locator('.cell[data-l="4"]').last().boundingBox())!;
+      const at = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+      await page.touchscreen.tap(at.x, at.y);
+      await expect(page.locator('.arc .tip')).toBeVisible();
+      await page.touchscreen.tap(at.x, at.y); // on itself
+      await expect(page.locator('.arc .tip')).toHaveCount(0);
+      await page.touchscreen.tap(at.x, at.y);
+      await expect(page.locator('.arc .tip')).toBeVisible();
+      await page.touchscreen.tap(8, 8); // elsewhere
+      await expect(page.locator('.arc .tip')).toHaveCount(0);
     });
   });
 });
@@ -891,15 +897,12 @@ test.describe('HIG and motion polish', () => {
   test('phone: the targets are at least 44 px high', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 800 });
     await ready(page, '/hu/');
-    await page.locator('.arc .name').first().click(); // one family off: the chips show
     const tall = (sel: string) => page.locator(sel).evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().height)));
     for (const h of await tall('.arc .name')) expect(h).toBeGreaterThanOrEqual(44);
     const target = await page.locator('#projects .more').first().evaluate((e) => { const r = e.getBoundingClientRect(); const b = getComputedStyle(e, '::before'); return Math.min(r.height - parseFloat(b.top) * 2, r.width - parseFloat(b.left) * 2); }); // a small button with a 44 px target
     expect(target).toBeGreaterThanOrEqual(44);
     for (const h of await tall('footer a')) expect(h).toBeGreaterThanOrEqual(44);
     expect((await tall('app-header .brand'))[0]).toBeGreaterThanOrEqual(44);
-    const chip = await page.locator('.arc .filter').first().evaluate((e) => { const r = e.getBoundingClientRect(); const b = getComputedStyle(e, '::before'); return r.height + parseFloat(b.top) * -2; });
-    expect(chip).toBeGreaterThanOrEqual(44);
   });
 
   test.describe('on a touch screen', () => {

@@ -16,7 +16,7 @@ import { BuddyFigure } from './buddy';
     <ul #row class="afk" [attr.aria-label]="c().profile.hobbies.label" (pointerdown)="reveal($event)">
       <svg class="trail row" viewBox="0 0 600 121.5" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M37.5 37.5 C90 37.5 90 67.5 142.5 67.5 S195 45 247.5 45 S300 75 352.5 75 S405 41.25 457.5 41.25 S510 63.75 562.5 63.75" vector-effect="non-scaling-stroke" /></svg>
       <svg class="trail wide" viewBox="0 0 256 416" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M60 60 C128 60 128 84 196 84 C196 140 60 140 60 196 C128 196 128 220 196 220 C196 276 60 276 60 332 C128 332 128 356 196 356" vector-effect="non-scaling-stroke" /></svg>
-      <li data-tip-pos="bottom" tabindex="0" class="tile cinema" [attr.data-tip]="c().profile.hobbies.cinema">
+      <li data-tip-pos="bottom" data-tip-align="start" tabindex="0" class="tile cinema" [attr.data-tip]="c().profile.hobbies.cinema">
         <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
           <rect x="7" y="20" width="34" height="21" rx="3" />
           <path d="M20 26.5l9 5-9 5z" />
@@ -59,7 +59,7 @@ import { BuddyFigure } from './buddy';
         </svg>
         <span class="sr-only">{{ c().profile.hobbies.pho }}</span>
       </li>
-      <li data-tip-pos="bottom" tabindex="0" class="tile games" [attr.data-tip]="c().profile.hobbies.games">
+      <li data-tip-pos="bottom" data-tip-align="end" tabindex="0" class="tile games" [attr.data-tip]="c().profile.hobbies.games">
         <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
           <g class="pad">
             <path d="M13 15h22c5.5 0 8.5 4.2 9.6 10.5l1.8 10.2c.6 3.6-1.4 6.3-4.4 6.3-2.3 0-3.9-1.3-5.5-3.8L33 34H15l-2.1 3.2c-1.6 2.5-3.2 3.8-5.5 3.8-3 0-5-2.7-4.4-6.3l1.8-10.2C4.5 19.2 7.5 15 13 15z" />
@@ -69,7 +69,7 @@ import { BuddyFigure } from './buddy';
         </svg>
         <span class="sr-only">{{ c().profile.hobbies.games }}</span>
       </li>
-      @defer (on hover(row)) { <app-buddy aria-hidden="true" /> }
+      @defer (on viewport(row); prefetch on idle) { <app-buddy aria-hidden="true" /> }
     </ul>
   `,
   styles: [`
@@ -98,8 +98,9 @@ import { BuddyFigure } from './buddy';
     .tile:nth-of-type(5) { rotate: -4deg; margin-top: 5%; }
     .tile:nth-of-type(6) { rotate: 3deg; margin-top: 35%; }
     /* straight while the pointer is on it, or while its name is shown: these come after the tilts, which are as specific */
-    @media (hover: hover) { .tile:hover { rotate: 0deg; } }
-    .tile:focus-visible, .tile.tip-open { rotate: 0deg; }
+    @media (hover: hover) { .tile:hover { rotate: 0deg; z-index: 3; } }
+    /* the tile whose name is shown is in front of the others: its label is part of its own layer, which a later tile would otherwise paint over */
+    .tile:focus-visible, .tile.tip-open { rotate: 0deg; z-index: 3; }
 
     /* each icon has one motion of its own, only while the tile is hovered */
     .clap { transform-origin: 8px 18px; transform: rotate(-17deg); transition: transform var(--dur-press) ease-in; }

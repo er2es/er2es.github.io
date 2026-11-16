@@ -47,3 +47,33 @@ describe('railGeometry side lanes', () => {
     expect(r.dots.some((d) => d.lane === 1)).toBe(true);
   });
 });
+
+describe('railGeometry lines that run beside main entries', () => {
+  const row = (cells: GraphRow['cells']): GraphRow => ({ id: 'x', lane: 1, cells, hues: cells.map((_, k) => k) });
+
+  it('leaves the main line at its node: a curve out to the side lane, and the line on from there', () => {
+    const r = railGeometry(row(['node', 'split']), 2, false, false);
+    expect(r.curves).toHaveLength(1);
+    expect(r.curves[0]!.d.startsWith(`M${LANE_W / 2},${NODE_Y} `)).toBe(true);
+    expect(r.lines.find((l) => l.lane === 1)!.y1).toBeGreaterThan(NODE_Y);
+    expect(r.lines.find((l) => l.lane === 1)!.y2).toBe('100%');
+    expect(r.dots.map((d) => d.lane)).toEqual([0]); // the node is the main one's
+  });
+
+  it('ends a line at the side node when it came from above', () => {
+    const r = railGeometry(row(['pass', 'tip']), 2, false, false);
+    expect(r.lines.find((l) => l.lane === 1)).toEqual({ x: LANE_W * 1.5, y1: 0, y2: NODE_Y, lane: 1 });
+    expect(r.dots.find((d) => d.lane === 1)?.y).toBe(NODE_Y);
+    // and a thin dashed curve from the node back into the main line, only for a part-time entry
+    expect(r.curves).toHaveLength(1);
+    expect(r.curves[0]!.dashed).toBe(true);
+    expect(r.curves[0]!.d.startsWith(`M${LANE_W * 1.5},${NODE_Y} `)).toBe(true);
+    expect(railGeometry(row(['pass', 'mid']), 2, false, false).curves).toEqual([]);
+  });
+
+  it('runs a line through the side node when it ran beside entries above and below', () => {
+    const r = railGeometry(row(['pass', 'mid']), 2, false, false);
+    expect(r.lines.find((l) => l.lane === 1)).toEqual({ x: LANE_W * 1.5, y1: 0, y2: '100%', lane: 1 });
+    expect(r.dots.find((d) => d.lane === 1)?.r).toBe(5);
+  });
+});

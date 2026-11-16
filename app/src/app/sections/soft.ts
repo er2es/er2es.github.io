@@ -11,7 +11,7 @@ import { BuddyFigure } from './buddy';
     <!-- the tiles are focusable only to show their name: keyboard parity with the hover tooltip -->
     <ul #row class="soft" [attr.aria-label]="c().about.soft.label" (pointerdown)="reveal($event)">
       <svg class="trail" viewBox="0 0 600 121.5" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M37.5 37.5 C90 37.5 90 67.5 142.5 67.5 S195 45 247.5 45 S300 75 352.5 75 S405 41.25 457.5 41.25 S510 63.75 562.5 63.75" vector-effect="non-scaling-stroke" /></svg>
-      <li data-tip-pos="bottom" tabindex="0" class="tile team" [attr.data-tip]="c().about.soft.team">
+      <li data-tip-pos="bottom" data-tip-align="start" tabindex="0" class="tile team" [attr.data-tip]="c().about.soft.team">
         <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><g class="p-c"><circle cx="24" cy="15" r="5" /><path d="M14 40v-4a10 10 0 0 1 20 0v4" /></g><g class="p-l"><circle cx="8.5" cy="21" r="3.6" /><path d="M3 38v-3a6 6 0 0 1 7.5-5.8" /></g><g class="p-r"><circle cx="39.5" cy="21" r="3.6" /><path d="M45 38v-3a6 6 0 0 0-7.5-5.8" /></g></svg>
         <span class="sr-only">{{ c().about.soft.team }}</span>
       </li>
@@ -31,11 +31,11 @@ import { BuddyFigure } from './buddy';
         <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><g class="bulb"><path d="M18 33v-3c-4-2.5-7-6-7-11a13 13 0 0 1 26 0c0 5-3 8.5-7 11v3z" /><path d="M19 39h10M21 44h6" /></g><g class="rays"><path d="M5 16H2M43 16h3M9 5L7 3M39 5l2-2M24 1V-2" /></g></svg>
         <span class="sr-only">{{ c().about.soft.solve }}</span>
       </li>
-      <li data-tip-pos="bottom" tabindex="0" class="tile learn" [attr.data-tip]="c().about.soft.learn">
+      <li data-tip-pos="bottom" data-tip-align="end" tabindex="0" class="tile learn" [attr.data-tip]="c().about.soft.learn">
         <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M24 13c-4-3-10-4.500-18-4.500V37c8 0 14 1.500 18 4.500z" /><path d="M24 13v28.500" /><g class="page"><path d="M24 13c4-3 10-4.500 18-4.500V37c-8 0-14 1.500-18 4.500z" /><path d="M29 19.500c3-1.500 6-2 8-2M29 26c3-1.500 6-2 8-2" /></g><path d="M11 19.500c3 0 6 .5 8 2M11 26c3 0 6 .5 8 2" /></svg>
         <span class="sr-only">{{ c().about.soft.learn }}</span>
       </li>
-      @defer (on hover(row)) { <app-buddy aria-hidden="true" /> }
+      @defer (on viewport(row); prefetch on idle) { <app-buddy aria-hidden="true" /> }
     </ul>
   `,
   styles: [`
@@ -63,8 +63,9 @@ import { BuddyFigure } from './buddy';
     .tile:nth-of-type(5) { rotate: -4deg; margin-top: 5%; }
     .tile:nth-of-type(6) { rotate: 3deg; margin-top: 35%; }
     /* straight while the pointer is on it, or while its name is shown: these come after the tilts, which are as specific */
-    @media (hover: hover) { .tile:hover { rotate: 0deg; } }
-    .tile:focus-visible, .tile.tip-open { rotate: 0deg; }
+    @media (hover: hover) { .tile:hover { rotate: 0deg; z-index: 3; } }
+    /* the tile whose name is shown is in front of the others: its label is part of its own layer, which a later tile would otherwise paint over */
+    .tile:focus-visible, .tile.tip-open { rotate: 0deg; z-index: 3; }
     @media (max-width: 480px) { .tile { border-radius: var(--r-ctl); } }
 
     /* each icon has one small motion of its own, only while the tile is hovered */
