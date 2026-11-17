@@ -201,6 +201,58 @@ describe('buddy, in a row', () => {
     expect(low(up[up.length - 1]!)).toBeCloseTo(B.fixed, 4);
   });
 
+  it('can start out already sitting on the end of a tile, with nothing to follow, and gets up and goes when the pointer comes', () => {
+    const b = new Buddy(() => 0.99);
+    b.setSpots([A, B]);
+    b.sitAt(1, B.b);
+    const views = seen(b, 5000, undefined, 50);
+    expect(views.every((v) => v.visible && !v.behind)).toBe(true);
+    const seat = views[views.length - 1]!;
+    expect(hipOf(seat).y).toBeGreaterThan(B.fixed - 2 * SCALE); // sitting on the tile
+    expect(hipOf(seat).y).toBeLessThan(B.fixed);
+    expect(seat.x).toBeLessThanOrEqual(B.b); // within its tile
+    const up = seen(b, 5000, [0, 60]);
+    expect(up[up.length - 1]!.x).toBeCloseTo(60, -0.8); // gone to the pointer, on the other tile
+  });
+
+  it('is on its seat from the very first frame, facing the outside, with no sitting down and no jolt', () => {
+    const b = new Buddy(() => 0.99);
+    b.setSpots([A, B]);
+    b.sitAt(1, B.b);
+    const views = seen(b, 3000, undefined, 16);
+    const first = views[0]!;
+    const last = views[views.length - 1]!;
+    expect(first.facing).toBe(1);
+    expect(Math.abs(hipOf(first).y - hipOf(last).y)).toBeLessThan(1.5); // already seated, nothing to sit down
+    expect(jerk(views)).toBeLessThan(3);
+  });
+
+  it('gets up from the seat as soon as the pointer is over the tiles, and a pointer that leaves past the end sends it off the cliff', () => {
+    const b = new Buddy(() => 0.99);
+    b.setSpots([{ ...A, cliff: -1 }, { ...B, cliff: 1 }]);
+    b.sitAt(1, B.b);
+    run(b, 1000);
+    b.setInside(true);
+    run(b, 700);
+    expect(hipOf(b.view()).y).toBeLessThan(B.fixed - 2 * SCALE * 3); // up on its feet
+    b.setInside(false); // the pointer leaves, past the right end
+    b.pointerOff(1);
+    run(b, 6000);
+    expect(b.takeDeath()).toBe(1);
+  });
+
+  it('starts from a clean slate even where it was in the middle of something', () => {
+    const b = new Buddy(() => 0);
+    b.setSpots([{ ...A, cliff: -1 }, { ...B, cliff: 1 }]);
+    run(b, 1500, [0, 60]);
+    b.pointerOff(-1); // running for the cliff
+    run(b, 300);
+    b.sitAt(0, 60);
+    const v = seen(b, 200, undefined, 16);
+    expect(v.every((x) => x.visible && !x.behind && x.spin === 0 && x.web === null)).toBe(true);
+    expect(b.takeDeath()).toBe(0);
+  });
+
   it('jumps across to a tile beside it that is a little lower, as between the two columns of the hobbies', () => {
     const b = standing([A, D], 100);
     const views = seen(b, 4000, [1, 200]);

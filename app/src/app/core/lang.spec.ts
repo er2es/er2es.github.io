@@ -17,6 +17,7 @@ describe('LangSwitch', () => {
     return TestBed.inject(LangSwitch);
   };
   afterEach(() => {
+    document.documentElement.classList.remove('swap');
     delete (document as unknown as Record<string, unknown>)['startViewTransition'];
     history.replaceState(null, '', '/');
   });
@@ -39,16 +40,22 @@ describe('LangSwitch', () => {
     expect(lang.current()).toBe('en');
   });
 
-  it('switches inside a view transition where the browser has one', () => {
+  it('marks the page as swapping for a moment after the switch (no cross-fade of the browser before it), and takes the mark off again', () => {
     const lang = setup();
-    let started = 0;
-    (document as unknown as Record<string, unknown>)['startViewTransition'] = (cb: () => void) => {
-      started++;
-      cb();
-    };
+    const root = document.documentElement;
+    let transitions = 0;
+    (document as unknown as Record<string, unknown>)['startViewTransition'] = () => transitions++;
+    vi.useFakeTimers();
     lang.go('hu');
-    expect(started).toBe(1);
-    expect(lang.current()).toBe('hu');
+    expect(transitions).toBe(0); // the browser's own transition is not used
+    expect(root.classList.contains('swap')).toBe(true);
+    vi.advanceTimersByTime(500);
+    lang.go('en'); // another switch meanwhile starts the time again
+    vi.advanceTimersByTime(500);
+    expect(root.classList.contains('swap')).toBe(true);
+    vi.advanceTimersByTime(400);
+    expect(root.classList.contains('swap')).toBe(false);
+    vi.useRealTimers();
   });
 
   it('follows back and forward, and ignores a popstate that stays on the same language', () => {

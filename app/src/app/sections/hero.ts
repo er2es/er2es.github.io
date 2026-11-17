@@ -97,6 +97,9 @@ import { Social } from './social';
       }
       .portrait.tracking::after { opacity: 1; }
     }
+    /* the photo has flown up to the header: nothing is left here to catch the light or the pointer */
+    .portrait.docked { pointer-events: none; }
+    .portrait.docked::after { display: none; }
   `],
 })
 export class Hero {

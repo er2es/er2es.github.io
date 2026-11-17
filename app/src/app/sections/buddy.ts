@@ -108,40 +108,59 @@ export class BuddyFigure {
           line.setAttribute('y2', `${v.web.y}`);
         }
         if (!v.visible) {
+          host.style.clipPath = '';
           host.style.translate = '0 0'; // hidden, it stays inside the list (a hidden element outside the page would still make it scroll sideways)
           return;
         }
         // the feet are at (16, 37) in the drawing; loose, the position is the page's, from where the list is now
         const at = falling ? list.getBoundingClientRect() : { left: 0, top: 0 };
         host.style.translate = `${at.left + v.x - 16 * SCALE}px ${at.top + v.y - 37 * SCALE}px`;
+        // a small tile is shorter than the figure: while it is behind its tile, whatever hangs lower than the tile's bottom is cut off
+        // (on a phone the legs showed under the tile); in front of the tile it is whole. The tile is the one it is behind: the lowest
+        // one, over its own width, whose top is above the feet (in a stack of rows too), at the height and the tilt it has now.
+        let which = -1;
+        if (v.behind && !falling) rects.forEach((q, i) => { if (v.x >= q.left && v.x <= q.right && v.y > q.top + 1 && (which < 0 || q.top > rects[which]!.top)) which = i; });
+        const t = rects[which];
+        const s = spots[which];
+        const over = t && s ? v.y - 37 * SCALE + 50 - (t.bottom + (s.lift ?? 0) + (s.tilt ?? 0) * (v.x - (t.left + t.right) / 2)) : 0;
+        host.style.clipPath = over > 0 ? `inset(0 0 ${over}px 0)` : '';
         host.classList.toggle('behind', v.behind);
         svg.style.transform = v.facing < 0 ? 'scaleX(-1)' : '';
         host.style.rotate = v.spin ? `${v.spin}deg` : '';
         for (const [n, g] of joints) g.style.rotate = `${v.pose[n]}deg`;
       };
 
-      let raf = 0;
-      let last = 0;
-      let lastMove = 0;
-      const loop = (now: number): void => {
-        const dt = Math.min(100, now - last);
-        last = now;
-        buddy.tick(dt);
-        // a tile that is tilted, or lifted by the pointer, is stood on as it is
+      /** A tile that is tilted, or lifted by the pointer, is stood on as it is. */
+      const readTiles = (): void => {
         spots.forEach((s, i) => {
           const cs = getComputedStyle(tiles[i]!);
           s.tilt = cs.rotate === 'none' ? 0 : Math.tan((parseFloat(cs.rotate) * Math.PI) / 180);
           s.lift = cs.translate === 'none' ? 0 : parseFloat(cs.translate.split(' ')[1] ?? '0');
         });
+      };
+
+      let raf = 0;
+      let last = 0;
+      let lastMove = 0;
+      let onScreen = true; // the row is in view (the loop rests while it is not, unless the figure is on the move over the page)
+      const loop = (now: number): void => {
+        const dt = Math.min(100, now - last);
+        last = now;
+        readTiles(); // before the step, so that the very first one already stands on the tile as it is
+        buddy.tick(dt);
         const fell = buddy.takeDeath();
         if (fell) graveyard.add(fell);
         const v = buddy.view();
         draw(v);
-        raf = !v.visible && now - lastMove > 3000 ? 0 : requestAnimationFrame(loop);
+        const adrift = v.visible && (v.spin !== 0 || v.web !== null);
+        raf = (!v.visible && now - lastMove > 3000) || (!onScreen && !adrift) ? 0 : requestAnimationFrame(loop);
       };
 
+      let engaged = false; // the visitor has moved the pointer over the tiles or tapped one: the figure is theirs now
+      let enteredAt = 0;
       const onMove = (e: PointerEvent): void => {
         if (e.pointerType !== 'mouse') return;
+        engaged = true;
         if (!spots.length) measure(); // the pointer was already over the tiles when the page came up
         const r = list.getBoundingClientRect();
         const x = e.clientX - r.left;
@@ -174,12 +193,14 @@ export class BuddyFigure {
         const tile = (e.target as Element | null)?.closest('.tile');
         const i = tiles.findIndex((t) => t === tile);
         if (moved > 10 || i < 0) return; // a scroll, or not on a tile
+        engaged = true;
         buddy.pointer(i, e.clientX - list.getBoundingClientRect().left);
         wake();
       };
       const onEnter = (e: PointerEvent): void => {
         if (e.pointerType !== 'mouse') return;
         measure();
+        enteredAt = performance.now();
         buddy.setInside(true); // while the mouse is over the tiles the figure stays out, however still it rests
       };
       /** The pointer left: past an end (or, from a stack, below it) is a cliff; any other way is just leaving. */
@@ -191,6 +212,8 @@ export class BuddyFigure {
         const y = e.clientY - r.top;
         const side = x < 0 ? -1 : x > r.width ? 1 : stacked && y > r.height ? (x < r.width / 2 ? -1 : 1) : 0;
         if (side === 0) return;
+        // a pointer that only swept across the row (it was in for less than 600 ms) is no reason for the figure to run off the edge
+        if (performance.now() - enteredAt < 600) return;
         buddy.pointerOff(side);
         wake();
       };
@@ -199,7 +222,32 @@ export class BuddyFigure {
       list.addEventListener('pointerleave', onLeave);
       list.addEventListener('pointerdown', onDown, { passive: true });
       list.addEventListener('pointerup', onUp, { passive: true });
+      // it is there from the start: sitting on the end of the row, legs over the edge, waiting for the pointer or a tap
+      const seat = (): void => {
+        if (!rects.length) return;
+        buddy.sitAt(rects.length - 1, rects[rects.length - 1]!.right);
+        readTiles();
+        wake();
+      };
+      measure();
+      readTiles();
+      seat();
+      // the tiles change size or place (a phone turned, a window resized): measure again, and a figure nobody has played with yet sits down on the new end of the row
+      const resized = new ResizeObserver(() => {
+        measure();
+        readTiles();
+        if (!engaged) seat();
+      });
+      resized.observe(list);
+      // off screen the loop rests; it picks up where it was when the row comes back into view
+      const seen = new IntersectionObserver((entries) => {
+        onScreen = entries[entries.length - 1]!.isIntersecting;
+        if (onScreen) wake();
+      });
+      seen.observe(list);
       destroy.onDestroy(() => {
+        resized.disconnect();
+        seen.disconnect();
         list.removeEventListener('pointerenter', onEnter);
         list.removeEventListener('pointermove', onMove);
         list.removeEventListener('pointerleave', onLeave);
