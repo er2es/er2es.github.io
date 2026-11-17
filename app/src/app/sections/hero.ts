@@ -58,6 +58,8 @@ import { Social } from './social';
     .portrait { touch-action: pan-y; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; transition: scale var(--dur-press) var(--ease-out); }
     .portrait.armed { scale: 0.97; } /* a finger has held still on the photo: it is ready to be scratched */ /* an easter egg scratches off the photo (egg/scratch.ts): sideways strokes on a touch screen, and no text selection */
     .portrait.docked img, .portrait.scratching img { visibility: hidden; }
+    /* while the page is scrolled the photo drains from the top, as the header's avatar fills (--p, 0 to 1, from shell/avatar-dock.ts) */
+    .portrait img { clip-path: inset(calc(var(--p, 0) * 100%) 0 0 0 round var(--radius)); }
     /* a coin for a cursor, over the photo: a hint that there is something to scratch (a pointer you hover with, not on a touch screen) */
     @media (hover: hover) and (pointer: fine) { .portrait:not(.docked) { cursor: url('/img/coin.svg') 11 11, crosshair; } }
     .portrait img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; border-radius: inherit; }

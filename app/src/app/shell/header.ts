@@ -13,7 +13,7 @@ import { MONOGRAM, MONOGRAM_EN } from './monogram';import { SectionIcon } from '
     <div class="edge" aria-hidden="true"></div>
     <header class="bar glass">
       <a class="brand" [attr.href]="home()" (click)="top($event)">
-        <span class="avatar-slot" aria-hidden="true"><svg class="sz" [attr.viewBox]="mono().box" focusable="false"><path [attr.d]="mono().d" /></svg></span>
+        <span class="avatar-slot" aria-hidden="true"><svg class="sz" [attr.viewBox]="mono().box" focusable="false"><path [attr.d]="mono().d" /></svg><img class="fill" alt="" decoding="async"></span>
         <span class="mark">{{ c().hero.name }}</span>
       </a>
       <nav class="links" [attr.aria-label]="c().ui.navLabel" [attr.data-dir]="dir()" (pointerover)="over($event)" (pointermove)="pull($event)" (pointerleave)="out()">
@@ -67,12 +67,14 @@ import { MONOGRAM, MONOGRAM_EN } from './monogram';import { SectionIcon } from '
       display: flex; align-items: center; gap: 0.75rem; border-radius: var(--radius);
     }
     /* where the portrait lands (app-avatar-dock flies a copy of it here while the hero scrolls away) */
-    .avatar-slot { flex: none; display: grid; place-items: center; overflow: hidden; width: 36px; height: 36px; border-radius: var(--r-pop); background: var(--tint-current); transition: background-color var(--dur-short) var(--ease-out); }
+    .avatar-slot { position: relative; flex: none; display: grid; place-items: center; overflow: hidden; width: 36px; height: 36px; border-radius: var(--r-pop); background: var(--tint-current); transition: background-color var(--dur-short) var(--ease-out); }
     /* the monogram holds the place until the portrait arrives, and is pushed out upwards by it (and drops back in when the portrait leaves) */
     .sz { width: 24px; height: auto; fill: var(--fg); transition: translate var(--dur-med) var(--ease-spring), scale var(--dur-med) var(--ease-spring), opacity var(--dur-short) var(--ease-out); }
     @media (hover: hover) { .brand:hover .avatar-slot:not(.filled) { background: var(--tint-press); } }
     @media (hover: hover) and (prefers-reduced-motion: no-preference) { .brand:hover .avatar-slot:not(.filled) .sz { scale: 1.08; } }
     .avatar-slot.filled { background: transparent; }
+    /* the photo fills the slot from the bottom as the hero portrait drains (--p, 0 to 1, set while scrolling by avatar-dock.ts) */
+    .fill { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: inherit; clip-path: inset(calc((1 - var(--p, 0)) * 100%) 0 0 0); pointer-events: none; }
     .avatar-slot.filled .sz { translate: 0 -140%; scale: 0.6; opacity: 0; }
     /* scroll edge: text passing above the floating bar softens into the page instead of showing sharp */
     .edge {
@@ -165,17 +167,19 @@ import { MONOGRAM, MONOGRAM_EN } from './monogram';import { SectionIcon } from '
     .chip.icon { width: 44px; padding: 0; justify-content: center; }
     @media (min-width: 900px) { .links { display: flex; } .ctl { margin-left: 0; } }
 
-    /* large title -> inline title: the wordmark appears once the hero heading has scrolled away */
-    @media (prefers-reduced-motion: no-preference) {
-      @supports (animation-timeline: scroll()) {
-        .mark { animation: dock linear both; animation-timeline: scroll(root); animation-range: 170px 340px; }
-      }
+    /* large title -> inline title: the name is built beside the avatar as it fills, from the first bit of scrolling to the last: a soft
+       edge runs through the letters from left to right, with the same --p (0 to 1) as the fill and the draining hero portrait (set on
+       .brand by avatar-dock.ts; with none set the name is not there) */
+    .mark {
+      --edge: calc(var(--p, 0) * 140%);
+      -webkit-mask-image: linear-gradient(90deg, #000 calc(var(--edge) - 40%), transparent var(--edge));
+      mask-image: linear-gradient(90deg, #000 calc(var(--edge) - 40%), transparent var(--edge));
+      translate: calc((1 - var(--p, 0)) * -8px) 0;
     }
     /* reading progress: a line that starts at the bottom-left corner and runs once around the bar as the page scrolls
        (the offset is eased in script, so a fast flick still draws it smoothly); it blooms softly as the ring closes */
     .read { position: absolute; inset: -1px; width: calc(100% + 2px); height: calc(100% + 2px); overflow: visible; pointer-events: none; }
     .read path { fill: none; stroke: var(--accent); stroke-width: 2; stroke-dasharray: 1 2; stroke-dashoffset: 1; }
-    @keyframes dock { from { opacity: 0; translate: 0 6px; } to { opacity: 1; translate: 0 0; } }
   `],
 })
 export class Header {

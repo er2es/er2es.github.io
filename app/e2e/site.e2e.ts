@@ -583,36 +583,54 @@ test.describe('bottom tab bar on phones', () => {
   });
 });
 
-test.describe('the portrait flies into the header', () => {
-  test('a copy of the portrait is in the header slot once the hero has scrolled away, and the hero one steps aside', async ({ page }) => {
+test.describe('the portrait hands over to the header', () => {
+  const progress = (page: Page) => page.evaluate(() => [document.querySelector<HTMLElement>('.portrait')!.style.getPropertyValue('--p'), document.querySelector<HTMLElement>('app-header .brand')!.style.getPropertyValue('--p')].map(Number));
+
+  test('the hero portrait drains as the header avatar fills, both by the same scroll position, and it all runs backwards', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await ready(page, '/');
-    const ghost = page.locator('app-avatar-dock .ghost');
-    await expect(ghost).not.toHaveClass(/on/);
-    await page.evaluate(() => window.scrollTo({ top: 600, behavior: 'instant' }));
-    await expect(ghost).toHaveClass(/on/);
-    await expect(page.locator('.portrait')).toHaveClass(/docked/);
-    const [g, slot] = await page.evaluate(() => {
-      const r = (el: Element | null) => { const b = el!.getBoundingClientRect(); return [Math.round(b.x), Math.round(b.y), Math.round(b.width)]; };
-      return [r(document.querySelector('app-avatar-dock .ghost')), r(document.querySelector('.avatar-slot'))];
-    });
-    expect(Math.abs(g[0] - slot[0])).toBeLessThanOrEqual(2);
-    expect(Math.abs(g[1] - slot[1])).toBeLessThanOrEqual(2);
-    expect(Math.abs(g[2] - slot[2])).toBeLessThanOrEqual(2);
-    await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
-    await expect(ghost).not.toHaveClass(/on/);
+    await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; });
+    expect(await progress(page)).toEqual([0, 0]);
+    await page.evaluate(() => window.scrollTo(0, 200));
+    await expect.poll(async () => (await progress(page))[0]).toBeGreaterThan(0.05);
+    const [hero, slot] = await progress(page);
+    expect(hero).toBeLessThan(0.95);
+    expect(slot).toBe(hero); // one number for both
+    await expect(page.locator('.portrait')).not.toHaveClass(/docked/); // still something left to drain
+    const filling = await page.locator('.avatar-slot .fill').evaluate((e) => getComputedStyle(e).clipPath);
+    expect(filling).toContain('inset(');
+    await page.evaluate(() => window.scrollTo(0, 700));
+    await expect(page.locator('.portrait')).toHaveClass(/docked/); // spent
+    expect(await progress(page)).toEqual([1, 1]);
+    await expect(page.locator('.avatar-slot')).toHaveClass(/filled/);
+    // the name is built with it: a soft edge that has run through all of it by now, and that is at the start at the top
+    expect(await page.locator('app-header .mark').evaluate((e) => getComputedStyle(e).maskImage)).toContain('140%');
+    await page.evaluate(() => window.scrollTo(0, 0));
+    await expect.poll(() => page.locator('app-header .mark').evaluate((e) => getComputedStyle(e).maskImage)).toContain('0%, rgba(0, 0, 0, 0) 0%');
+    await page.evaluate(() => window.scrollTo(0, 700));
+    expect(await page.locator('.avatar-slot .fill').evaluate((e) => (e as HTMLImageElement).src)).toContain('/img/portrait'); // the photo the hero already has
+    await page.evaluate(() => window.scrollTo(0, 0));
     await expect(page.locator('.portrait')).not.toHaveClass(/docked/);
+    expect(await progress(page)).toEqual([0, 0]);
   });
 
-  test('under reduced motion it simply appears in the slot once the portrait has left', async ({ page }) => {
+  test('a spent hero portrait cannot be pointed at (no hover and no scratching of what is not there)', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await ready(page, '/');
+    await page.evaluate(() => { document.documentElement.style.scrollBehavior = 'auto'; window.scrollTo(0, 700); });
+    await expect(page.locator('.portrait')).toHaveClass(/docked/);
+    expect(await page.locator('.portrait').evaluate((e) => getComputedStyle(e).pointerEvents)).toBe('none');
+  });
+
+  test('under reduced motion there is no half-way: the slot is simply full once the portrait has left', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.setViewportSize({ width: 1280, height: 800 });
     await ready(page, '/');
     await page.evaluate(() => window.scrollTo({ top: 120, behavior: 'instant' }));
     await page.waitForTimeout(200);
-    await expect(page.locator('app-avatar-dock .ghost')).not.toHaveClass(/on/); // portrait still partly in view: no half-way states
+    expect(await progress(page)).toEqual([0, 0]); // portrait still partly in view
     await page.evaluate(() => window.scrollTo({ top: 700, behavior: 'instant' }));
-    await expect(page.locator('app-avatar-dock .ghost')).toHaveClass(/on/);
+    await expect.poll(() => progress(page)).toEqual([1, 1]);
   });
 });
 
