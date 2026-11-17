@@ -1,42 +1,25 @@
-import { Component, DestroyRef, ElementRef, afterNextRender, inject, viewChild } from '@angular/core';
+import { Component, DestroyRef, afterNextRender, inject } from '@angular/core';
 
 const clamp01 = (n: number): number => Math.min(1, Math.max(0, n));
-const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
-const smooth = (t: number): number => t * t * (3 - 2 * t);
 
 /**
- * The hero portrait flies into the header as the visitor scrolls: a copy of the already loaded image travels
- * from the portrait's place to the small round slot in the header (position, size and corner radius are
- * interpolated; the motion is driven by the scroll position, so it reverses when scrolling back). The real
- * portrait is hidden while the copy is away from it. One passive scroll listener, one frame at a time, and only a
- * transform per frame. The header slot holds the monogram until the portrait arrives and pushes it out (see `.filled`). Under reduced motion the copy simply appears in the slot once the portrait has left.
+ * The hero portrait hands itself over to the header as the visitor scrolls: it drains away from the top (its top edge sinks
+ * until nothing is left) while the small slot in the header, next to the monogram, fills with the same photo from the bottom,
+ * like a loading bar, and the name is written out beside it. Nothing flies and nothing is copied over the page: this only sets
+ * one number, `--p` (0 to 1, from the scroll position, so it runs backwards when scrolling back), on the hero portrait and on
+ * the header's brand (avatar and name); their styles do the rest.
+ * The slot holds the monogram until the photo is nearly full and then pushes it out (see `.filled`). Under reduced motion the
+ * hand-over is not played: the slot is simply full once the portrait has left.
+ * One passive scroll listener, one frame at a time.
  */
 @Component({
   selector: 'app-avatar-dock',
-  template: `<img #ghost class="ghost" alt="" aria-hidden="true" decoding="async">`,
-  styles: [`
-    .ghost {
-      position: fixed; z-index: 21; left: 0; top: 0; margin: 0; object-fit: cover; pointer-events: none;
-      transform-origin: 0 0; visibility: hidden; will-change: transform; box-shadow: var(--glass-shadow);
-    }
-    .ghost.on { visibility: visible; }
-    @supports (corner-shape: squircle) { .ghost { corner-shape: squircle; } .ghost.arrived { corner-shape: round; } } /* a squircle like the portrait it came from, round in the header's round slot */
-    /* one soft ring when the avatar has arrived in the header */
-    .ghost.arrived { animation: arrive var(--dur-ring) var(--ease-out); }
-    @keyframes arrive {
-      from { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent); }
-      to { box-shadow: 0 0 0 14px transparent; }
-    }
-    @media (prefers-reduced-motion: reduce) { .ghost.arrived { animation: none; } }
-  `],
+  template: '',
 })
 export class AvatarDock {
-  private readonly ghost = viewChild.required<ElementRef<HTMLImageElement>>('ghost');
-
   constructor() {
     const destroy = inject(DestroyRef);
     afterNextRender(() => {
-      const g = this.ghost().nativeElement;
       const reduce = matchMedia('(prefers-reduced-motion: reduce)');
       let raf = 0;
       let box: HTMLElement | null = null;
@@ -45,45 +28,32 @@ export class AvatarDock {
         raf = 0;
         const img = document.querySelector<HTMLImageElement>('.portrait img');
         const slot = document.querySelector<HTMLElement>('.avatar-slot');
-        if (!img || !slot) return;
+        const fill = slot?.querySelector<HTMLImageElement>('.fill');
+        if (!img || !slot || !fill) return;
         const src = img.currentSrc || img.src;
-        if (src && g.src !== src) g.src = src; // the file the hero already downloaded: no extra request
+        if (src && fill.src !== src) fill.src = src; // the file the hero already downloaded: no extra request
 
-        // at the top with the copy not showing there is nothing to place: no layout is read
-        if (window.scrollY === 0 && !g.classList.contains('on')) return;
+        const nextBox = img.closest<HTMLElement>('.portrait');
+        if (box && box !== nextBox) box.style.removeProperty('--p');
+        box = nextBox;
+        // at the top there is nothing to hand over: no layout is read
+        const brand = slot.parentElement!; // the avatar and the name: both follow the same number
+        if (window.scrollY === 0) {
+          box?.style.setProperty('--p', '0');
+          brand.style.setProperty('--p', '0');
+          box?.classList.remove('docked');
+          slot.classList.remove('filled');
+          return;
+        }
 
-        const pr = img.getBoundingClientRect();
-        const sr = slot.getBoundingClientRect();
-        const base = img.offsetWidth; // layout size, free of the entrance and lean transforms
-        if (!base || !sr.width) return;
-
-        // the morph spans the scroll distance that carries the portrait's bottom edge under the header
-        const distance = pr.bottom + window.scrollY - sr.bottom;
+        // the hand-over spans the scroll distance that carries the portrait's bottom edge under the header
+        const distance = img.getBoundingClientRect().bottom + window.scrollY - slot.getBoundingClientRect().bottom;
         const raw = distance > 0 ? clamp01(window.scrollY / distance) : 1;
         const p = reduce.matches ? (raw >= 1 ? 1 : 0) : raw;
-        // it shrinks first (so it never lingers big over the page), then glides the rest of the way, moving about its centre
-        const eSize = smooth(clamp01(p * 2.6));
-        // across first, up into the slot last: it passes through the empty band under the bar, not over the menu
-        const eX = smooth(clamp01(p * 1.5));
-        const eY = smooth(p) ** 2;
-
-        const size = lerp(base, sr.width, eSize);
-        const s = size / base;
-        const radius = lerp(parseFloat(getComputedStyle(img).borderTopLeftRadius) || 0, parseFloat(getComputedStyle(slot).borderTopLeftRadius) || sr.width / 2, eSize);
-        const cx = lerp(pr.left + pr.width / 2, sr.left + sr.width / 2, eX);
-        const cy = lerp(pr.top + pr.height / 2, sr.top + sr.height / 2, eY);
-        g.style.width = g.style.height = `${base}px`;
-        g.style.borderRadius = `${radius / s}px`;
-        g.style.transform = `translate3d(${cx - size / 2}px, ${cy - size / 2}px, 0) scale(${s})`;
-
-        const away = p > 0.001;
-        g.classList.toggle('on', away);
-        g.classList.toggle('arrived', p >= 0.999);
-        slot.classList.toggle('filled', p >= 0.92); // the monogram in the slot leaves just before the portrait lands
-        const nextBox = img.closest<HTMLElement>('.portrait');
-        if (box && box !== nextBox) box.classList.remove('docked');
-        box = nextBox;
-        box?.classList.toggle('docked', away); // the real portrait steps aside while its copy is away
+        box?.style.setProperty('--p', p.toFixed(3));
+        brand.style.setProperty('--p', p.toFixed(3));
+        box?.classList.toggle('docked', p >= 0.999); // the hero portrait is spent: nothing left to point at
+        slot.classList.toggle('filled', p >= 0.92); // the monogram in the slot leaves just before the photo is full
       };
 
       const request = (): void => {
@@ -96,6 +66,7 @@ export class AvatarDock {
         window.removeEventListener('scroll', request);
         window.removeEventListener('resize', request);
         cancelAnimationFrame(raf);
+        box?.style.removeProperty('--p');
         box?.classList.remove('docked');
       });
     });
