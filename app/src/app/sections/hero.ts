@@ -62,7 +62,8 @@ import { Social } from './social';
     @media (hover: hover) and (pointer: fine) { .portrait:not(.docked) { cursor: url('/img/coin.svg') 11 11, crosshair; } }
     .portrait img { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; border-radius: inherit; }
     @media (min-width: 800px) {
-      .hero { grid-template-columns: 1.2fr 0.8fr; }
+      /* the row is as high as the portrait will be from the first frame: the text beside it is centred on that, so it does not jump down when the photo arrives (a page that is painted before all of it has come in) */
+      .hero { grid-template-columns: 1.2fr 0.8fr; grid-template-rows: minmax(min(20rem, 38vw), auto); }
       .portrait { order: 0; justify-self: end; width: min(100%, 20rem); }
     }
 
