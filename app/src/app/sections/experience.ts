@@ -94,6 +94,16 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
     @media (hover: hover) { summary:hover { background: var(--tint-accent); box-shadow: inset 0 0 0 1px var(--ring-accent); } }
     /* an open entry is a card of its own: readable on the busy backdrop, and its summary keeps the hover and lit tints inside it */
     details[open] { margin-inline: -0.5rem; padding-bottom: 0.25rem; border-radius: var(--r-pop); background: color-mix(in srgb, var(--bg-2) 72%, transparent); box-shadow: 0 0 0 1px var(--ring); }
+    /* opening and closing spring: the height grows past its end and settles, the text fades in (the native details-content
+       box, so no script; browsers without it just open at once) */
+    @media (prefers-reduced-motion: no-preference) {
+      details { interpolate-size: allow-keywords; }
+      details::details-content {
+        block-size: 0; opacity: 0; overflow: clip;
+        transition: block-size var(--dur-med) var(--ease-spring), opacity var(--dur-short) var(--ease-out), content-visibility var(--dur-med) allow-discrete;
+      }
+      details[open]::details-content { block-size: auto; opacity: 1; }
+    }
     details[open] > summary { margin-inline: 0; border-radius: var(--r-pop) var(--r-pop) 0 0; } /* flush with the card's top, so its tint does not round off inside it */
     details[open] > :not(summary) { margin-inline: 0.5rem; }
     @media (prefers-reduced-motion: reduce) { summary::after { transition: none; } }

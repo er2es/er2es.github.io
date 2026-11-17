@@ -4,8 +4,7 @@ import { LangSwitch } from '../core/lang';
 import { anchorHref, inPageClick, pagePath } from '../core/nav';
 import { squirclePath } from '../core/squircle';
 import { Theme } from '../core/theme';
-import { MONOGRAM, MONOGRAM_EN } from './monogram';
-import { SectionIcon } from './section-icon';
+import { MONOGRAM, MONOGRAM_EN } from './monogram';import { SectionIcon } from './section-icon';
 
 @Component({
   selector: 'app-header',
@@ -54,7 +53,7 @@ import { SectionIcon } from './section-icon';
             {{ h }}
           </span>
         }
-        <a class="chip" [attr.href]="otherHref()" [attr.lang]="other()" [attr.hreflang]="other()" (click)="switchLang($event)"><span aria-hidden="true">{{ other().toUpperCase() }}</span><span class="sr-only">{{ c().ui.otherLanguage }} ({{ other().toUpperCase() }})</span></a>
+        <a class="chip" [attr.href]="otherHref()" [attr.lang]="other()" [attr.hreflang]="other()" (click)="switchLang($event)">@for (o of [other()]; track o) { <span class="fl" aria-hidden="true">{{ o.toUpperCase() }}</span> }<span class="sr-only">{{ c().ui.otherLanguage }} ({{ other().toUpperCase() }})</span></a>
       </div>
       <svg class="read" aria-hidden="true" focusable="false"><path [attr.d]="outline()" pathLength="1" /></svg>
     </header>
@@ -68,7 +67,7 @@ import { SectionIcon } from './section-icon';
       display: flex; align-items: center; gap: 0.75rem; border-radius: var(--radius);
     }
     /* where the portrait lands (app-avatar-dock flies a copy of it here while the hero scrolls away) */
-    .avatar-slot { flex: none; display: grid; place-items: center; overflow: hidden; width: 36px; height: 36px; border-radius: var(--r-ctl); background: var(--tint-current); transition: background-color var(--dur-short) var(--ease-out); }
+    .avatar-slot { flex: none; display: grid; place-items: center; overflow: hidden; width: 36px; height: 36px; border-radius: var(--r-pop); background: var(--tint-current); transition: background-color var(--dur-short) var(--ease-out); }
     /* the monogram holds the place until the portrait arrives, and is pushed out upwards by it (and drops back in when the portrait leaves) */
     .sz { width: 24px; height: auto; fill: var(--fg); transition: translate var(--dur-med) var(--ease-spring), scale var(--dur-med) var(--ease-spring), opacity var(--dur-short) var(--ease-out); }
     @media (hover: hover) { .brand:hover .avatar-slot:not(.filled) { background: var(--tint-press); } }
@@ -151,9 +150,9 @@ import { SectionIcon } from './section-icon';
     @media (prefers-reduced-motion: no-preference) { .hint { animation: hint-in var(--dur-press) var(--ease-out) both; } }
     .tip-off::after { display: none; } /* the bubble says it already */
     /* the theme as three positions (Light, Auto, Dark) with one thumb that glides between them */
-    .theme { position: relative; display: inline-flex; align-items: center; height: 36px; padding: 0 2px; margin-inline: 2px; border-radius: var(--r-ctl); background: var(--tint-hover); }
+    .theme { position: relative; display: inline-flex; align-items: center; height: 36px; padding: 0 2px; margin-inline: 2px; border-radius: var(--r-pop); background: var(--tint-hover); }
     .thumb {
-      position: absolute; left: 2px; top: 2px; width: 34px; height: 32px; border-radius: var(--r-ctl); pointer-events: none;
+      position: absolute; left: 2px; top: 2px; width: 34px; height: 32px; border-radius: var(--r-pop); pointer-events: none;
       background: color-mix(in srgb, var(--fg) 16%, transparent); translate: calc(var(--k, 0) * 34px) 0;
     }
     .go .thumb { transition: translate var(--dur-med) var(--ease-spring); }
@@ -161,7 +160,8 @@ import { SectionIcon } from './section-icon';
     .seg[aria-checked='true'] { color: var(--fg); }
     @media (hover: hover) { .seg:hover { color: var(--fg); } }
     /* the controls at the bar's edges take the bar's corner, less the gap they keep from it (22px - 6px), instead of a full pill */
-    .chip { border-radius: var(--r-ctl); }
+    .chip { border-radius: var(--r-ctl); perspective: 120px; }
+    .fl { display: inline-block; } /* the label turns over like a card when the language has changed: _layout.scss, html.swap */
     .chip.icon { width: 44px; padding: 0; justify-content: center; }
     @media (min-width: 900px) { .links { display: flex; } .ctl { margin-left: 0; } }
 

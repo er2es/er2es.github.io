@@ -9,7 +9,8 @@ export const localeOf = (path: string): Locale => (/^\/hu(\/|$)/.test(path) ? 'h
 
 /**
  * The page language. Switching is an in-app navigation without a router: the URL is pushed, the language signal
- * changes and the page re-renders in place inside a view transition (no reload, the scroll position stays).
+ * changes and the page re-renders in place (no reload, the scroll position stays); the texts that changed come in
+ * with a short animation of their own (`swap`), not with the browser's cross-fade, which would play before it.
  * Back and forward between the two pages switch the same way.
  */
 @Injectable({ providedIn: 'root' })
@@ -41,13 +42,21 @@ export class LangSwitch {
   }
 
   private show(to: Locale): void {
-    const apply = (): void => {
-      this.current.set(to);
-      this.seo.apply(to, getContent(to));
-      this.appRef.tick(); // the new language is rendered before the view transition takes its "after" snapshot
-    };
-    const start = (this.doc as Document & { startViewTransition?: (cb: () => void) => unknown }).startViewTransition;
-    if (start) start.call(this.doc, apply);
-    else apply();
+    this.current.set(to);
+    this.seo.apply(to, getContent(to));
+    this.appRef.tick(); // the new language is in the page before the texts are animated
+    this.settle();
+  }
+
+  private swapTimer: ReturnType<typeof setTimeout> | undefined;
+
+  /** For a moment the page carries `swap` (see `_layout.scss`): the texts that changed come in, and the language chip turns over. */
+  private settle(): void {
+    const root = this.doc.documentElement;
+    root.classList.remove('swap'); // off and on again, with a layout in between, so that every switch plays the animations from the start
+    void root.offsetWidth;
+    root.classList.add('swap');
+    clearTimeout(this.swapTimer);
+    this.swapTimer = setTimeout(() => root.classList.remove('swap'), 900);
   }
 }

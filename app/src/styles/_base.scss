@@ -5,6 +5,9 @@ html {
   text-size-adjust: 100%;
   scroll-behavior: smooth;
   background: var(--bg);
+  /* a thin scrollbar in the page's own colours: the thumb a quiet tint of the text colour, the track see-through */
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--fg) 30%, transparent) transparent;
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }

@@ -24,6 +24,7 @@ export interface ExtraText {
   contentLicence: string;
   /** Appended (visually hidden) to links that open in a new tab. */
   newTab: string;
+  toTop: string;
   /** Unfold / fold a long project description on narrow screens (spoken only). */
   more: string;
   less: string;
@@ -54,6 +55,7 @@ export const EXTRA: Record<Locale, ExtraText> = {
     source: 'Source',
     contentLicence: 'Content: all rights reserved',
     newTab: '(opens in a new tab)',
+    toTop: 'Back to top',
     more: 'Read more',
     less: 'Show less',
   },
@@ -81,6 +83,7 @@ export const EXTRA: Record<Locale, ExtraText> = {
     source: 'Forráskód',
     contentLicence: 'Tartalom: minden jog fenntartva',
     newTab: '(új lapon nyílik)',
+    toTop: 'Vissza a tetejére',
     more: 'Teljes leírás',
     less: 'Kevesebb',
   },

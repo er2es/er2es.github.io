@@ -52,11 +52,10 @@ import { FACT_BY_ID, FILES, PROJECT_ORDER, period, tagLabel, type SiteContent } 
     .fold { display: grid; gap: 0.75rem; }
     /* a pill in the accent tint, with its words: it sits on the fade where the text trails off, and its chevron nods once in a while */
     .more {
-      position: relative; justify-self: center; margin-top: -0.375rem; display: inline-flex; align-items: center; gap: 0.4rem; height: 36px; padding: 0 0.85rem 0 1rem;
+      position: relative; justify-self: center; margin-top: -0.375rem; display: inline-flex; align-items: center; gap: 0.4rem; height: 44px; padding: 0 1rem 0 1.1rem;
       border: 1px solid var(--ring-accent); border-radius: 999px; background: var(--tint-accent); color: var(--fg); font: 600 var(--t-footnote) / 1 var(--font); cursor: pointer;
       box-shadow: 0 8px 20px -12px var(--ring-accent); transition: scale var(--dur-press) var(--ease-out), background-color var(--dur-short) var(--ease-out);
     }
-    .more::before { content: ''; position: absolute; inset: -4px -8px; } /* a 44 px target */
     .more:active { scale: 0.96; background: var(--tint-accent-strong); }
     .more svg { transition: rotate var(--dur-short) var(--ease-out); }
     .more[aria-expanded='true'] svg { rotate: 180deg; }

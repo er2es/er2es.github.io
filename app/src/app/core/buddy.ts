@@ -345,6 +345,34 @@ export class Buddy {
     this.spots = spots;
   }
 
+  /** Starts out already sitting on `spot`, `pos` along it (clamped to the tile), as if it had been there all along; any sign of the pointer gets it up. */
+  sitAt(spot: number, pos: number): void {
+    this.cur = spot;
+    this.want = spot;
+    this.wantPos = pos;
+    this.goal = this.clampTo(spot, pos);
+    this.face = 1;
+    this.hip = { x: this.goal, y: 0 };
+    this.feet = [this.goal - SPLAY * SCALE, this.goal + SPLAY * SCALE];
+    this.hip.y = this.standY(this.feet);
+    this.onFeet(STAND);
+    this.behind = false;
+    this.spin = 0;
+    this.web = null;
+    this.plunge = 0;
+    this.leaving = false;
+    this.jumping = false;
+    this.dwell = 0;
+    this.flight = -1;
+    this.v = 0;
+    this.quiet = TOLERANCE;
+    this.sit();
+    this.t = SIT_MS; // sat down already
+    this.seat.p = 1;
+    this.pose = this.seated(1); // on the seat from the first frame (this also puts the hip there)
+    this.vel = { x: 0, y: 0 };
+  }
+
   /** The pointer is on `spot`, `pos` along it. */
   pointer(spot: number, pos: number): void {
     this.quiet = 0;

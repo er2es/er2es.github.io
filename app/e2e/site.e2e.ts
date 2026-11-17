@@ -804,6 +804,16 @@ test.describe('review fixes', () => {
     expect(links[2]).toMatch(/\/blob\/main\/LICENSE-CONTENT\.md$/); // the texts and photographs have their own licence
   });
 
+  test('the footer has a link back to the top, which also takes the #section off the address', async ({ page }) => {
+    await ready(page, '/');
+    await page.locator('app-header .links a', { hasText: 'Skills' }).click();
+    await expect.poll(() => page.evaluate(() => location.hash)).not.toBe('');
+    await page.locator('footer a.up').scrollIntoViewIfNeeded();
+    await page.locator('footer a.up').click();
+    await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+    await expect.poll(() => page.evaluate(() => location.hash)).toBe('');
+  });
+
   test('phone: a long project description folds and unfolds', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 800 });
     await ready(page, '/');
@@ -908,8 +918,7 @@ test.describe('HIG and motion polish', () => {
     await ready(page, '/hu/');
     const tall = (sel: string) => page.locator(sel).evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().height)));
     for (const h of await tall('.arc .name')) expect(h).toBeGreaterThanOrEqual(44);
-    const target = await page.locator('#projects .more').first().evaluate((e) => { const r = e.getBoundingClientRect(); const b = getComputedStyle(e, '::before'); return Math.min(r.height - parseFloat(b.top) * 2, r.width - parseFloat(b.left) * 2); }); // a small button with a 44 px target
-    expect(target).toBeGreaterThanOrEqual(44);
+    for (const h of await tall('#projects .more')) expect(h).toBeGreaterThanOrEqual(44); // the button itself is 44 px high, not a smaller one with a bigger invisible target
     for (const h of await tall('footer a')) expect(h).toBeGreaterThanOrEqual(44);
     expect((await tall('app-header .brand'))[0]).toBeGreaterThanOrEqual(44);
   });
