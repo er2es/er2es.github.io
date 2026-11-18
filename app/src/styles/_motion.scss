@@ -16,7 +16,7 @@
 
 // Press feedback: one press for every control. In within --dur-tap, then back with a small spring (--press-scale, --dur-tap).
 .chip, .btn {
-  transition: scale var(--dur-short) var(--ease-spring), background-color var(--dur-short) var(--ease-out), box-shadow var(--dur-short) var(--ease-out);
+  transition: scale var(--dur-short) var(--ease-spring), background-color var(--dur-fade) var(--ease-out), box-shadow var(--dur-fade) var(--ease-out);
 }
 .chip:active, .btn:active { scale: var(--press-scale); transition-duration: var(--dur-tap); transition-timing-function: var(--ease-out); }
 

@@ -55,7 +55,9 @@ when one of these rules is broken:
 | Rule | What it means |
 | --- | --- |
 | Corners are tokens | `--radius` (22 px, surfaces and tiles), `--r-ctl` (16 px, a control inside a surface), `--r-pop` (10 px, tooltips and notes), or a full round (`999px`, `50%`). Only tiny shapes, up to 6 px, have their own |
-| Transitions use duration tokens | `--dur-press` 150 ms, `--dur-short` 250 ms, `--dur-med` 400 ms, `--dur-ring` 600 ms, `--dur-long` 700 ms, `--dur-play` 900 ms. A transition never carries a number of milliseconds |
+| Transitions use duration tokens | `--dur-tap` 80 ms (a press goes in), `--dur-press` 150 ms, `--dur-fade` 200 ms, `--dur-short` 250 ms, `--dur-med` 400 ms, `--dur-ring` 600 ms, `--dur-long` 700 ms, `--dur-play` 900 ms. A transition never carries a number of milliseconds |
+| Fades use `--dur-fade` | A transition of opacity or of a colour alone lasts `--dur-fade`, the one duration reduced motion leaves alone (it removes movement, not fades). The long arrivals of a whole scene stay on the movement tokens |
+| Keyframe names are unique | The global stylesheets never define the same `@keyframes` twice: animation names are global and the later one silently wins |
 | Short animations use them too | An animation under a second lasts a duration token; long and endless ones (the backdrop, an icon's own movement) are free |
 | States use tint tokens | Hover, pressed, selected and current are painted with `--tint-hover`, `--tint-press`, `--tint-current`, `--tint-accent` and `--tint-accent-strong`, never with a colour mixed on the spot. Resting rings and fills are `--ring`, `--ring-accent`, `--veil` and `--glint` |
 

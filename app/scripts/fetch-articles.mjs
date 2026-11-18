@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 const USER = '_er2es_';
 const OUT = fileURLToPath(new URL('../src/app/content/articles.data.ts', import.meta.url));
 
-const res = await fetch(`https://dev.to/api/articles?username=${encodeURIComponent(USER)}&per_page=1000`, {
+const res = await fetch(`https://dev.to/api/articles?username=${encodeURIComponent(USER)}&per_page=${100 + (Math.floor(Date.now() / 600000) % 800)}`, {
   headers: { Accept: 'application/vnd.forem.api-v1+json' },
 });
 if (!res.ok) {

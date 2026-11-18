@@ -68,7 +68,7 @@ const REPO = 'https://github.com/er2es/er2es.github.io';
     a { display: inline-flex; align-items: center; min-height: 44px; margin-inline: -0.5rem; padding-inline: 0.5rem; color: inherit; text-underline-offset: 0.2em; }
     @media (hover: hover) { a:hover { color: var(--fg); } }
     /* the last item, at the far end of the line: a round button like the contact icons above, not one more underlined line of text */
-    .up { justify-content: center; width: 44px; margin: 0 0 0 auto; padding: 0; border: 1px solid var(--line); border-radius: 50%; text-decoration: none; transition: background-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out); }
+    .up { justify-content: center; width: 44px; margin: 0 0 0 auto; padding: 0; border: 1px solid var(--line); border-radius: 50%; text-decoration: none; transition: background-color var(--dur-fade) var(--ease-out), color var(--dur-fade) var(--ease-out); }
     @media (hover: hover) { .up:hover { background: var(--tint-hover); } }
     /* room for the floating tab bar on phones */
     @media (max-width: 899px) { .foot { padding-bottom: calc(var(--tabbar-h) + 2rem + env(safe-area-inset-bottom)); } }

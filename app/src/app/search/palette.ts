@@ -76,7 +76,7 @@ type Entry =
     .list { overflow: auto; padding: 0.5rem; }
     li { display: flex; align-items: center; gap: 0.75rem; padding: 0.625rem 1rem; border-radius: var(--r-ctl); cursor: pointer; min-height: 44px; }
     li[aria-selected='true'] { background: var(--tint-hover); }
-    .ico { flex: none; color: var(--fg-2); transition: color var(--dur-short) var(--ease-out); }
+    .ico { flex: none; color: var(--fg-2); transition: color var(--dur-fade) var(--ease-out); }
     li[aria-selected='true'] .ico { color: var(--accent); }
     .hit { font-weight: 700; text-decoration: underline 2px var(--accent); text-underline-offset: 0.2em; }
     @media (prefers-reduced-motion: no-preference) {

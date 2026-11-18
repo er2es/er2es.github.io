@@ -67,9 +67,9 @@ import { MONOGRAM, MONOGRAM_EN } from './monogram';import { SectionIcon } from '
       display: flex; align-items: center; gap: 0.75rem; border-radius: var(--radius);
     }
     /* where the portrait lands (app-avatar-dock flies a copy of it here while the hero scrolls away) */
-    .avatar-slot { position: relative; flex: none; display: grid; place-items: center; overflow: hidden; width: 36px; height: 36px; border-radius: var(--r-pop); background: var(--tint-current); transition: background-color var(--dur-short) var(--ease-out); }
+    .avatar-slot { position: relative; flex: none; display: grid; place-items: center; overflow: hidden; width: 36px; height: 36px; border-radius: var(--r-pop); background: var(--tint-current); transition: background-color var(--dur-fade) var(--ease-out); }
     /* the monogram holds the place until the portrait arrives, and is pushed out upwards by it (and drops back in when the portrait leaves) */
-    .sz { width: 24px; height: auto; fill: var(--fg); transition: translate var(--dur-med) var(--ease-spring), scale var(--dur-med) var(--ease-spring), opacity var(--dur-short) var(--ease-out); }
+    .sz { width: 24px; height: auto; fill: var(--fg); transition: translate var(--dur-med) var(--ease-spring), scale var(--dur-med) var(--ease-spring), opacity var(--dur-fade) var(--ease-out); }
     @media (hover: hover) { .brand:hover .avatar-slot:not(.filled) { background: var(--tint-press); } }
     @media (hover: hover) and (prefers-reduced-motion: no-preference) { .brand:hover .avatar-slot:not(.filled) .sz { scale: 1.08; } }
     .avatar-slot.filled { background: transparent; }
@@ -93,14 +93,14 @@ import { MONOGRAM, MONOGRAM_EN } from './monogram';import { SectionIcon } from '
     .links { display: none; margin-inline: auto; } /* no gap: the pill must not lose the pointer between two items */
     .links a { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.75rem 0.7rem; margin-inline: 0.125rem; border-radius: var(--r-ctl); color: var(--fg-2); text-decoration: none; font-size: var(--t-subhead); font-weight: 500; }
     .links a[aria-current] { color: var(--fg); background: var(--tint-current); }
-    .links a { transition: color var(--dur-press) var(--ease-out), background-color var(--dur-short) var(--ease-out), scale var(--dur-short) var(--ease-spring); }
+    .links a { transition: color var(--dur-fade) var(--ease-out), background-color var(--dur-fade) var(--ease-out), scale var(--dur-short) var(--ease-spring); }
     .links a:active { background: var(--tint-press); scale: var(--press-scale); transition-duration: var(--dur-tap); transition-timing-function: var(--ease-out); }
     /* one selection pill that glides to the current section, and follows the pointer while it is over the menu
        (anchor positioning; a static pill elsewhere) */
     @supports (anchor-name: --a) {
       .links { position: relative; isolation: isolate; }
       .links a[aria-current] { anchor-name: --nav-target; background: none; }
-      .links a { transition: color var(--dur-press) var(--ease-out), scale var(--dur-press) var(--ease-out); } /* the pill is the background: the link's own must not fade out beside it */
+      .links a { transition: color var(--dur-fade) var(--ease-out), scale var(--dur-press) var(--ease-out); } /* the pill is the background: the link's own must not fade out beside it */
       .links .sel {
         display: block; position: absolute; z-index: -1; position-anchor: --nav-target; pointer-events: none;
         top: anchor(top); bottom: anchor(bottom); left: anchor(left); right: anchor(right); border-radius: var(--r-ctl);
@@ -108,12 +108,12 @@ import { MONOGRAM, MONOGRAM_EN } from './monogram';import { SectionIcon } from '
         /* quick enough to keep up with the pointer; the short delay (only on the way back to the current item) keeps the
            pill from jumping away while the pointer crosses the edge of the menu */
         transition: left var(--lag) var(--ease-spring) 90ms, right var(--lag) var(--ease-spring) 90ms,
-          background-color var(--dur-short) var(--ease-out), scale var(--dur-press) var(--ease-out);
+          background-color var(--dur-fade) var(--ease-out), scale var(--dur-press) var(--ease-out);
       }
       /* it stretches as it travels: the edge it is heading with is quick, the one behind it follows (data-dir: which way) */
       .links { --lead: calc(var(--dur-short) * 0.75); --lag: var(--dur-med); }
-      .links[data-dir='right'] .sel { transition: left var(--lag) var(--ease-spring) 90ms, right var(--lead) var(--ease-out) 90ms, background-color var(--dur-short) var(--ease-out), scale var(--dur-press) var(--ease-out); }
-      .links[data-dir='left'] .sel { transition: left var(--lead) var(--ease-out) 90ms, right var(--lag) var(--ease-spring) 90ms, background-color var(--dur-short) var(--ease-out), scale var(--dur-press) var(--ease-out); }
+      .links[data-dir='right'] .sel { transition: left var(--lag) var(--ease-spring) 90ms, right var(--lead) var(--ease-out) 90ms, background-color var(--dur-fade) var(--ease-out), scale var(--dur-press) var(--ease-out); }
+      .links[data-dir='left'] .sel { transition: left var(--lead) var(--ease-out) 90ms, right var(--lag) var(--ease-spring) 90ms, background-color var(--dur-fade) var(--ease-out), scale var(--dur-press) var(--ease-out); }
       @media (hover: hover) {
         .links:has(a:hover) a[aria-current]:not(:hover) { anchor-name: none; }
         .links a:hover { anchor-name: --nav-target; }
@@ -129,9 +129,9 @@ import { MONOGRAM, MONOGRAM_EN } from './monogram';import { SectionIcon } from '
     /* the icon and the label are drawn a pixel or two towards the pointer (--tx, --ty are set in script) */
     .links a app-section-icon, .links a .t { translate: var(--tx, 0px) var(--ty, 0px); }
     .links a .t { transition: translate var(--dur-short) var(--ease-out); }
-    .links a app-section-icon { transition: translate var(--dur-short) var(--ease-spring), color var(--dur-short) var(--ease-out); }
+    .links a app-section-icon { transition: translate var(--dur-short) var(--ease-spring), color var(--dur-fade) var(--ease-out); }
     /* how far through its section the page is (--p, from script): the current item's pill fills with a tint of the accent, left to right */
-    .links a .prog { position: absolute; z-index: -1; inset: 0; border-radius: var(--r-ctl); background: color-mix(in srgb, var(--accent) 22%, transparent); clip-path: inset(0 calc((1 - var(--p, 0)) * 100%) 0 0); opacity: 0; transition: opacity var(--dur-short) var(--ease-out); pointer-events: none; }
+    .links a .prog { position: absolute; z-index: -1; inset: 0; border-radius: var(--r-ctl); background: color-mix(in srgb, var(--accent) 22%, transparent); clip-path: inset(0 calc((1 - var(--p, 0)) * 100%) 0 0); opacity: 0; transition: opacity var(--dur-fade) var(--ease-out); pointer-events: none; }
     .links a[aria-current] .prog { opacity: 1; }
     .links a[aria-current] app-section-icon { color: var(--accent); }
     @media (hover: hover) { .links a:hover app-section-icon { color: var(--accent); } }
@@ -158,7 +158,7 @@ import { MONOGRAM, MONOGRAM_EN } from './monogram';import { SectionIcon } from '
       background: color-mix(in srgb, var(--fg) 16%, transparent); translate: calc(var(--k, 0) * 34px) 0;
     }
     .go .thumb { transition: translate var(--dur-med) var(--ease-spring); }
-    .seg { position: relative; z-index: 1; display: grid; place-items: center; width: 34px; height: 44px; margin-block: -4px; padding: 0; border: 0; border-radius: var(--r-ctl); background: none; color: var(--fg-2); cursor: pointer; transition: color var(--dur-press) var(--ease-out); }
+    .seg { position: relative; z-index: 1; display: grid; place-items: center; width: 34px; height: 44px; margin-block: -4px; padding: 0; border: 0; border-radius: var(--r-ctl); background: none; color: var(--fg-2); cursor: pointer; transition: color var(--dur-fade) var(--ease-out); }
     .seg[aria-checked='true'] { color: var(--fg); }
     @media (hover: hover) { .seg:hover { color: var(--fg); } }
     /* the controls at the bar's edges take the bar's corner, less the gap they keep from it (22px - 6px), instead of a full pill */

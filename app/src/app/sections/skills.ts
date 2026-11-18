@@ -65,7 +65,7 @@ import { FILES, SKILLS, type SiteContent } from '../content/model';
     }
     /* the same glint on a touch screen, from the touch, only quicker: the pill gets .touched for the length of the animation (glint() below); its outline and tint start warm and settle back at once, nothing is left lit */
     @media (prefers-reduced-motion: no-preference) {
-      .pill { transition: border-color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out); }
+      .pill { transition: border-color var(--dur-fade) var(--ease-out), background-color var(--dur-fade) var(--ease-out); }
       .pill.touched { animation: tap var(--dur-short) var(--ease-out) both; }
       .pill.touched::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 30%, var(--glint) 50%, transparent 70%); background-size: 260% 100%; animation: glint var(--dur-short) var(--ease-out) both; }
     }

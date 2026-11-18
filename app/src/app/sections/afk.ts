@@ -84,7 +84,7 @@ import { BuddyFigure } from './buddy';
       position: relative; z-index: 1; aspect-ratio: 1; display: grid; place-items: center; border-radius: var(--radius); corner-shape: squircle; color: var(--fg-2);
       /* the outline is a ring (one path), not a border (four sides, each smoothed on its own, which on a tilted tile comes out patchy) */
       border: 0; box-shadow: 0 0 0 1px var(--ring), 0 0 8px var(--veil); background: linear-gradient(var(--veil), var(--veil)), var(--bg);
-      transition: color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out), translate var(--dur-med) var(--ease-spring), rotate var(--dur-med) var(--ease-spring), box-shadow var(--dur-short) var(--ease-out);
+      transition: color var(--dur-fade) var(--ease-out), background-color var(--dur-fade) var(--ease-out), translate var(--dur-med) var(--ease-spring), rotate var(--dur-med) var(--ease-spring), box-shadow var(--dur-fade) var(--ease-out);
     }
     .tile svg { width: 52%; height: auto; overflow: visible; }
     @media (hover: hover) {

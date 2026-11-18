@@ -100,11 +100,11 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
       details { interpolate-size: allow-keywords; }
       details::details-content {
         block-size: 0; opacity: 0; overflow: clip;
-        transition: block-size var(--dur-short) var(--ease-in), opacity var(--dur-press) var(--ease-in), content-visibility var(--dur-short) allow-discrete;
+        transition: block-size var(--dur-short) var(--ease-in), opacity var(--dur-fade) var(--ease-in), content-visibility var(--dur-short) allow-discrete;
       }
       details[open]::details-content {
         block-size: auto; opacity: 1;
-        transition: block-size var(--dur-med) var(--ease-spring), opacity var(--dur-short) var(--ease-out) 50ms, content-visibility var(--dur-med) allow-discrete;
+        transition: block-size var(--dur-med) var(--ease-spring), opacity var(--dur-fade) var(--ease-out) 50ms, content-visibility var(--dur-med) allow-discrete;
       }
     }
     details[open] > summary { margin-inline: 0; border-radius: var(--r-pop) var(--r-pop) 0 0; } /* flush with the card's top, so its tint does not round off inside it */
@@ -131,7 +131,7 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
     @keyframes ring { from { scale: 1; opacity: 0.5; } to { scale: 2.8; opacity: 0; } }
 
     /* lit by a skill chosen in the Skills section */
-    summary { transition: background-color var(--dur-short) var(--ease-out), box-shadow var(--dur-short) var(--ease-out); }
+    summary { transition: background-color var(--dur-fade) var(--ease-out), box-shadow var(--dur-fade) var(--ease-out); }
     .row.lit summary { background: var(--tint-accent); }
     .row.lit .per { color: var(--fg); } /* the tint is darker than the page: keep the small text readable */
     .row.lit .dot { scale: 1.3; }

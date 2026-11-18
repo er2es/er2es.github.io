@@ -29,16 +29,17 @@
 }
 .intro { margin-top: 0.5rem; color: var(--fg-2); max-width: 44rem; }
 
-/* a section's heading and its lines settle in as they come into view: a little from below, fading up, once
-   (scroll-driven, so no script; only opacity and translate; not under reduced motion) */
+/* a section's heading and its lines settle in as they come into view: a little from below, once (scroll-driven, so no script;
+   translate only, with no fade, so that contrast audits never see a faded state; not under reduced motion). The easing is in the
+   keyframe: the scroll moves the element 1:1 and it settles at the end of its range. The name differs from `reveal` in _motion.scss. */
 @media (prefers-reduced-motion: no-preference) {
   @supports (animation-timeline: view()) {
     .block > .wrap > :is(.eyebrow, h2:not(.flash-title), .intro, .lead) {
-      animation: reveal linear backwards; animation-timeline: view(); animation-range: entry 0% entry 45%;
+      animation: reveal-line linear backwards; animation-timeline: view(); animation-range: entry 0% entry 45%;
     }
   }
 }
-@keyframes reveal { from { opacity: 0; translate: 0 14px; } }
+@keyframes reveal-line { from { translate: 0 14px; animation-timing-function: var(--ease-out); } }
 
 /* a change of language: the new texts settle in, headings first, then the lines a moment after (the header puts .swap on <html>
    for the length of it; !important so it wins over the entrances above for that moment, which come back afterwards) */

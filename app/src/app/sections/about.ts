@@ -84,7 +84,7 @@ import { FILES, type SiteContent } from '../content/model';
     .research .eyebrow { margin-bottom: 0.75rem; }
     .cards { list-style: none; margin: 1.25rem 0 0; padding: 0; display: grid; gap: 0.75rem; }
     .cards li + li { margin-top: 0; }
-    .art { position: relative; display: grid; grid-template-rows: auto 1fr auto; gap: 0.5rem; height: 100%; padding: 1rem 2.5rem 1rem 1rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-2); color: var(--fg); text-decoration: none; transition: border-color var(--dur-short) var(--ease-out), scale var(--dur-short) var(--ease-spring); }
+    .art { position: relative; display: grid; grid-template-rows: auto 1fr auto; gap: 0.5rem; height: 100%; padding: 1rem 2.5rem 1rem 1rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-2); color: var(--fg); text-decoration: none; transition: border-color var(--dur-fade) var(--ease-out), scale var(--dur-short) var(--ease-spring); }
     .meta { display: flex; flex-wrap: wrap; gap: 0 0.5rem; font-size: 0.75rem; color: var(--fg-2); white-space: nowrap; }
     /* the topics of an article: the same pills as the tags of the role cards, every one of them (a smaller size, one row; they take the room under the arrow as well) */
     .pills { align-self: end; margin-right: -1.5rem; font-size: 0.75rem; }
@@ -92,9 +92,10 @@ import { FILES, type SiteContent } from '../content/model';
     .topics { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
     .topic {
       padding: 0.4rem 0.85rem; border: 1px solid var(--line); border-radius: 999px; background: none; color: var(--fg-2); cursor: pointer;
-      font: 500 var(--t-footnote) / 1.2 var(--font); transition: background-color var(--dur-short) var(--ease-out), border-color var(--dur-short) var(--ease-out), color var(--dur-short) var(--ease-out), scale var(--dur-short) var(--ease-spring);
+      font: 500 var(--t-footnote) / 1.2 var(--font); transition: background-color var(--dur-fade) var(--ease-out), border-color var(--dur-fade) var(--ease-out), color var(--dur-fade) var(--ease-out), scale var(--dur-short) var(--ease-spring);
     }
-    .topic small { font-size: inherit; opacity: 0.7; font-variant-numeric: tabular-nums; }
+    .topic small { font-size: inherit; color: var(--fg-2); font-variant-numeric: tabular-nums; } /* a colour, not an opacity: the count keeps the 7:1 contrast */
+    .topic[aria-pressed='true'] small { color: var(--fg); }
     @media (hover: hover) { .topic:hover { background: var(--tint-hover); color: var(--fg); } }
     .topic[aria-pressed='true'] { background: var(--tint-accent); border-color: var(--ring-accent); color: var(--fg); }
     .topic:active { scale: var(--press-scale); transition-duration: var(--dur-tap); transition-timing-function: var(--ease-out); }

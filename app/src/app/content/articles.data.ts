@@ -6,6 +6,19 @@ export interface ArticleData { url: string; title: string; description: string; 
 
 export const ARTICLE_DATA: readonly ArticleData[] = [
   {
+    "url": "https://dev.to/_er2es_/physical-ux-in-angular-from-css-springs-to-easter-eggs-on-a-cv-site-5f73",
+    "title": "Physical UX in Angular, from CSS springs to easter eggs on a CV site",
+    "description": "One set of motion tokens, CSS linear() springs, scroll-driven CSS and a tested physics layer make an Angular CV site behave like one small world.",
+    "date": "2026-11-18",
+    "minutes": 24,
+    "tags": [
+      "angular",
+      "webdev",
+      "css",
+      "a11y"
+    ]
+  },
+  {
     "url": "https://dev.to/_er2es_/slimfony-a-small-php-84-core-for-frankenphp-worker-mode-with-its-benchmarks-and-its-limits-1dbe",
     "title": "slimfony: a small PHP 8.4 core for FrankenPHP worker mode, with its benchmarks and its limits",
     "description": "Why we built a strict microservice core from three Symfony components for long-running PHP workers, what it measured on one machine, and what it does not do.",
@@ -90,12 +103,13 @@ export const ARTICLE_DATA: readonly ArticleData[] = [
     "date": "2026-09-30",
     "minutes": 4,
     "tags": [
-      "php"
+      "php",
+      "postgressql"
     ]
   },
   {
     "url": "https://dev.to/_er2es_/postgresql-19-wait-for-lsn-from-php-read-your-writes-on-a-replica-and-four-ways-it-bites-1ogi",
-    "title": "PostgreSQL 19 WAIT FOR LSN from PHP: read-your-writes on a replica, and four ways it bites\" published: false",
+    "title": "PostgreSQL 19 WAIT FOR LSN from PHP: read-your-writes on a replica, and four ways it bites",
     "description": "You add a read replica. A user saves a form, gets redirected, and the next page shows the old data....",
     "date": "2026-09-30",
     "minutes": 5,
