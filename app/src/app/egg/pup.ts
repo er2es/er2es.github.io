@@ -53,7 +53,7 @@ import { Component, input, output } from '@angular/core';
       transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform var(--dur-press) var(--ease-out);
       animation: land 1000ms var(--ease-spring) 120ms both, float 7s ease-in-out 1.1s infinite;
     }
-    .stage { transition: opacity var(--dur-med) var(--ease-out), scale var(--dur-med) var(--ease-out); }
+    .stage { transition: opacity var(--dur-fade) var(--ease-out), scale var(--dur-med) var(--ease-out); }
     .pup.sheet .stage { opacity: 0; scale: 0.94; }
     .photo { display: block; width: 100%; height: 100%; object-fit: cover; }
     /* a soft highlight that follows the pointer across the picture, like light on glass */
@@ -74,7 +74,7 @@ import { Component, input, output } from '@angular/core';
       background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.38);
       -webkit-backdrop-filter: blur(14px) saturate(160%); backdrop-filter: blur(14px) saturate(160%);
       box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.4);
-      animation: hint-in var(--dur-med) var(--ease-spring) both; transition: opacity var(--dur-short) var(--ease-out);
+      animation: hint-in var(--dur-med) var(--ease-spring) both; transition: opacity var(--dur-fade) var(--ease-out);
     }
     .pup.sheet .hint { opacity: 0; }
     .hint::before, .hint::after { content: ''; position: absolute; inset: -1px; border-radius: 50%; border: 1.5px solid rgba(255, 255, 255, 0.55); animation: ring 2.4s ease-out 0.3s infinite; }

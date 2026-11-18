@@ -63,7 +63,7 @@ a:not([class]):focus-visible { border-radius: 6px; }
 .link-action {
   display: inline-flex; align-items: center; gap: 0.5rem; min-height: 44px; margin-inline: -0.75rem; padding: 0 0.75rem;
   border-radius: 999px; color: var(--accent); font-weight: 600; text-underline-offset: 0.2em;
-  transition: background-color var(--dur-short) var(--ease-out), scale var(--dur-short) var(--ease-spring);
+  transition: background-color var(--dur-fade) var(--ease-out), scale var(--dur-short) var(--ease-spring);
 }
 .link-action svg { flex: none; }
 @media (hover: hover) { .link-action:hover { background: var(--tint-hover); } }

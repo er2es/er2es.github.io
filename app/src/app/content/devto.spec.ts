@@ -1,4 +1,4 @@
-import { DEVTO_API, fetchArticles, parseArticles } from './devto';
+import { DEVTO_API, articlesUrl, fetchArticles, parseArticles } from './devto';
 
 const entry = (over: Record<string, unknown> = {}): Record<string, unknown> => ({
   url: 'https://dev.to/x/a', title: ' A title ', description: ' About it ', published_at: '2026-11-05T10:00:00Z', reading_time_minutes: 7, tag_list: ['php', 'testing'], ...over,
@@ -27,13 +27,34 @@ describe('parseArticles', () => {
   });
 });
 
+describe('articlesUrl', () => {
+  it('is the same address for ten minutes and another one after, so that no stale copy of the list at the edge is ever the answer for long', () => {
+    const t = Date.UTC(2026, 10, 18, 15, 0, 0);
+    expect(articlesUrl(t)).toBe(articlesUrl(t + 599999));
+    expect(articlesUrl(t)).not.toBe(articlesUrl(t + 600000));
+    expect(articlesUrl(t)).toContain('username=_er2es_');
+  });
+
+  it('asks for a page size that is always more than the articles there are, and within what the API allows', () => {
+    for (let i = 0; i < 2000; i++) {
+      const n = Number(new URL(articlesUrl(i * 600000)).searchParams.get('per_page'));
+      expect(n).toBeGreaterThanOrEqual(100);
+      expect(n).toBeLessThanOrEqual(1000);
+    }
+  });
+
+  it('is the one address the page uses without being given a time', () => {
+    expect(articlesUrl()).toMatch(/^https:\/\/dev\.to\/api\/articles\?username=_er2es_&per_page=\d+$/);
+  });
+});
+
 describe('fetchArticles', () => {
   it('asks the API for the list without cookies or a referrer, and gives the articles', async () => {
     const calls: { url: string; init: RequestInit }[] = [];
     const fake = ((url: string, init: RequestInit) => { calls.push({ url, init }); return Promise.resolve(answer([entry()])); }) as unknown as typeof fetch;
     const list = await fetchArticles(fake);
     expect(list).toHaveLength(1);
-    expect(calls[0]!.url).toBe(DEVTO_API);
+    expect(calls[0]!.url.startsWith(DEVTO_API + '&per_page=')).toBe(true);
     expect(calls[0]!.init).toMatchObject({ credentials: 'omit', referrerPolicy: 'no-referrer' });
     expect(calls[0]!.init).not.toHaveProperty('signal'); // none given: none passed on
   });
@@ -42,7 +63,7 @@ describe('fetchArticles', () => {
     const ctl = new AbortController();
     const calls: RequestInit[] = [];
     const fake = ((_: string, init: RequestInit) => { calls.push(init); return Promise.resolve(answer([entry()])); }) as unknown as typeof fetch;
-    await fetchArticles(fake, ctl.signal);
+    await fetchArticles(fake, ctl.signal, 0);
     expect(calls[0]!.signal).toBe(ctl.signal);
   });
 

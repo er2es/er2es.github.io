@@ -35,7 +35,7 @@ import { Email } from './email';
     .icons { display: flex; gap: 0.5rem; }
     .icon {
       display: inline-grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; color: var(--fg);
-      border: 1px solid var(--line); transition: background-color var(--dur-short) var(--ease-out), scale var(--dur-short) var(--ease-spring);
+      border: 1px solid var(--line); transition: background-color var(--dur-fade) var(--ease-out), scale var(--dur-short) var(--ease-spring);
     }
     @media (hover: hover) { .icon:hover { background: var(--tint-hover); } }
     .icon:active { background: var(--tint-press); scale: var(--press-scale); transition-duration: var(--dur-tap); transition-timing-function: var(--ease-out); }

@@ -2,7 +2,10 @@
 //  1. a corner is a token (--radius, --r-ctl, --r-pop) or a full round (999px, 50%); only tiny shapes (up to 6px) have their own;
 //  2. a transition lasts a --dur-* token, never a number of milliseconds;
 //  3. a short animation (under a second) lasts a --dur-* token too; long and endless ones (the backdrop, an icon's play) are free;
-//  4. a hover, pressed, selected or current state is painted with the --tint-* tokens, not a colour mixed on the spot.
+//  4. a hover, pressed, selected or current state is painted with the --tint-* tokens, not a colour mixed on the spot;
+//  5. a fade (a transition of opacity or of a colour alone) lasts --dur-fade, the one duration that reduced motion leaves alone
+//     (the long arrivals of a whole scene, --dur-ring and --dur-long, are movement and stay as they are);
+//  6. the global stylesheets do not define the same @keyframes twice (animation names are global: the later one silently wins).
 // Run: npm run check:design
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
@@ -36,6 +39,9 @@ for (const file of files) {
     for (const item of m[1].split(/,(?![^(]*\))/)) {
       const first = item.match(/(\d*\.?\d+m?s)|var\(--(?:dur|lag|lead)[^)]*\)|calc\([^)]*\)/);
       if (first?.[1]) at(m.index, 'duration', `"transition: ${item.trim().slice(0, 60)}" has a number of milliseconds; use a --dur-* token`);
+      if (/^\s*(?:background-color|color|border-color|opacity|box-shadow)\s/.test(item) && /var\(--dur-(?:tap|press|short|med)\)/.test(item) && !TOKENS.has(rel.split('/').pop())) {
+        at(m.index, 'fade', `"transition: ${item.trim().slice(0, 60)}" is a fade: use --dur-fade (reduced motion keeps it)`);
+      }
     }
   }
   for (const m of text.matchAll(/(?<![\w-])animation:\s*([^;}]*)/g)) {
@@ -58,8 +64,21 @@ for (const file of files) {
   }
 }
 
+// rule 6: the same @keyframes name twice among the global stylesheets (a component's own are renamed by Angular, so they cannot clash)
+const seen = new Map();
+for (const file of files.filter((f) => f.endsWith('.scss'))) {
+  const rel = relative(root, file).replaceAll('\\', '/');
+  const text = readFileSync(file, 'utf8');
+  for (const m of text.matchAll(/@keyframes\s+([\w-]+)/g)) {
+    const before = seen.get(m[1]);
+    const line = text.slice(0, m.index).split('\n').length;
+    if (before) problems.push(`${rel}:${line}  keyframes: "${m[1]}" is already defined in ${before}`);
+    else seen.set(m[1], rel);
+  }
+}
+
 if (problems.length) {
   console.error(`design: ${problems.length} thing(s) that break the rules\n${problems.join('\n')}`);
   process.exit(1);
 }
-console.log(`design ok: ${files.length} files follow the radius, duration and state-colour rules`);
+console.log(`design ok: ${files.length} files follow the radius, duration, fade, keyframes and state-colour rules`);

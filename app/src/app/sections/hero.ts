@@ -96,7 +96,7 @@ import { Social } from './social';
       .portrait::after {
         content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0;
         background: radial-gradient(circle at var(--spec-x, 50%) var(--spec-y, 30%), rgba(255, 255, 255, 0.22), transparent 55%);
-        transition: opacity var(--dur-med) var(--ease-out);
+        transition: opacity var(--dur-fade) var(--ease-out);
       }
       .portrait.tracking::after { opacity: 1; }
     }

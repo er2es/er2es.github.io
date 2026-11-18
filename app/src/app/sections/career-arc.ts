@@ -82,7 +82,7 @@ const ORDER = ['backend', 'frontend', 'quality', 'database', 'devops'];
     /* the coloured part is its own layer: it fades and grows on its own, while the card inside the square stays as it is */
     .fill {
       position: absolute; inset: 0; border-radius: 5px; background: color-mix(in srgb, var(--fg) 7%, transparent);
-      transition: opacity var(--dur-short) var(--ease-out), scale var(--dur-short) var(--ease-spring);
+      transition: opacity var(--dur-fade) var(--ease-out), scale var(--dur-short) var(--ease-spring);
     }
     .cell[data-l='1'] .fill { background: color-mix(in srgb, var(--accent) 36%, transparent); }
     .cell[data-l='2'] .fill { background: color-mix(in srgb, var(--accent) 60%, transparent); }

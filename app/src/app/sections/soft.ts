@@ -46,7 +46,7 @@ import { BuddyFigure } from './buddy';
       aspect-ratio: 1; display: grid; place-items: center; border-radius: var(--radius); corner-shape: squircle; color: var(--fg-2);
       /* the outline is a ring (one path), not a border (four sides, each smoothed on its own, which on a tilted tile comes out patchy) */
       border: 0; box-shadow: 0 0 0 1px var(--ring), 0 0 8px var(--veil); background: linear-gradient(var(--veil), var(--veil)), var(--bg);
-      transition: color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out), translate var(--dur-med) var(--ease-spring), rotate var(--dur-med) var(--ease-spring), box-shadow var(--dur-short) var(--ease-out);
+      transition: color var(--dur-fade) var(--ease-out), background-color var(--dur-fade) var(--ease-out), translate var(--dur-med) var(--ease-spring), rotate var(--dur-med) var(--ease-spring), box-shadow var(--dur-fade) var(--ease-out);
     }
     .tile svg { width: 52%; height: auto; overflow: visible; }
     @media (hover: hover) {
@@ -70,7 +70,7 @@ import { BuddyFigure } from './buddy';
 
     /* each icon has one small motion of its own, only while the tile is hovered */
     .tile g, .tile .tick { transform-box: fill-box; transform-origin: center; }
-    .rays { opacity: 0; transition: opacity var(--dur-short) var(--ease-out); }
+    .rays { opacity: 0; transition: opacity var(--dur-fade) var(--ease-out); }
     .tile .page { transform-origin: 24px 24px; transform-box: view-box; }
     .tile .needle { transform-origin: 24px 24px; transform-box: view-box; }
     @media (hover: hover) { .solve:hover .rays { opacity: 1; } }

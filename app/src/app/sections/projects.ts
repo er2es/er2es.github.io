@@ -54,7 +54,7 @@ import { FACT_BY_ID, FILES, PROJECT_ORDER, period, tagLabel, type SiteContent } 
     .more {
       position: relative; justify-self: center; margin-top: -0.375rem; display: inline-flex; align-items: center; gap: 0.4rem; height: 44px; padding: 0 1rem 0 1.1rem;
       border: 1px solid var(--ring-accent); border-radius: 999px; background: var(--tint-accent); color: var(--fg); font: 600 var(--t-footnote) / 1 var(--font); cursor: pointer;
-      box-shadow: 0 8px 20px -12px var(--ring-accent); transition: scale var(--dur-short) var(--ease-spring), background-color var(--dur-short) var(--ease-out);
+      box-shadow: 0 8px 20px -12px var(--ring-accent); transition: scale var(--dur-short) var(--ease-spring), background-color var(--dur-fade) var(--ease-out);
     }
     .more:active { scale: var(--press-scale); background: var(--tint-accent-strong); transition-duration: var(--dur-tap); transition-timing-function: var(--ease-out); }
     .more svg { transition: rotate var(--dur-short) var(--ease-out); }
