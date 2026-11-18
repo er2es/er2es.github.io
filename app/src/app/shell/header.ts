@@ -93,8 +93,8 @@ import { MONOGRAM, MONOGRAM_EN } from './monogram';import { SectionIcon } from '
     .links { display: none; margin-inline: auto; } /* no gap: the pill must not lose the pointer between two items */
     .links a { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.75rem 0.7rem; margin-inline: 0.125rem; border-radius: var(--r-ctl); color: var(--fg-2); text-decoration: none; font-size: var(--t-subhead); font-weight: 500; }
     .links a[aria-current] { color: var(--fg); background: var(--tint-current); }
-    .links a { transition: color var(--dur-press) var(--ease-out), background-color var(--dur-short) var(--ease-out), scale var(--dur-press) var(--ease-out); }
-    .links a:active { background: var(--tint-press); scale: 0.96; }
+    .links a { transition: color var(--dur-press) var(--ease-out), background-color var(--dur-short) var(--ease-out), scale var(--dur-short) var(--ease-spring); }
+    .links a:active { background: var(--tint-press); scale: var(--press-scale); transition-duration: var(--dur-tap); transition-timing-function: var(--ease-out); }
     /* one selection pill that glides to the current section, and follows the pointer while it is over the menu
        (anchor positioning; a static pill elsewhere) */
     @supports (anchor-name: --a) {
@@ -121,7 +121,7 @@ import { MONOGRAM, MONOGRAM_EN } from './monogram';import { SectionIcon } from '
         .links:has(a:not([aria-current]):hover) .sel { background: var(--tint-hover); }
       }
       /* a press is shown on the pill, which shrinks with the label */
-      .links.links:has(a:active) .sel { background: var(--tint-press); scale: 0.96; transition-delay: 0s; }
+      .links.links:has(a:active) .sel { background: var(--tint-press); scale: var(--press-scale); transition-delay: 0s; }
     }
     /* between 900 and 1100 px the menu takes the room: the name would be cut off ("Szabó Jó…"), so the avatar stands for it */
     @media (min-width: 900px) and (max-width: 1099px) { .mark { display: none; } }

@@ -36,9 +36,9 @@ const LABEL_SIZES = [13, 12] as const;
     /* labels that cannot fit at a readable size give way to the icons (still announced to screen readers) */
     .compact .lbl { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
     a[aria-current] { color: var(--fg); }
-    a { transition: color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out), scale var(--dur-press) var(--ease-out); }
+    a { transition: color var(--dur-short) var(--ease-out), background-color var(--dur-short) var(--ease-out), scale var(--dur-short) var(--ease-spring); }
     @media (hover: hover) { a:not([aria-current]):hover { color: var(--fg); background: var(--tint-hover); } }
-    a:active { background: var(--tint-press); scale: 0.95; }
+    a:active { background: var(--tint-press); scale: var(--press-scale); transition-duration: var(--dur-tap); transition-timing-function: var(--ease-out); }
     @media (prefers-reduced-motion: reduce) { a:active { scale: none; } }
     @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) { .tabs.glass { background: var(--bg-2); } }
     /* the selection glides between tabs: one pill moved by translate, one sixth of the bar (less the gaps) per tab, which is cheap

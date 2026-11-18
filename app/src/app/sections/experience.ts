@@ -89,20 +89,23 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
       transition: rotate var(--dur-short) var(--ease-out), translate var(--dur-short) var(--ease-out);
     }
     details[open] > summary::after { rotate: 225deg; translate: 0 4px; }
-    @media (hover: hover) { summary:hover { background: var(--tint-hover); } }
     /* the colours of a skill pill's hover, without its glint: the outline warms to the accent */
     @media (hover: hover) { summary:hover { background: var(--tint-accent); box-shadow: inset 0 0 0 1px var(--ring-accent); } }
     /* an open entry is a card of its own: readable on the busy backdrop, and its summary keeps the hover and lit tints inside it */
     details[open] { margin-inline: -0.5rem; padding-bottom: 0.25rem; border-radius: var(--r-pop); background: color-mix(in srgb, var(--bg-2) 72%, transparent); box-shadow: 0 0 0 1px var(--ring); }
-    /* opening and closing spring: the height grows past its end and settles, the text fades in (the native details-content
-       box, so no script; browsers without it just open at once) */
+    /* opening and closing spring: the height grows past its end and settles, the text fades in; closing is quicker and has no spring
+       (an exit is shorter than an entrance). The transition of the state it is going to decides each direction. Native details-content
+       box, so no script; browsers without it just open at once. */
     @media (prefers-reduced-motion: no-preference) {
       details { interpolate-size: allow-keywords; }
       details::details-content {
         block-size: 0; opacity: 0; overflow: clip;
-        transition: block-size var(--dur-med) var(--ease-spring), opacity var(--dur-short) var(--ease-out), content-visibility var(--dur-med) allow-discrete;
+        transition: block-size var(--dur-short) var(--ease-in), opacity var(--dur-press) var(--ease-in), content-visibility var(--dur-short) allow-discrete;
       }
-      details[open]::details-content { block-size: auto; opacity: 1; }
+      details[open]::details-content {
+        block-size: auto; opacity: 1;
+        transition: block-size var(--dur-med) var(--ease-spring), opacity var(--dur-short) var(--ease-out) 50ms, content-visibility var(--dur-med) allow-discrete;
+      }
     }
     details[open] > summary { margin-inline: 0; border-radius: var(--r-pop) var(--r-pop) 0 0; } /* flush with the card's top, so its tint does not round off inside it */
     details[open] > :not(summary) { margin-inline: 0.5rem; }
@@ -121,13 +124,14 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
     .halo { opacity: 0; }
     @media (prefers-reduced-motion: no-preference) {
       .dot { transition: scale var(--dur-short) var(--ease-spring); }
-      .row:is(:hover, :focus-within) .dot { scale: 1.3; }
+      .row:focus-within .dot { scale: 1.3; }
+      @media (hover: hover) { .row:hover .dot { scale: 1.3; } } /* not on a touch screen, where a hover would stay after a tap */
       .row:has(details[open]) .halo { animation: ring var(--dur-ring) var(--ease-out); }
     }
     @keyframes ring { from { scale: 1; opacity: 0.5; } to { scale: 2.8; opacity: 0; } }
 
     /* lit by a skill chosen in the Skills section */
-    summary { transition: background-color var(--dur-short) var(--ease-out); }
+    summary { transition: background-color var(--dur-short) var(--ease-out), box-shadow var(--dur-short) var(--ease-out); }
     .row.lit summary { background: var(--tint-accent); }
     .row.lit .per { color: var(--fg); } /* the tint is darker than the page: keep the small text readable */
     .row.lit .dot { scale: 1.3; }
@@ -144,13 +148,6 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
     }
     @media (prefers-reduced-motion: reduce) { .spine { display: none; } }
     @keyframes grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
-
-    /* smooth disclosure where the browser supports it (progressive enhancement) */
-    @media (prefers-reduced-motion: no-preference) {
-      details { interpolate-size: allow-keywords; }
-      details::details-content { block-size: 0; overflow: hidden; transition: block-size var(--dur-med) var(--ease-out), content-visibility var(--dur-med) allow-discrete; }
-      details[open]::details-content { block-size: auto; }
-    }
 
     @media (min-width: 700px) {
       summary { grid-template-columns: auto 1fr auto; align-items: baseline; gap: 0.75rem; }

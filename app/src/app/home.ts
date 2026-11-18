@@ -96,6 +96,10 @@ export class Home {
     afterNextRender(() => {
       destroy.onDestroy(initHash((section) => this.active.set(section)));
       destroy.onDestroy(initTips());
+      // iOS Safari applies :active (the press feedback of every control) only where something listens for touchstart
+      const noop = (): void => undefined;
+      document.addEventListener('touchstart', noop, { passive: true });
+      destroy.onDestroy(() => document.removeEventListener('touchstart', noop));
       const stop = trackActive(SECTION_IDS, (id) => {
         this.active.set(shownSection(id as SectionId));
       });

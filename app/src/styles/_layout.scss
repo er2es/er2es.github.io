@@ -43,10 +43,12 @@
 /* a change of language: the new texts settle in, headings first, then the lines a moment after (the header puts .swap on <html>
    for the length of it; !important so it wins over the entrances above for that moment, which come back afterwards) */
 @media (prefers-reduced-motion: no-preference) {
-  html.swap :is(h1, h2, h3) { animation: swap var(--dur-med) var(--ease-out) both !important; }
-  html.swap :is(main p:not(.eyebrow), main .role, main .org, main .pts li, main .lead, app-header .links .t, app-tabbar .lbl) { animation: swap var(--dur-med) var(--ease-out) 70ms both !important; }
+  html.swap :is(h1, h2, h3) { animation: swap-title var(--dur-med) var(--ease-out) both !important; }
+  html.swap :is(main p:not(.eyebrow), main .role, main .org, main .pts li, main .lead, app-header .links .t, app-tabbar .lbl) { animation: swap var(--dur-short) var(--ease-out) 70ms both !important; }
 }
-@keyframes swap { from { opacity: 0; translate: 0 8px; filter: blur(4px); } }
+/* only the headings take a little blur (a few boxes); the many lines fade and rise, which the graphics card does for nothing */
+@keyframes swap-title { from { opacity: 0; translate: 0 8px; filter: blur(4px); } }
+@keyframes swap { from { opacity: 0; translate: 0 5px; } }
 /* and the language chip turns its label over, like a card, with a spring */
 @media (prefers-reduced-motion: no-preference) {
   html.swap app-header .chip .fl { animation: flip var(--dur-med) var(--ease-spring) both; }

@@ -49,11 +49,11 @@ describe('LangSwitch', () => {
     lang.go('hu');
     expect(transitions).toBe(0); // the browser's own transition is not used
     expect(root.classList.contains('swap')).toBe(true);
-    vi.advanceTimersByTime(500);
-    lang.go('en'); // another switch meanwhile starts the time again
-    vi.advanceTimersByTime(500);
-    expect(root.classList.contains('swap')).toBe(true);
     vi.advanceTimersByTime(400);
+    lang.go('en'); // another switch meanwhile starts the time again
+    vi.advanceTimersByTime(400);
+    expect(root.classList.contains('swap')).toBe(true);
+    vi.advanceTimersByTime(250);
     expect(root.classList.contains('swap')).toBe(false);
     vi.useRealTimers();
   });

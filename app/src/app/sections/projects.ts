@@ -50,17 +50,17 @@ import { FACT_BY_ID, FILES, PROJECT_ORDER, period, tagLabel, type SiteContent } 
     .pts li::before { content: ''; position: absolute; left: 0; top: 0.7em; width: 5px; height: 5px; border-radius: 50%; background: var(--fg-2); }
     /* on narrow screens a long description folds to a few lines, with a chevron to unfold it */
     .fold { display: grid; gap: 0.75rem; }
-    /* a pill in the accent tint, with its words: it sits on the fade where the text trails off, and its chevron nods once in a while */
+    /* a pill in the accent tint, with its words: it sits on the fade where the text trails off, and its chevron nods twice (not for ever: movement that starts by itself and goes on beside the text is not allowed to) */
     .more {
       position: relative; justify-self: center; margin-top: -0.375rem; display: inline-flex; align-items: center; gap: 0.4rem; height: 44px; padding: 0 1rem 0 1.1rem;
       border: 1px solid var(--ring-accent); border-radius: 999px; background: var(--tint-accent); color: var(--fg); font: 600 var(--t-footnote) / 1 var(--font); cursor: pointer;
-      box-shadow: 0 8px 20px -12px var(--ring-accent); transition: scale var(--dur-press) var(--ease-out), background-color var(--dur-short) var(--ease-out);
+      box-shadow: 0 8px 20px -12px var(--ring-accent); transition: scale var(--dur-short) var(--ease-spring), background-color var(--dur-short) var(--ease-out);
     }
-    .more:active { scale: 0.96; background: var(--tint-accent-strong); }
+    .more:active { scale: var(--press-scale); background: var(--tint-accent-strong); transition-duration: var(--dur-tap); transition-timing-function: var(--ease-out); }
     .more svg { transition: rotate var(--dur-short) var(--ease-out); }
     .more[aria-expanded='true'] svg { rotate: 180deg; }
     @media (prefers-reduced-motion: no-preference) {
-      .more[aria-expanded='false'] svg { animation: nod 2.8s ease-in-out 1.2s infinite; }
+      .more[aria-expanded='false'] svg { animation: nod 2.8s var(--ease-in-out) 1.2s 2; }
     }
     @keyframes nod { 0%, 70%, 100% { translate: 0 0; } 80% { translate: 0 3px; } 90% { translate: 0 0; } }
     /* on a phone a long tile (the text and its list together) is cut off a few lines down, fading out instead of ending mid-word */
