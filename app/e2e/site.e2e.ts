@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 import { EXTRA } from '../src/app/content/extra';
 
 const EMAIL = 'szabo.jozsef.acc@gmail.com';
@@ -7,6 +7,19 @@ const PAGES = [
   { url: '/', lang: 'en', name: 'József Szabó' },
   { url: '/hu/', lang: 'hu', name: 'Szabó József' },
 ];
+
+/** What the dev.to API answers, as the page sees it: `n` articles, the newest first, with tags that map onto the filter. */
+const devtoList = (n: number) => Array.from({ length: n }, (_, i) => ({
+  url: `https://dev.to/x/article-${i}`, title: `Article ${i}`, description: i % 2 ? 'about Symfony' : '', published_at: `2026-11-${String(28 - i).padStart(2, '0')}T08:00:00Z`,
+  reading_time_minutes: 3 + i, tag_list: i % 3 === 0 ? ['testing'] : ['php'],
+}));
+const answerDevto = (where: Page | BrowserContext, body: unknown, status = 200, delay = 0) =>
+  where.route(/^https:\/\/dev\.to\/api\/articles/, async (route) => {
+    if (delay) await new Promise((r) => setTimeout(r, delay));
+    await route.fulfill({ status, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(body) });
+  });
+// the tests never ask the real dev.to: the page gets a small list (single tests answer otherwise)
+test.beforeEach(async ({ context }) => { await answerDevto(context, devtoList(3)); });
 
 const ready = async (page: Page, url: string) => {
   await page.goto(url);
@@ -822,7 +835,94 @@ test.describe('review fixes', () => {
     expect(links[2]).toMatch(/\/blob\/main\/LICENSE-CONTENT\.md$/); // the texts and photographs have their own licence
   });
 
-  test('the footer has a link back to the top, which also takes the #section off the address', async ({ page }) => {
+  test.describe('research articles from the dev.to API', () => {
+  const block = (page: Page) => page.locator('#about-research');
+  const open = async (page: Page, url = '/hu/') => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await ready(page, url);
+    await block(page).scrollIntoViewIfNeeded();
+  };
+
+  test('shows a loader while the list is being fetched, then the articles of the answer, newest first, with date and reading time', async ({ page }) => {
+    await answerDevto(page, devtoList(3), 200, 700);
+    await open(page);
+    await expect(block(page).locator('li.skel').first()).toBeVisible(); // the loader
+    await expect(block(page).locator('ul.cards')).toHaveAttribute('aria-busy', 'true');
+    await expect(block(page).locator('li.skel')).toHaveCount(0);
+    const titles = await block(page).locator('.art .t').allTextContents();
+    expect(titles.map((t) => t.trim().slice(0, 9))).toEqual(['Article 0', 'Article 1', 'Article 2']);
+    await expect(block(page).locator('.art').first().locator('time')).toHaveText('2026. 11. 28.');
+    await expect(block(page).locator('.art').first()).toContainText('3 perc');
+  });
+
+  test('keeps the list from the build when the API does not answer well', async ({ page }) => {
+    await answerDevto(page, { message: 'no' }, 503);
+    await open(page);
+    await expect(block(page).locator('li.skel')).toHaveCount(0);
+    expect(await block(page).locator('.art').count()).toBeGreaterThan(3); // the build-time list, not the three of the stub
+  });
+
+  test('says so, with a way to dev.to itself and a retry, when the API does not answer; and gives up after a while', async ({ page }) => {
+    let calls = 0;
+    await page.route(/^https:\/\/dev\.to\/api\/articles/, async (route) => {
+      calls++;
+      if (calls === 1) await route.fulfill({ status: 503, body: 'no' });
+      else await route.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(devtoList(3)) });
+    });
+    await open(page);
+    const notice = block(page).locator('.notice');
+    await expect(notice).toBeVisible();
+    await expect(notice).toContainText('A dev.to most nem érhető el');
+    await expect(notice.locator('svg.broken')).toBeVisible();
+    await expect(notice.getByRole('link')).toHaveAttribute('href', 'https://dev.to/_er2es_');
+    expect(await block(page).locator('.art').count()).toBeGreaterThan(3); // the last known list is there meanwhile
+    await notice.getByRole('button').click(); // try again: this time it answers
+    await expect(notice).toHaveCount(0);
+    await expect(block(page).locator('.art')).toHaveCount(3);
+  });
+
+  test('has a filter of the four topics, with "All", and shows more only on request, centred', async ({ page }) => {
+    await answerDevto(page, devtoList(10));
+    await open(page);
+    await expect(block(page).locator('.art')).toHaveCount(8);
+    const more = block(page).getByRole('button', { name: /2 további/ });
+    await expect(more).toBeVisible();
+    const [bx, bw] = (await more.evaluate((e) => { const r = e.getBoundingClientRect(); return [r.x, r.width]; })) as [number, number];
+    const [cx, cw] = (await block(page).locator('ul.cards').evaluate((e) => { const r = e.getBoundingClientRect(); return [r.x, r.width]; })) as [number, number];
+    expect(Math.abs(bx + bw / 2 - (cx + cw / 2))).toBeLessThan(2); // in the middle of the cards
+    await more.click();
+    await expect(block(page).locator('.art')).toHaveCount(10);
+    await expect(more).toHaveCount(0);
+    const chips = block(page).locator('.topics .topic');
+    await expect(chips.first()).toContainText('Mind');
+    await expect(chips.first()).toHaveAttribute('aria-pressed', 'true');
+    const names = (await chips.allTextContents()).map((t) => t.replace(/\s*\d+$/, '').trim());
+    expect(names.every((n) => ['Mind', 'Symfony', 'PostgreSQL', 'QA', 'Angular'].includes(n))).toBe(true);
+    await chips.filter({ hasText: 'QA' }).click(); // the articles tagged "testing"
+    await expect(block(page).locator('.art')).toHaveCount(4);
+    await chips.filter({ hasText: 'QA' }).click(); // again: the filter goes away
+    await expect(block(page).locator('.art')).toHaveCount(10);
+  });
+});
+
+test('research cards on a phone: the three newest and a "more" button for the rest, and PHP is a pill only where nothing else is', async ({ page }) => {
+  await answerDevto(page, devtoList(10));
+  await page.setViewportSize({ width: 390, height: 800 });
+  await ready(page, '/hu/');
+  const block = page.locator('#about-research');
+  await block.scrollIntoViewIfNeeded();
+  await expect(block.locator('.art .t').first()).toContainText('Article 0'); // the answer of the API is in
+  await expect(block.locator('.art:visible')).toHaveCount(3);
+  const more = block.getByRole('button', { name: /7 további/ }); // ten articles, three of them shown
+  await expect(more).toBeVisible();
+  const pills = await block.locator('.art:visible').first().locator('.pills span').allTextContents();
+  expect(pills).toEqual(['QA']); // "testing" and "php": the PHP pill is left out where another topic says what it is about
+  await more.click();
+  await expect(block.locator('.art:visible')).toHaveCount(10); // "more" shows all of them
+  await expect(block.locator('.more-articles')).toBeHidden();
+});
+
+test('the footer has a link back to the top, which also takes the #section off the address', async ({ page }) => {
     await ready(page, '/');
     await page.locator('app-header .links a', { hasText: 'Skills' }).click();
     await expect.poll(() => page.evaluate(() => location.hash)).not.toBe('');

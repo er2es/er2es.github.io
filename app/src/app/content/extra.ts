@@ -25,6 +25,13 @@ export interface ExtraText {
   /** Appended (visually hidden) to links that open in a new tab. */
   newTab: string;
   toTop: string;
+  allArticles: string;
+  moreArticles: string; // {n}
+  filterLabel: string;
+  loadingArticles: string;
+  articlesFailed: string;
+  articlesOnDevto: string;
+  retry: string;
   /** Unfold / fold a long project description on narrow screens (spoken only). */
   more: string;
   less: string;
@@ -56,6 +63,13 @@ export const EXTRA: Record<Locale, ExtraText> = {
     contentLicence: 'Content: all rights reserved',
     newTab: '(opens in a new tab)',
     toTop: 'Back to top',
+    allArticles: 'All',
+    moreArticles: 'Show {n} more',
+    filterLabel: 'Filter the articles by topic',
+    loadingArticles: 'Loading the articles…',
+    articlesFailed: 'dev.to isn’t reachable right now, so the last known list is shown.',
+    articlesOnDevto: 'See them on dev.to',
+    retry: 'Try again',
     more: 'Read more',
     less: 'Show less',
   },
@@ -84,6 +98,13 @@ export const EXTRA: Record<Locale, ExtraText> = {
     contentLicence: 'Tartalom: minden jog fenntartva',
     newTab: '(új lapon nyílik)',
     toTop: 'Vissza a tetejére',
+    allArticles: 'Mind',
+    moreArticles: '{n} további cikk',
+    filterLabel: 'Cikkek szűrése témára',
+    loadingArticles: 'A cikkek betöltése…',
+    articlesFailed: 'A dev.to most nem érhető el, ezért a legutóbbi ismert lista látszik.',
+    articlesOnDevto: 'Megnézem a dev.to-n',
+    retry: 'Újra',
     more: 'Teljes leírás',
     less: 'Kevesebb',
   },

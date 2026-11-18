@@ -20,7 +20,8 @@ function measure(t: SiteContent['ui']['egg']): Promise<Row[]> {
   const size = (r: { transferSize?: number; encodedBodySize?: number }): number => r.encodedBodySize || r.transferSize || 0;
   const transferred = res.reduce((n, r) => n + size(r), 0) + (nav ? size(nav) : 0);
   const scripts = res.filter((r) => r.initiatorType === 'script' || /\.js(\?|$)/.test(r.name)).reduce((n, r) => n + size(r), 0);
-  const thirdParty = res.filter((r) => { try { return new URL(r.name).origin !== origin; } catch { return false; } }).length;
+  // the one request to somebody else, the list of articles (content/devto.ts), is sent without cookies or a referrer: not counted
+  const thirdParty = res.filter((r) => { try { return new URL(r.name).origin !== origin && !r.name.startsWith('https://dev.to/api/articles'); } catch { return false; } }).length;
   // cookies are shared by every site on the same host (all of localhost, for example): count only the ones this page added
   const names = (c: string): string[] => c.split(';').map((x) => x.trim().split('=')[0]!).filter(Boolean);
   const before = new Set(names(window.__ck ?? ''));

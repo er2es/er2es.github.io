@@ -102,7 +102,7 @@ export const hu: SiteContent = {
     soft: { label: 'Soft skillek', team: 'Csapatjátékos', comms: 'Kommunikáció', solo: 'Önállóság', detail: 'Alaposság', solve: 'Problémamegoldás', learn: 'Tanulékonyság' },
     research: {
       heading: 'Írásaim',
-      intro: 'Az foglalkoztat, hogyan lehet a szoftverminőséget egyszerre több oldalról biztosítani: statikus elemzéssel, automatizált tesztekkel és emberi átnézéssel, a fejlesztés teljes folyamatában. A saját projektjeimen próbálom ki, például a Fuzzphonyn.',
+      intro: 'A dev.to-n publikálok cikkeket backend fejlesztésről, adatbázisokról, valamint tesztelésről és minőségbiztosításról – mindezt a saját projektjeim és tapasztalataim alapján.',
     },
   },
   contact: {
