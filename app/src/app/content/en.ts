@@ -102,7 +102,7 @@ export const en: SiteContent = {
     soft: { label: 'Soft skills', team: 'Team player', comms: 'Communication', solo: 'Independence', detail: 'Attention to detail', solve: 'Problem solving', learn: 'Quick learner' },
     research: {
       heading: 'Writing',
-      intro: 'I’m interested in assuring software quality from several sides at once: static analysis, automation and human review, across the whole development cycle. I try it out on my own projects, such as Fuzzphony.',
+      intro: 'I publish articles on dev.to about backend development, databases, and testing and quality assurance – all based on my own projects and experience.',
     },
   },
   contact: {

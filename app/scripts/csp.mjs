@@ -18,7 +18,7 @@ export function withCsp(html) {
     `script-src 'self'${hashes.length ? ' ' + [...new Set(hashes)].join(' ') : ''}`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data:",
-    "connect-src 'self'",
+    "connect-src 'self' https://dev.to/api/articles",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'none'",

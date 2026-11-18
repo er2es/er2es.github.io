@@ -13,8 +13,8 @@ Personal CV site of József Szabó, in English (`/`) and Hungarian (`/hu/`). Liv
 
 - Angular 22 (standalone components, signals, zoneless), TypeScript, SCSS
 - Static prerender (SSG) with hydration, no server at runtime
-- No UI library, no webfonts, no analytics, no cookies, no third-party requests
-- Strict Content Security Policy as a `<meta>` tag: scripts only from the site itself or by hash, written into the pages at build time
+- No UI library, no webfonts, no analytics, no cookies, no third-party requests except one: the list of the author's articles is fetched from the public dev.to API when the research block nears the screen (no cookies, no referrer; the list from the build is shown if it fails)
+- Strict Content Security Policy as a `<meta>` tag: scripts only from the site itself or by hash, written into the pages at build time; `connect-src` lets through only that one address
 - Quality gates: type check (strict TypeScript, strict Angular templates), ESLint with angular-eslint, Vitest (unit), Playwright and axe-core (end-to-end and accessibility), Lighthouse (performance gate)
 
 ## Layout
@@ -77,6 +77,8 @@ with the sources.
 
 `npm run verify`, then `npm run build`, commit `docs/` on a branch and open a pull request. When the checks are green,
 squash-merge it: the workflow on `main` runs the checks again and then deploys.
+
+`npm run articles` refreshes the list of dev.to articles that is baked into the build (`src/app/content/articles.data.ts`, shown first and to search engines); the browser then asks the API for the current list itself.
 
 `npm run portrait` and `npm run check:privacy` read local source material that is not part of this repository, so they only work on the author's machine.
 
