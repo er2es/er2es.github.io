@@ -57,6 +57,6 @@ export class LangSwitch {
     void root.offsetWidth;
     root.classList.add('swap');
     clearTimeout(this.swapTimer);
-    this.swapTimer = setTimeout(() => root.classList.remove('swap'), 900);
+    this.swapTimer = setTimeout(() => root.classList.remove('swap'), 600);
   }
 }

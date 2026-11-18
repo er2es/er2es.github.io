@@ -5,13 +5,22 @@
  * the band while the bottom rule had the last one (About, above a short Contact) would never be named again on the way up.
  * Being at the bottom sticks until the reader scrolls away from it (more than 40px): the page growing under a reader who
  * is at the end (content that arrives late) is not the reader leaving.
+ * A jump (a menu item, a tab, a search result) names its target at once with `holdActive`, and the sections it passes on the way
+ * are not named: the selection glides once, from where it was to where the jump goes, instead of hopping through every section
+ * in between (it is released when the scroll ends, or after a moment where the page did not have to scroll).
  */
+let holder: ((id: string) => void) | null = null;
+
+export const holdActive = (id: string): void => holder?.(id);
+
 export function trackActive(ids: readonly string[], onActive: (id: string) => void): () => void {
   if (typeof IntersectionObserver === 'undefined') return () => undefined;
   const inBand = new Set<string>();
   let shown = '';
   let atEnd = false;
+  let held = false;
   const show = (scrolled: boolean): void => {
+    if (held) return;
     const left = document.documentElement.scrollHeight - (window.scrollY + window.innerHeight); // how far from the very end
     if (left <= 2) atEnd = true;
     else if (scrolled && left > 40) atEnd = false;
@@ -38,7 +47,26 @@ export function trackActive(ids: readonly string[], onActive: (id: string) => vo
   }
   const onScroll = (): void => show(true);
   window.addEventListener('scroll', onScroll, { passive: true });
+  let release: (() => void) | undefined;
+  holder = (id) => {
+    release?.();
+    held = true;
+    shown = id;
+    onActive(id);
+    const timer = setTimeout(() => release?.(), 1200);
+    const end = (): void => release?.();
+    release = () => {
+      clearTimeout(timer);
+      window.removeEventListener('scrollend', end);
+      release = undefined;
+      held = false;
+      show(false);
+    };
+    window.addEventListener('scrollend', end, { once: true });
+  };
   return () => {
+    holder = null;
+    release?.();
     io.disconnect();
     window.removeEventListener('scroll', onScroll);
   };

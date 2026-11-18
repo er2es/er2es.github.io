@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { trackActive } from './active';
+import { holdActive, trackActive } from './active';
 
 class FakeIO {
   static disconnected = 0;
@@ -127,5 +127,51 @@ describe('trackActive without or with partial support', () => {
     window.dispatchEvent(new Event('scroll'));
     expect(on.mock.calls).toEqual([['contact'], ['about']]);
     stop();
+  });
+});
+
+describe('holdActive', () => {
+  beforeEach(() => {
+    FakeIO.disconnected = 0;
+    vi.stubGlobal('IntersectionObserver', FakeIO);
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('names a jump target at once, and not what it passes on the way, until the scroll ends', () => {
+    const on = vi.fn();
+    const stop = trackActive(['a', 'b', 'c'], on);
+    holdActive('c');
+    expect(on).toHaveBeenCalledWith('c');
+    on.mockClear();
+    setMetrics(1000, 800, 1800); // the bottom is passed on the way: not named again
+    window.dispatchEvent(new Event('scroll'));
+    setMetrics(100, 800, 1800);
+    expect(on).not.toHaveBeenCalled();
+    window.dispatchEvent(new Event('scrollend'));
+    expect(on).not.toHaveBeenCalledWith('a'); // released: the band is looked at afresh (nothing is in it here)
+    stop();
+  });
+
+  it('lets go after a moment where the page did not have to scroll, and when the next jump comes', () => {
+    const on = vi.fn();
+    const stop = trackActive(['a', 'b', 'c'], on);
+    holdActive('b');
+    setMetrics(1000, 800, 1800);
+    window.dispatchEvent(new Event('scroll'));
+    expect(on).toHaveBeenCalledTimes(1); // only b
+    vi.advanceTimersByTime(1300);
+    window.dispatchEvent(new Event('scroll'));
+    expect(on).toHaveBeenLastCalledWith('c'); // held no more: the bottom names the last one
+    holdActive('a');
+    holdActive('b'); // a second jump takes over from the first
+    expect(on).toHaveBeenLastCalledWith('b');
+    stop(); // the cleanup lets go too, and a jump after it names nobody
+    on.mockClear();
+    holdActive('a');
+    expect(on).not.toHaveBeenCalled();
   });
 });

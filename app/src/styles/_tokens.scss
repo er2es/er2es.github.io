@@ -80,7 +80,14 @@
   // Motion: one set of curves and durations for the whole site (zeroed under reduced motion in _motion.scss).
   // Spring: stiffness 220, damping 22, mass 1 (about 3 % overshoot), sampled for linear().
   --ease-spring: linear(0, 0.049, 0.164, 0.308, 0.458, 0.597, 0.717, 0.815, 0.891, 0.947, 0.985, 1.009, 1.023, 1.03, 1.031, 1.029, 1.025, 1.02, 1.016, 1.012, 1.008, 1.005, 1.003, 1.001, 1);
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1); /* entering */
+  --ease-in: cubic-bezier(0.3, 0, 0.8, 0.15); /* leaving: the exit is quicker than the entrance */
+  --ease-in-out: cubic-bezier(0.2, 0, 0, 1); /* a move across the screen, and loops */
+  --ease-spring-smooth: linear(0, 0.079, 0.236, 0.403, 0.551, 0.671, 0.764, 0.833, 0.883, 0.919, 0.944, 0.962, 0.974, 0.983, 0.988, 0.992, 0.995, 0.997, 0.998, 0.998, 1); /* a spring with no overshoot: for size and layout, and big surfaces (the bouncy one is for small things) */
+  --dur-tap: 80ms; /* a press goes in within a tenth of a second */
+  --dur-fade: 200ms; /* opacity and colour only: kept under reduced motion, which takes out movement, not fades */
+  --press-scale: 0.96; /* the one press: every pressable gives this much, then springs back */
+  --tip-delay: 400ms; /* a tooltip waits this long under a resting pointer (not after another one was just shown) */
   --dur-press: 150ms;
   --dur-short: 250ms;
   --dur-med: 400ms;

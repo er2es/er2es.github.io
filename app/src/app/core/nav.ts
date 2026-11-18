@@ -1,4 +1,5 @@
 import { SECTION_IDS, type Locale } from '../content/model';
+import { holdActive } from './active';
 import { jumpHash } from './hash';
 
 export const pagePath = (l: Locale): string => (l === 'hu' ? '/hu/' : '/');
@@ -16,6 +17,7 @@ export function scrollToSection(id: string): void {
   if (!el) return;
   const details = el.querySelector('details');
   if (details) details.open = true;
+  if ((SECTION_IDS as readonly string[]).includes(id)) holdActive(id); // the menu names where it is going at once, and not what it passes
   el.scrollIntoView({ block: 'start' }); // smoothness comes from CSS scroll-behavior, which reduced-motion turns off
   el.focus({ preventScroll: true });
   // a section of the menu: its heading draws a line once the page has arrived (the whole section lit up would be loud); anything else lights up at once

@@ -54,13 +54,16 @@ import { FILES, type SiteContent } from '../content/model';
     .research .eyebrow { margin-bottom: 0.75rem; }
     .cards { list-style: none; margin: 1.25rem 0 0; padding: 0; display: grid; gap: 0.75rem; }
     .cards li + li { margin-top: 0; }
-    .art { position: relative; display: grid; gap: 0.5rem; height: 100%; padding: 1rem 2.5rem 1rem 1rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-2); color: var(--fg); text-decoration: none; transition: border-color var(--dur-med), transform var(--dur-med); }
+    .art { position: relative; display: grid; gap: 0.5rem; height: 100%; padding: 1rem 2.5rem 1rem 1rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-2); color: var(--fg); text-decoration: none; transition: border-color var(--dur-short) var(--ease-out), scale var(--dur-short) var(--ease-spring); }
     .src { font-size: 0.75rem; letter-spacing: 0.06em; color: var(--accent); }
     .t { font-weight: 600; line-height: 1.35; }
     .go { position: absolute; top: 0.9rem; right: 0.9rem; opacity: 0.55; }
-    .art:hover, .art:focus-visible { border-color: var(--accent); transform: translateY(-2px); }
+    /* the same hover language as the role cards and the skill pills (an accent outline and a tint), not a lift: nothing here moves away from the pointer, and nothing sticks on a touch screen */
+    @media (hover: hover) { .art:hover { border-color: var(--ring-accent); background-image: linear-gradient(var(--tint-hover), var(--tint-hover)); } }
+    .art:focus-visible { border-color: var(--accent); }
     .art:hover .go, .art:focus-visible .go { opacity: 1; color: var(--accent); }
-    @media (prefers-reduced-motion: reduce) { .art { transition: none; } .art:hover, .art:focus-visible { transform: none; } }
+    .art:active { scale: var(--press-scale); background-image: linear-gradient(var(--tint-press), var(--tint-press)); transition-duration: var(--dur-tap); transition-timing-function: var(--ease-out); }
+    @media (prefers-reduced-motion: reduce) { .art:active { scale: none; } }
     @media (min-width: 560px) and (max-width: 899px) { .cards { grid-template-columns: repeat(2, 1fr); } }
     @media (min-width: 900px) { .grid { grid-template-columns: repeat(3, 1fr); gap: 2rem; } .cards { grid-template-columns: repeat(4, 1fr); gap: 1rem; } }
   `],

@@ -1,4 +1,5 @@
-// Transform-only reveal (no opacity, so contrast audits never see a faded state).
+// Transform-only reveal (no opacity, so contrast audits never see a faded state). The easing is in the keyframe: the scroll
+// moves the element 1:1, and it settles instead of stopping dead at the end of its range.
 @media (prefers-reduced-motion: no-preference) {
   @supports (animation-timeline: view()) {
     .reveal {
@@ -9,15 +10,15 @@
   }
 }
 @keyframes reveal {
-  from { transform: translateY(18px); }
+  from { transform: translateY(18px); animation-timing-function: var(--ease-out); }
   to { transform: none; }
 }
 
-// Press feedback: controls give a little under the finger and spring back.
+// Press feedback: one press for every control. In within --dur-tap, then back with a small spring (--press-scale, --dur-tap).
 .chip, .btn {
-  transition: scale var(--dur-press) var(--ease-out), background-color var(--dur-short) var(--ease-out), box-shadow var(--dur-short) var(--ease-out);
+  transition: scale var(--dur-short) var(--ease-spring), background-color var(--dur-short) var(--ease-out), box-shadow var(--dur-short) var(--ease-out);
 }
-.chip:active, .btn:active { scale: 0.96; transition-duration: 60ms; }
+.chip:active, .btn:active { scale: var(--press-scale); transition-duration: var(--dur-tap); transition-timing-function: var(--ease-out); }
 
 // Theme change: the new theme grows as a circle from the button that asked for it (View Transitions, set in core/theme.ts).
 @media (prefers-reduced-motion: no-preference) {
@@ -31,8 +32,9 @@
   to { clip-path: circle(var(--vt-r, 150vmax) at var(--vt-x, 50%) var(--vt-y, 0)); }
 }
 
+// Reduced motion takes out the movement, not the fades: opacity and colour (--dur-fade) carry no risk and still tell what changed.
 @media (prefers-reduced-motion: reduce) {
-  :root { --dur-press: 0s; --dur-short: 0s; --dur-med: 0s; }
+  :root { --dur-tap: 0s; --dur-press: 0s; --dur-short: 0s; --dur-med: 0s; --dur-ring: 0s; --dur-long: 0s; --dur-play: 0s; }
   .chip:active, .btn:active { scale: none; }
   ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
 }

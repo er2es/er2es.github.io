@@ -77,16 +77,23 @@ export class Backdrop {
         ctx.stroke();
       };
 
-      const frame = (): void => {
+      let stamp = 0;
+      const frame = (now = performance.now()): void => {
         raf = 0;
         const g = goals();
-        t += (g.t - t) * 0.12;
-        p += (g.p - p) * 0.12;
-        bump = { x: bump.x + (aim.x - bump.x) * 0.18, y: bump.y + (aim.y - bump.y) * 0.18, k: bump.k + (aim.k - bump.k) * 0.08 };
+        // eased by time, not per frame: a 120 Hz screen settles at the same pace as a 60 Hz one (the time constants are what the old
+        // per-frame factors came to at 60 Hz)
+        const dt = Math.min(100, stamp ? now - stamp : 16.7);
+        stamp = now;
+        const ease = (ms: number): number => 1 - Math.exp(-dt / ms);
+        t += (g.t - t) * ease(130);
+        p += (g.p - p) * ease(130);
+        bump = { x: bump.x + (aim.x - bump.x) * ease(85), y: bump.y + (aim.y - bump.y) * ease(85), k: bump.k + (aim.k - bump.k) * ease(200) };
         draw();
         const settled = Math.abs(g.t - t) < 0.0005 && Math.abs(g.p - p) < 0.002 && Math.abs(aim.k - bump.k) < 0.004
           && Math.hypot(aim.x - bump.x, aim.y - bump.y) < 0.5;
         if (!settled) raf = requestAnimationFrame(frame);
+        else stamp = 0;
       };
       const kick = (): void => {
         if (!raf && !document.hidden) raf = requestAnimationFrame(frame);
