@@ -71,7 +71,6 @@ export const en: SiteContent = {
     arc: 'Grid of years and skill families: the stronger the colour, the more skills of that family I used that year.',
   },
   skills: {
-    intro: 'What I work with, grouped by area; the testing methods come from my QA years.',
     groups: {
       backend: 'Back end',
       frontend: 'Front end',
@@ -81,7 +80,7 @@ export const en: SiteContent = {
       other: 'Other',
     },
   },
-  projects: { intro: 'Work and personal projects, each with a few lines on what it is for.', open: 'See it on GitHub' },
+  projects: { open: 'See it on GitHub' },
   about: {
     education: {
       heading: 'Education',
@@ -106,7 +105,6 @@ export const en: SiteContent = {
     },
   },
   contact: {
-    text: 'The quickest way to reach me is by email.',
     workMode: 'REMOTE / HYBRID · Budapest',
   },
   items: {

@@ -52,7 +52,7 @@ export class Backdrop {
         const hex = probe.fillStyle; // any colour notation, as #rrggbb
         const n = parseInt(hex.slice(1), 16);
         const light = (n >> 16) + ((n >> 8) & 255) + (n & 255) > 384; // the text colour is light: the dark theme
-        colour = `rgba(${n >> 16}, ${(n >> 8) & 255}, ${n & 255}, ${light ? 0.072 : 0.08})`; // the dark page's lines are a touch firmer than they were (0.055); the light page's are as they were
+        colour = `rgba(${n >> 16}, ${(n >> 8) & 255}, ${n & 255}, ${light ? 0.072 : 0.045})`; // the dark page's lines are a touch firmer than they were (0.055); the light page's are fainter (0.08 before), so that they do not compete with dense text such as the skills
       };
 
       const draw = (): void => {

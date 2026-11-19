@@ -188,8 +188,8 @@ export interface SiteContent {
   hero: { name: string; role: string; location: string; status: string; cta: string; portraitAlt: string };
   profile: { paragraphs: string[]; hobbies: { label: string; cinema: string; woods: string; dog: string; walk: string; pho: string; games: string } };
   experience: { arc: string };
-  skills: { intro: string; groups: Record<SkillGroupId, string> };
-  projects: { intro: string; open: string };
+  skills: { groups: Record<SkillGroupId, string> };
+  projects: { open: string };
   about: {
     education: { heading: string; items: string[] };
     languages: { heading: string; items: string[] };
@@ -197,6 +197,6 @@ export interface SiteContent {
     soft: { label: string; team: string; comms: string; solo: string; detail: string; solve: string; learn: string };
     research: { heading: string; intro: string };
   };
-  contact: { text: string; workMode: string };
+  contact: { workMode: string };
   items: Record<ItemId, ItemText>;
 }

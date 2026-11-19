@@ -1,4 +1,4 @@
-import { Component, DestroyRef, ElementRef, afterNextRender, computed, inject, input, signal } from '@angular/core';
+import { Component, computed, input, signal } from '@angular/core';
 import { EXTRA } from '../content/extra';
 import { FACT_BY_ID, FILES, PROJECT_ORDER, period, tagLabel, type SiteContent } from '../content/model';
 
@@ -9,10 +9,9 @@ import { FACT_BY_ID, FILES, PROJECT_ORDER, period, tagLabel, type SiteContent } 
       <div class="wrap">
         <p class="eyebrow mono">{{ file }}</p>
         <h2 id="projects-h">{{ c().ui.sections.projects }}</h2>
-        <p class="intro">{{ c().projects.intro }}</p>
         <ul class="cards">
           @for (id of order; track id) {
-            <li class="card reveal" [id]="'p-' + id" tabindex="-1">
+            <li class="card reveal" [class.big]="big(id)" [attr.data-p]="id" [id]="'p-' + id" tabindex="-1">
               <h3>{{ c().items[id].title }}</h3>
               @if (per(id)) { <p class="per">{{ per(id) }}</p> }
               <div class="fold" [id]="'sum-' + id" [class.cut]="long(id)" [class.open]="opened().has(id)">
@@ -44,7 +43,7 @@ import { FACT_BY_ID, FILES, PROJECT_ORDER, period, tagLabel, type SiteContent } 
   `,
   styles: [`
     .cards { display: grid; gap: 1rem; margin-top: 1.5rem; }
-    .card { display: grid; gap: 0.75rem; align-content: start; outline: none; }
+    .card { gap: 0.75rem; outline: none; }
     .per { color: var(--fg-2); font-size: var(--t-footnote); font-weight: 500; font-variant-numeric: tabular-nums; }
     .pts li { padding-left: 1rem; position: relative; }
     .pts li::before { content: ''; position: absolute; left: 0; top: 0.7em; width: 5px; height: 5px; border-radius: 50%; background: var(--fg-2); }
@@ -69,15 +68,34 @@ import { FACT_BY_ID, FILES, PROJECT_ORDER, period, tagLabel, type SiteContent } 
       .fold.cut { overflow: hidden; --keep: 100%; -webkit-mask-image: linear-gradient(#000 var(--keep), transparent); mask-image: linear-gradient(#000 var(--keep), transparent); transition: --keep var(--dur-med) var(--ease-out), max-height var(--dur-med) var(--ease-out); }
       .fold.cut:not(.open) { max-height: 8.5em; --keep: 45%; }
     }
-    /* two columns, and every tile as tall as its own text: each tile goes where there is room first, in the order of the list.
-       The tiles are measured in script (--rows: how many 4px rows a tile takes) and the grid fills in; without the script the
-       tiles are the plain rows of a two-column grid. */
+    /*
+     * A bento grid, with no script: the two big projects first, then three tiles to a row, then the last one as a slim strip. Every tile
+     * fills the height of its row, with its tags (and link) at the foot, so a row is even whatever the text. The order of the list (and so
+     * of reading and tabbing) is the order in the page; only the places differ. Below 1000px the tiles go two to a row, and below 800px
+     * one under another, where a long text folds (see above).
+     */
+    .card { display: flex; flex-direction: column; }
+    .card .tags, .card > p:last-child { margin-top: auto; }
+    .card .tags + p { margin-top: 0; } /* the link follows its tags */
+    .card:not(.big) .sum { font-size: var(--t-callout); }
+    .card.big h3 { font-size: 1.25rem; }
     @media (min-width: 800px) {
-      .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .cards.masonry { grid-auto-rows: 4px; row-gap: 0; grid-auto-flow: row dense; }
-      .cards.masonry > .card { grid-row-end: span var(--rows, 1); align-self: start; }
+      .cards { grid-template-columns: repeat(6, minmax(0, 1fr)); grid-template-areas: 'a a a a a a' 'b b b b b b' 'c c c d d d' 'e e e f f f' 'g g g h h h' 'i i i i i i'; }
       .more { display: none; }
     }
+    @media (min-width: 1000px) {
+      .cards { grid-template-columns: repeat(12, minmax(0, 1fr)); grid-template-areas: 'a a a a a a b b b b b b' 'c c c c d d d d e e e e' 'f f f f g g g g h h h h' 'i i i i i i i i i i i i'; }
+      /* the last project is a strip: its name and years, its text, its tags, side by side */
+      .card[data-p='admissions-map'] { display: grid; grid-template-columns: 15rem minmax(0, 1fr) auto; grid-template-areas: 't s g' 'p s g'; align-items: center; column-gap: 1.5rem; row-gap: 0.125rem; }
+      .card[data-p='admissions-map'] h3 { grid-area: t; align-self: end; }
+      .card[data-p='admissions-map'] .per { grid-area: p; align-self: start; }
+      .card[data-p='admissions-map'] .fold { grid-area: s; }
+      .card[data-p='admissions-map'] .tags { grid-area: g; margin-top: 0; }
+    }
+    .card[data-p='fuzzphony'] { grid-area: a; } .card[data-p='slimfony'] { grid-area: b; } .card[data-p='cv-site'] { grid-area: c; }
+    .card[data-p='audit'] { grid-area: d; } .card[data-p='gov-reporting'] { grid-area: e; } .card[data-p='wordpress'] { grid-area: f; }
+    .card[data-p='surveys'] { grid-area: g; } .card[data-p='sport-programme'] { grid-area: h; } .card[data-p='admissions-map'] { grid-area: i; }
+    @media (max-width: 799px) { .card { grid-area: auto !important; } }
     @media (prefers-reduced-motion: reduce) { .more svg { transition: none; } }
   `],
 })
@@ -85,25 +103,11 @@ export class Projects {
   readonly c = input.required<SiteContent>();
   protected readonly order = PROJECT_ORDER;
 
-  constructor() {
-    const host = inject<ElementRef<HTMLElement>>(ElementRef);
-    const destroy = inject(DestroyRef);
-    afterNextRender(() => {
-      const list = host.nativeElement.querySelector<HTMLElement>('.cards');
-      if (!list) return;
-      const cards = [...list.querySelectorAll<HTMLElement>(':scope > .card')];
-      // each tile takes as many 4px rows as its height and the 16px gap below it need
-      const measure = (): void => cards.forEach((c) => c.style.setProperty('--rows', String(Math.ceil((c.offsetHeight + 16) / 4))));
-      list.classList.add('masonry');
-      measure();
-      const ro = new ResizeObserver(measure); // a tile changes height when its text reflows, and when it is first laid out (the section is rendered on demand)
-      cards.forEach((c) => ro.observe(c));
-      destroy.onDestroy(() => ro.disconnect());
-    });
-  }
   protected readonly x = computed(() => EXTRA[this.c().lang]);
   protected readonly file = FILES.projects;
   protected per = (id: (typeof PROJECT_ORDER)[number]) => period(FACT_BY_ID[id]);
+  /** The two big projects (the first two of the list) get the large tiles. */
+  protected big = (id: (typeof PROJECT_ORDER)[number]): boolean => id === 'fuzzphony' || id === 'slimfony';
   protected readonly opened = signal<ReadonlySet<string>>(new Set());
   protected long = (id: (typeof PROJECT_ORDER)[number]): boolean => (this.c().items[id].summary ?? '').length > 220;
   protected fold(id: string): void {

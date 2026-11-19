@@ -73,7 +73,7 @@ export function buildDocs(c: SiteContent): SearchDoc[] {
     { id: 'about:soft', section: 'about', title: a.soft.label, text: [a.soft.team, a.soft.comms, a.soft.solo, a.soft.detail, a.soft.solve, a.soft.learn].join(' '), anchor: 'about-soft' },
     { id: 'about:research', section: 'about', title: a.research.heading, text: a.research.intro + ' ' + ARTICLES.map((r) => r.title).join(' '), anchor: 'about-research' },
     { id: 'about:award', section: 'about', title: a.award.heading, text: a.award.text, anchor: 'about-award' },
-    { id: 'section:contact', section: 'contact', title: c.ui.sections.contact, text: `${c.contact.text} ${c.contact.workMode} ${EMAIL}`, anchor: 'contact' },
+    { id: 'section:contact', section: 'contact', title: c.ui.sections.contact, text: `${c.contact.workMode} ${EMAIL}`, anchor: 'contact' },
   );
   return docs;
 }
