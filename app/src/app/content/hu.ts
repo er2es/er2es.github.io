@@ -71,7 +71,6 @@ export const hu: SiteContent = {
     arc: 'Évek és szakmai területek rácsa: minél erősebb a szín, annál több technológiát és módszert használtam abban az évben.',
   },
   skills: {
-    intro: 'Amivel dolgozom, területek szerint; a tesztelési módszereket a QA-s éveimből hoztam.',
     groups: {
       backend: 'Backend',
       frontend: 'Frontend',
@@ -81,7 +80,7 @@ export const hu: SiteContent = {
       other: 'Egyéb',
     },
   },
-  projects: { intro: 'Munkahelyi és saját projektek, mindegyiknél néhány sor arról, mire való.', open: 'Megnézem a GitHubon' },
+  projects: { open: 'Megnézem a GitHubon' },
   about: {
     education: {
       heading: 'Végzettség',
@@ -106,7 +105,6 @@ export const hu: SiteContent = {
     },
   },
   contact: {
-    text: 'Emailben érsz el a leggyorsabban.',
     workMode: 'REMOTE / HYBRID · Budapest',
   },
   items: {

@@ -12,7 +12,6 @@ import { FILES, SKILLS, type SiteContent } from '../content/model';
       <div class="wrap">
         <p class="eyebrow mono">{{ file }}</p>
         <h2 id="skills-h">{{ c().ui.sections.skills }}</h2>
-        <p class="intro">{{ c().skills.intro }}</p>
         <dl class="groups">
           @for (g of view(); track g.group) {
             <div class="group" [id]="'skills-' + g.group" tabindex="-1">
