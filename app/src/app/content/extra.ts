@@ -25,6 +25,7 @@ export interface ExtraText {
   /** Appended (visually hidden) to links that open in a new tab. */
   newTab: string;
   toTop: string;
+  noData: string;
   allArticles: string;
   moreArticles: string; // {n}
   filterLabel: string;
@@ -63,6 +64,7 @@ export const EXTRA: Record<Locale, ExtraText> = {
     contentLicence: 'Content: all rights reserved',
     newTab: '(opens in a new tab)',
     toTop: 'Back to top',
+    noData: 'no contributions',
     allArticles: 'All',
     moreArticles: 'Show {n} more',
     filterLabel: 'Filter the articles by topic',
@@ -98,6 +100,7 @@ export const EXTRA: Record<Locale, ExtraText> = {
     contentLicence: 'Tartalom: minden jog fenntartva',
     newTab: '(új lapon nyílik)',
     toTop: 'Vissza a tetejére',
+    noData: 'nincs hozzájárulás',
     allArticles: 'Mind',
     moreArticles: '{n} további cikk',
     filterLabel: 'Cikkek szűrése témára',

@@ -202,7 +202,7 @@ test('no horizontal scroll on a phone', async ({ page }) => {
 test.describe('search results land exactly on their target', () => {
   for (const p of PAGES) {
     test(`${p.url}: every result exists and is shown below the header`, async ({ page }) => {
-      test.setTimeout(60_000); // ~45 palette round trips; clicks wait for the results' short entrance to settle
+      test.setTimeout(120_000); // ~45 palette round trips; clicks wait for the results' short entrance to settle (60 s was too tight with the whole suite running in parallel)
       await ready(page, p.url);
       const queries = ['php', 'qa', 'symfony', 'wordpress', 'laravel', 'egyetem', 'university', 'tesztel', 'tester', 'postgre', 'angular', 'survey', 'kérdőív', 'english', 'angol', 'education', 'tanulm', 'award', 'elismer', 'contact', 'kapcsolat', 'profile', 'profil', 'audit', 'fuzzphony', 'seeddms', 'vba'];
       const open = async (q: string) => {
@@ -665,32 +665,46 @@ test.describe('career graph', () => {
     await expect(lane('Backend')).toBeVisible();
   });
 
-  test('a square with nothing in it is not a place to point at: no card, no highlight', async ({ page }) => {
+  test('the empty years at the start of a row are one bar, which says there are no contributions: no card, no highlight', async ({ page }) => {
     await setup(page);
     const frontend = page.locator('.arc .lane').nth(1);
     await frontend.scrollIntoViewIfNeeded();
-    const empty = (await frontend.locator('.cell[data-l="0"]').first().boundingBox())!;
-    await page.mouse.move(empty.x + empty.width / 2, empty.y + empty.height / 2);
-    await page.waitForTimeout(200);
+    await expect(frontend.locator('.gap')).toHaveCount(1); // one bar, not nine squares
+    await expect(frontend.locator('.cell[data-l="0"]')).toHaveCount(0);
+    const gap = (await frontend.locator('.gap').boundingBox())!;
+    await page.mouse.move(gap.x + gap.width / 2, gap.y + gap.height / 2);
+    await expect(page.locator('.arc .mini')).toHaveText('2011–2019 · nincs hozzájárulás');
     await expect(page.locator('.arc .tip')).toHaveCount(0);
     await expect(page.locator('.arc .head')).toHaveCount(0);
-    const lit = (await frontend.locator('.cell:not([data-l="0"])').last().boundingBox())!;
+    const lit = (await frontend.locator('.cell').last().boundingBox())!;
     await page.mouse.move(lit.x + lit.width / 2, lit.y + lit.height / 2);
-    await expect(page.locator('.arc .tip')).toBeVisible(); // a square with something in it is
-    await page.mouse.move(empty.x + empty.width / 2, empty.y + empty.height / 2);
-    await expect(page.locator('.arc .tip')).toHaveCount(0); // and moving onto an empty one puts the card away
+    await expect(page.locator('.arc .tip')).toBeVisible(); // a square with something in it has the card, and no small tooltip
+    await expect(page.locator('.arc .mini')).toHaveCount(0);
+    await page.mouse.move(gap.x + gap.width / 2, gap.y + gap.height / 2);
+    await expect(page.locator('.arc .mini')).toContainText('nincs hozzájárulás');
+    await expect(page.locator('.arc .tip')).toHaveCount(0);
   });
 
-  test('pointing at a year shows its card and leaves the roles log alone', async ({ page }) => {
+  test('pointing at a year shows its card (no click needed) and leaves the roles log alone', async ({ page }) => {
     const { lit } = await setup(page);
     const track = page.locator('.arc .lane').first().locator('.track');
     await track.scrollIntoViewIfNeeded();
     const box = (await track.boundingBox())!;
     await page.mouse.move(box.x + box.width * 0.5, box.y + box.height / 2);
     await expect(page.locator('.arc .tip b')).toHaveText('2017'); // the card is where the year is told
+    await expect(page.locator('.arc .mini')).toHaveCount(0);
     await expect(lit).toHaveCount(0);
     await page.mouse.move(2, 2);
     await expect(page.locator('.arc .tip')).toHaveCount(0);
+  });
+
+  test('the grey block carries no text of its own: pointing at it names the first job by its card', async ({ page }) => {
+    await setup(page);
+    await expect(page.locator('.arc .base').first()).toHaveText('');
+    await page.locator('.arc .base').first().scrollIntoViewIfNeeded();
+    const b = (await page.locator('.arc .base').first().boundingBox())!;
+    await page.mouse.move(b.x + b.width / 2, b.y + b.height / 2);
+    await expect(page.locator('.arc .tip b')).toHaveText('IT-asszisztens');
   });
 
   test('nothing in the graph moves the page or the URL: not a square, not the foundation', async ({ page }) => {

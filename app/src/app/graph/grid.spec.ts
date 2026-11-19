@@ -29,6 +29,14 @@ describe('careerGrid', () => {
     expect(g.lanes[0].since).toBe(2010);
   });
 
+  it('counts the empty years at the start of a row, which are drawn as one bar', () => {
+    expect(g.lanes[0].lead).toBe(0); // the family is used from the first year after the foundation
+    expect(g.lanes[1].lead).toBe(g.lanes[1].cells.length); // never used: all of them
+    const late = careerGrid(jobs, 'base', [{ id: 'late', jobs: ['b'], tagsOf: () => ['PHP'] }]);
+    expect(late.lanes[0].lead).toBe(late.lanes[0].cells.findIndex((c) => c.year === 2014));
+    expect(late.lanes[0].lead).toBeGreaterThan(0);
+  });
+
   it('starts an unused family at the beginning of the axis', () => {
     expect(g.lanes[1].since).toBe(2008);
     expect(g.lanes[1].cells.every((c) => c.level === 0)).toBe(true);
