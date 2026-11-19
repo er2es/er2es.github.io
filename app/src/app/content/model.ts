@@ -3,6 +3,8 @@ export const SITE_URL = 'https://er2es.github.io';
 export const EMAIL = 'szabo.jozsef.acc@gmail.com';
 export const GITHUB_URL = 'https://github.com/er2es';
 export const DEVTO_URL = 'https://dev.to/_er2es_';
+/** The page of the programme the verification badge links to. */
+export const CVP_URL = 'https://support.claude.com/en/articles/14604842-cyber-verification-program';
 export const LINKEDIN_URL = 'https://www.linkedin.com/in/szabo-j%C3%B3zsef-a61156357/';
 
 export type SectionId = 'profile' | 'experience' | 'skills' | 'projects' | 'about' | 'contact';

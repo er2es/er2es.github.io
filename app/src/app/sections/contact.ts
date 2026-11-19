@@ -12,7 +12,7 @@ import { Social } from './social';
         <h2 id="contact-h">{{ c().ui.sections.contact }}</h2>
         <p class="lead measure">{{ c().contact.text }}</p>
         <p class="mode"><span class="dot" aria-hidden="true"></span>{{ c().contact.workMode }}</p>
-        <app-social class="act" [c]="c()" />
+        <app-social class="act" [c]="c()" [verified]="true" />
       </div>
     </section>
   `,

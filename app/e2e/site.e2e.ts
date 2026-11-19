@@ -811,7 +811,7 @@ test.describe('review fixes', () => {
     await page.setViewportSize({ width: 390, height: 800 });
     await ready(page, '/hu/');
     const lefts = await page.locator('#contact .icon').evaluateAll((els) => els.map((e) => Math.round(e.getBoundingClientRect().left)));
-    expect(lefts.length).toBe(4);
+    expect(lefts.length).toBe(5); // mail, GitHub, LinkedIn, dev.to and the verification badge
     for (const x of lefts) expect(x).toBeGreaterThanOrEqual(16);
   });
 
@@ -920,6 +920,26 @@ test('research cards on a phone: the three newest and a "more" button for the re
   await more.click();
   await expect(block.locator('.art:visible')).toHaveCount(10); // "more" shows all of them
   await expect(block.locator('.more-articles')).toBeHidden();
+});
+
+test('the hero and Contact have the verification badge among the round icons (an icon with a tooltip, no text)', async ({ page }) => {
+  await ready(page, '/');
+  for (const where of ['app-hero', 'app-contact']) {
+    const badge = page.locator(`${where} a.icon[data-tip]`);
+    await expect(badge).toHaveAttribute('href', 'https://support.claude.com/en/articles/14604842-cyber-verification-program');
+    await expect(badge).toHaveAttribute('data-tip', 'Anthropic CVP: Defense Access');
+    await expect(badge.locator('.sr-only')).toContainText('(opens in a new tab)');
+  }
+});
+
+test('the footer carries the verification badge, linked to the programme\'s own page and opening in a new tab', async ({ page }) => {
+  await ready(page, '/hu/');
+  const badge = page.locator('footer a.cvp');
+  await expect(badge).toHaveAttribute('href', 'https://support.claude.com/en/articles/14604842-cyber-verification-program');
+  await expect(badge).toHaveAttribute('target', '_blank');
+  await expect(badge).toHaveAttribute('rel', /noopener/);
+  await expect(badge).toContainText('Anthropic CVP: Defense Access');
+  await expect(badge).toContainText('(új lapon nyílik)'); // for a screen reader, in the language of the page
 });
 
 test('the footer has a link back to the top, which also takes the #section off the address', async ({ page }) => {

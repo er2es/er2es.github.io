@@ -14,7 +14,7 @@ import { Social } from './social';
         <h1 id="hero-title">{{ c().hero.name }}</h1>
         <p class="role">{{ c().hero.role }}</p>
         <p class="meta"><span class="in"><span class="status"><span class="dot" aria-hidden="true"></span>{{ c().hero.status }}</span> <span class="loc">{{ c().hero.location }}</span></span></p>
-        <app-social [c]="c()" />
+        <app-social [c]="c()" [verified]="true" />
       </div>
  <div class="portrait">
       <picture>
