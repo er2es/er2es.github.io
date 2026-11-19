@@ -74,7 +74,7 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
     .log { position: relative; margin-top: 0.5rem; }
     .row { display: flex; gap: 0.75rem; scroll-margin-top: calc(var(--bar-h) + 1.25rem); outline: none; border-radius: var(--r-ctl); }
     .railcol { position: relative; flex: none; }
-    .rail { position: absolute; inset: 0; height: 100%; overflow: visible; }
+    .rail { position: absolute; inset: 0 0 auto; height: calc(100% + 1px); overflow: visible; } /* one pixel into the next row: the rows are not whole pixels high, and a line that ends exactly on the seam shows a hairline gap there */
     /* the nodes of the line say, on hover, whether the role was full-time (the main line) or a branch of it (part-time), and open or close their entry */
     .hit { position: absolute; z-index: 2; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; }
     .body { flex: 1; min-width: 0; padding-bottom: 0.25rem; }

@@ -1,6 +1,6 @@
 import { Component, computed, inject, input } from '@angular/core';
 import { EXTRA } from '../content/extra';
-import type { SiteContent } from '../content/model';
+import { CVP_URL, type SiteContent } from '../content/model';
 import { BUILD } from '../egg/build-info';
 import { Graveyard } from './graveyard';
 
@@ -16,6 +16,7 @@ const REPO = 'https://github.com/er2es/er2es.github.io';
         <a [attr.href]="release" target="_blank" rel="noopener noreferrer">v{{ version }}<span class="sr-only"> {{ x().newTab }}</span></a>
         <a [attr.href]="licence" target="_blank" rel="noopener noreferrer">{{ x().source }}: MIT<span class="sr-only"> {{ x().newTab }}</span></a>
         <a [attr.href]="contentLicence" target="_blank" rel="noopener noreferrer">{{ x().contentLicence }}<span class="sr-only"> {{ x().newTab }}</span></a>
+        <a class="cvp" [attr.href]="cvp" target="_blank" rel="noopener noreferrer"><i aria-hidden="true"></i>Anthropic CVP: Defense Access<span class="sr-only"> {{ x().newTab }}</span></a>
         <a class="up" href="#" (click)="toTop($event)"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 19V5M5 12l7-7 7 7" /></svg><span class="sr-only">{{ x().toTop }}</span></a>
       </div>
       <div class="yard" aria-hidden="true"><div class="wrap lot">
@@ -68,6 +69,15 @@ const REPO = 'https://github.com/er2es/er2es.github.io';
     a { display: inline-flex; align-items: center; min-height: 44px; margin-inline: -0.5rem; padding-inline: 0.5rem; color: inherit; text-underline-offset: 0.2em; }
     @media (hover: hover) { a:hover { color: var(--fg); } }
     /* the last item, at the far end of the line: a round button like the contact icons above, not one more underlined line of text */
+    /* the verification badge: one more link of the line, with a small dot in front (the page's accent): no box, no logo, no colour of the other party */
+    .cvp { gap: 0.5rem; margin-inline-start: auto; margin-inline-end: 0.75rem; } /* at the right of the line, beside the button that takes it to the top */
+    .cvp + .up { margin-inline-start: 0; }
+    .cvp i { position: relative; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+    /* while the link is pointed at (or focused) the dot gives off a ring now and then, like a live status light */
+    @media (prefers-reduced-motion: no-preference) {
+      .cvp:is(:hover, :focus-visible) i::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: var(--accent); animation: dot-pulse 1.8s var(--ease-out) infinite; }
+    }
+    @keyframes dot-pulse { from { scale: 1; opacity: 0.55; } to { scale: 3; opacity: 0; } }
     .up { justify-content: center; width: 44px; margin: 0 0 0 auto; padding: 0; border: 1px solid var(--line); border-radius: 50%; text-decoration: none; transition: background-color var(--dur-fade) var(--ease-out), color var(--dur-fade) var(--ease-out); }
     @media (hover: hover) { .up:hover { background: var(--tint-hover); } }
     /* room for the floating tab bar on phones */
@@ -98,5 +108,6 @@ export class Footer {
   protected readonly version = BUILD.version || '1';
   protected readonly release = `${REPO}/releases/tag/v${BUILD.version}`;
   protected readonly licence = `${REPO}/blob/main/LICENSE`;
+  protected readonly cvp = CVP_URL;
   protected readonly contentLicence = `${REPO}/blob/main/LICENSE-CONTENT.md`;
 }
