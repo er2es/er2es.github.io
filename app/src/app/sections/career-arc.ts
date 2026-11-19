@@ -30,15 +30,19 @@ const ORDER = ['backend', 'frontend', 'quality', 'database', 'devops'];
             </div>
             <div class="track" aria-hidden="true" (pointermove)="scrub($event, l.id)" (pointerdown)="press($event, l.id)" (pointerup)="lift()" (pointercancel)="lift()" (pointerleave)="leave($event)">
               <div class="cells" [style.grid-template-columns]="'repeat(' + grid().cols + ', minmax(0, 1fr))'">
-                <i class="base" [class.first]="i === 0" [class.last]="last" [style.grid-column]="'span ' + grid().baseYears"></i>
-                @for (cell of l.cells; track cell.year) {
+                <i class="base" [class.first]="i === 0" [class.last]="last" [class.hot]="overBase()" [style.grid-column]="'span ' + grid().baseYears"></i>
+                @if (l.lead > 0) { <i class="gap" [style.grid-column]="'span ' + l.lead"></i> }
+                @for (cell of l.cells.slice(l.lead); track cell.year) {
                   <i class="cell" [attr.data-l]="cell.level" [class.dim]="dim(cell.jobs)"><span class="fill"></span></i>
                 }
               </div>
-              @if (year() !== null) { <s class="head" [style.left.%]="head().left" [style.width.%]="head().width"></s> }
+              @if (year() !== null && !overBase()) { <s class="head" [style.left.%]="head().left" [style.width.%]="head().width"></s> }
+              @if (mini(); as m) {
+                @if (m.lane === l.id) { <div class="mini tip-card" [style.--c]="m.center">{{ m.text }}</div> }
+              }
               @if (tip(); as tp) {
                 @if (tp.lane === l.id) {
-                  <div class="tip tip-card" [class.up]="tp.up" [style.--c]="tp.center">
+                  <div class="tip tip-card" [class.up]="tp.up" [class.side]="tp.base && !tp.up" [style.--c]="tp.center">
                     <b>{{ tp.title }}</b>
                     @for (line of tp.lines; track line) { <span class="job">{{ line }}</span> }
                     @if (tp.tags) { <em>{{ tp.tags }}</em> }
@@ -76,6 +80,12 @@ const ORDER = ['backend', 'frontend', 'quality', 'database', 'devops'];
     .base { position: relative; align-self: stretch; background: color-mix(in srgb, var(--fg) 20%, transparent); }
     .base.first { border-top-left-radius: 10px; border-top-right-radius: 10px; }
     .base.last { border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; }
+    /* the pointer is on the foundation: the whole block lights up as one (a highlight of one row's slice of it would show as a band with its own corners inside it) */
+    .base { transition: background-color var(--dur-fade) var(--ease-out); }
+    .base.hot { background: color-mix(in srgb, var(--fg) 30%, transparent); }
+
+    /* the empty years at the start of a row, one continuous bar */
+    .gap { height: var(--cell); border-radius: 5px; background: color-mix(in srgb, var(--fg) 7%, transparent); }
 
     /* a year: empty, or one of four accent levels (how many technologies of the family its jobs list) */
     .cell { position: relative; height: var(--cell); font-style: normal; }
@@ -96,8 +106,12 @@ const ORDER = ['backend', 'frontend', 'quality', 'database', 'devops'];
       position: absolute; z-index: 5; top: calc(50% + var(--cell) / 2 + 8px); left: calc(var(--c, 50) * 1%); translate: calc(var(--c, 50) * -1%) 0;
       width: max-content; max-width: 16rem; pointer-events: none; cursor: default; line-height: 1.35; color: var(--fg-2); white-space: normal;
     }
+    /* the small tooltip of a mouse over a stretch with nothing in it: the years and "no contributions", in one line, above it (the squares with something in them have the card) */
+    .mini { position: absolute; z-index: 5; bottom: calc(50% + var(--cell) / 2 + 6px); left: calc(var(--c, 50) * 1%); translate: -50% 0; width: max-content; max-width: none; padding: 0.3rem 0.6rem; white-space: nowrap; font-size: var(--t-footnote); line-height: 1.3; color: var(--fg); pointer-events: none; }
     /* a finger covers what is below the row: for a touch the card opens above it */
     .tip.up { top: auto; bottom: calc(50% + var(--cell) / 2 + 8px); }
+    /* the foundation block spans every row, so its card does not sit on it: it stands beside it, level with the row that is pointed at */
+    .tip.side { top: 0; left: calc(var(--c) * 1% + 10px); translate: 0 0; }
     .tip b { display: block; color: var(--fg); font-weight: 600; }
     .tip .job { display: block; }
     .tip em { display: block; margin-top: 0.125rem; font-style: normal; }
@@ -162,30 +176,51 @@ export class CareerArc {
 
   protected readonly baseTags = computed(() => FACT_BY_ID[BASE].keywords.join(' · '));
 
+
   /** The year under the pointer, while it is scrubbing. */
   protected readonly year = signal<number | null>(null);
   /** Where the pointer is: which row, which year (a finger gets the card above its row). */
   private readonly hover = signal<{ lane: string; year: number; touch: boolean } | null>(null);
+  /** The small tooltip of a mouse over a stretch with nothing in it (as on GitHub): the years, and that there are no contributions. Squares with something in them have the card. */
+  protected readonly mini = computed(() => {
+    const h = this.hover();
+    const g = this.grid();
+    const lane = h && g.lanes.find((l) => l.id === h.lane);
+    if (!h || !lane || h.touch || h.year < g.min + g.baseYears) return null;
+    const at = h.year - g.min - g.baseYears;
+    if (at < lane.lead) {
+      const from = g.min + g.baseYears;
+      return { lane: h.lane, center: ((g.baseYears + lane.lead / 2) / g.cols) * 100, text: lane.lead > 1 ? `${from}–${from + lane.lead - 1} · ${this.x().noData}` : `${from} · ${this.x().noData}` };
+    }
+    if (lane.cells[at]!.level !== 0) return null;
+    return { lane: h.lane, center: ((h.year - g.min + 0.5) / g.cols) * 100, text: `${h.year} · ${this.x().noData}` };
+  });
   protected readonly tip = computed(() => {
     const h = this.hover();
     const g = this.grid();
     const lane = h && g.lanes.find((l) => l.id === h.lane);
     if (!h || !lane) return null;
     if (h.year < g.min + g.baseYears) {
-      return { lane: h.lane, up: h.touch, center: (g.baseYears / g.cols) * 50, title: this.t(BASE).title, lines: [`${this.t(BASE).org} · ${this.per(BASE)}`], tags: this.baseTags() };
+      return { lane: h.lane, up: h.touch, base: true, center: (g.baseYears / g.cols) * 100, title: this.t(BASE).title, lines: [`${this.t(BASE).org} · ${this.per(BASE)}`], tags: this.baseTags() };
     }
     const cell = lane.cells.find((c) => c.year === h.year);
     if (!cell || !cell.jobs.length) return null;
     return {
       lane: h.lane,
       up: h.touch,
+      base: false,
       center: ((h.year - g.min + 0.5) / g.cols) * 100,
       title: String(h.year),
       lines: cell.jobs.map((j) => `${this.t(j).title} · ${this.t(j).org}`),
       tags: cell.tags.join(' · '),
     };
   });
-  /** The highlight of the year under the pointer; over the foundation, the whole foundation block. */
+  /** Whether the pointer is on the foundation block (the first job). */
+  protected readonly overBase = computed(() => {
+    const h = this.hover();
+    return h !== null && h.year < this.grid().min + this.grid().baseYears;
+  });
+  /** The highlight of the year under the pointer (over the foundation, the block lights up as a whole instead: see `hot`). */
   protected readonly head = computed(() => {
     const g = this.grid();
     const i = Math.max(0, (this.year() ?? 0) - g.min);
@@ -238,6 +273,7 @@ export class CareerArc {
     this.stilled = false;
     if (this.idle(lane, this.yearAt(e))) {
       this.dismiss(); // a square with nothing in it is not a place to point at: it puts away what was shown
+      if (e.pointerType === 'mouse') this.hover.set({ lane, year: this.yearAt(e), touch: false });
       return;
     }
     if (e.pointerType !== 'mouse' && h && h.lane === lane && h.year === this.yearAt(e)) {
@@ -258,6 +294,7 @@ export class CareerArc {
     const year = this.yearAt(e);
     if (this.idle(lane, year)) {
       this.dismiss();
+      if (e.pointerType === 'mouse') this.hover.set({ lane, year, touch: false }); // the small tooltip says there is no data: no card and no highlight
       return;
     }
     this.year.set(year);
@@ -281,9 +318,9 @@ export class CareerArc {
   }
 
   private dismiss(): void {
+    this.hover.set(null);
     if (this.year() === null) return;
     this.year.set(null);
-    this.hover.set(null);
     this.lit = '';
     this.active.set(new Set());
   }

@@ -70,8 +70,9 @@ const REPO = 'https://github.com/er2es/er2es.github.io';
     @media (hover: hover) { a:hover { color: var(--fg); } }
     /* the last item, at the far end of the line: a round button like the contact icons above, not one more underlined line of text */
     /* the verification badge: one more link of the line, with a small dot in front (the page's accent): no box, no logo, no colour of the other party */
-    .cvp { gap: 0.5rem; margin-inline-start: auto; margin-inline-end: 0.75rem; } /* at the right of the line, beside the button that takes it to the top */
-    .cvp + .up { margin-inline-start: 0; }
+    .cvp { gap: 0.5rem; }
+    /* at the right of the line, beside the button that takes it to the top, only where the whole line fits (a narrower screen wraps it onto a line of its own, and there it stands at the left) */
+    @media (min-width: 1000px) { .cvp { margin-inline-start: auto; margin-inline-end: 0.75rem; } .cvp + .up { margin-inline-start: 0; } }
     .cvp i { position: relative; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
     /* while the link is pointed at (or focused) the dot gives off a ring now and then, like a live status light */
     @media (prefers-reduced-motion: no-preference) {

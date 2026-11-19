@@ -8,7 +8,13 @@ export interface GridLaneIn {
   tagsOf: (jobId: string) => readonly string[];
 }
 export interface GridCell { year: number; level: number; jobs: string[]; tags: string[] }
-export interface GridLane { id: string; since: number; cells: GridCell[] }
+export interface GridLane {
+  id: string;
+  since: number;
+  /** How many cells at the start of the row are empty (drawn as one bar, not as separate squares); all of them where the family is unused. */
+  lead: number;
+  cells: GridCell[];
+}
 export interface Grid {
   min: number;
   max: number;
@@ -44,7 +50,8 @@ export function careerGrid(jobs: readonly ArcJob[], baseId: string, lanes: reado
         const tags = [...new Set(active.flatMap((id) => lane.tagsOf(id)))];
         return { year, level: Math.min(MAX_LEVEL, Math.max(tags.length, active.length ? 1 : 0)), jobs: active, tags };
       });
-      return { id: lane.id, since: cells.find((c) => c.level > 0)?.year ?? min, cells };
+      const first = cells.findIndex((c) => c.level > 0);
+      return { id: lane.id, since: cells.find((c) => c.level > 0)?.year ?? min, lead: first === -1 ? cells.length : first, cells };
     }),
   };
 }
