@@ -89,7 +89,7 @@ import { FACT_BY_ID, FILES, PROJECT_ORDER, period, tagLabel, type SiteContent } 
       /* it is a little larger than its place and lifted off the page: it overlaps its neighbours' edges, with a shadow under it, so that it is clearly above them, not fitted between them */
       .card.float.lifted { scale: 1.035; translate: 0 -8px; box-shadow: 0 40px 80px -24px rgb(0 0 0 / 0.5), 0 14px 30px -14px rgb(0 0 0 / 0.3), 0 0 0 1px var(--ring); transition-delay: 0ms; }
       .card.float.opening { transition: height var(--dur-med) var(--ease-spring), margin-bottom var(--dur-med) var(--ease-spring), box-shadow var(--dur-fade) var(--ease-out), scale var(--dur-med) var(--ease-spring), translate var(--dur-med) var(--ease-spring); }
-      .card.float.closing { transition: height var(--dur-med) var(--ease-settle), margin-bottom var(--dur-med) var(--ease-settle), box-shadow var(--dur-fade) var(--ease-out) 250ms, scale var(--dur-med) var(--ease-settle), translate var(--dur-med) var(--ease-settle); }
+      .card.float.closing { z-index: 9; transition: height var(--dur-med) var(--ease-settle), margin-bottom var(--dur-med) var(--ease-settle), box-shadow var(--dur-fade) var(--ease-out) 250ms, scale var(--dur-med) var(--ease-settle), translate var(--dur-med) var(--ease-settle); }
     }
     /*
      * A bento grid, with no script: the two big projects first, then three tiles to a row, then the last one as a slim strip. Every tile
