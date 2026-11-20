@@ -259,8 +259,11 @@ export class Header {
       });
       const bar = this.host.nativeElement.querySelector<HTMLElement>('.bar');
       if (!bar) return;
-      const fit = (): void => this.outline.set(squirclePath(bar.offsetWidth, bar.offsetHeight, 22, 2));
-      new ResizeObserver(fit).observe(bar); // its first callback measures, after the first layout
+      // the size comes with the observer's entry (a read of offsetWidth here would ask for the layout again)
+      new ResizeObserver((entries) => {
+        const box = entries[entries.length - 1]?.borderBoxSize[0];
+        if (box) this.outline.set(squirclePath(Math.round(box.inlineSize), Math.round(box.blockSize), 22, 2));
+      }).observe(bar); // its first callback measures, after the first layout
 
       // reading progress, eased towards the real scroll position (frame-rate independent, instant under reduced motion)
       const svg = bar.querySelector<SVGSVGElement>('.read');
@@ -291,7 +294,8 @@ export class Header {
       };
       addEventListener('scroll', kick, { passive: true });
       addEventListener('resize', kick);
-      if (scrollY > 0) kick(); // at the top there is nothing to draw yet
+      // restored below the top (a reload): after the first frame, since reading scrollY while the page is still being hydrated forces its layout
+      requestAnimationFrame(() => setTimeout(() => { if (scrollY > 0) kick(); }));
       destroy.onDestroy(() => {
         removeEventListener('scroll', kick);
         removeEventListener('resize', kick);
