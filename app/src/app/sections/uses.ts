@@ -15,7 +15,6 @@ export const SKILL_TERMS: Readonly<Record<string, readonly string[]>> = {
   SCSS: ['SASS'],
   Bootstrap: ['Bootstrap 4'],
   Git: ['GitLab'],
-  QA: ['Selenium WebDriver'],
   'REST / SOAP API': ['API', 'REST', 'SOAP'],
   SPSS: ['IBM SPSS'],
   'Docker / Podman': ['Docker', 'Podman'],
