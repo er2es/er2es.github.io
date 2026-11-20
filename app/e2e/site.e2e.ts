@@ -1257,6 +1257,11 @@ test('text meets the enhanced (AAA) contrast of 7:1, in both themes and both lan
   for (const p of PAGES) for (const scheme of ['light', 'dark'] as const) {
     await page.emulateMedia({ colorScheme: scheme });
     await ready(page, p.url);
+    // text that is still fading in (a card's entrance) has not got its colour yet: the finite animations are let to end first
+    await page.evaluate(() => Promise.race([
+      Promise.all(document.getAnimations().filter((a) => a.playState === 'running' && a.timeline instanceof DocumentTimeline && a.effect?.getComputedTiming().iterations !== Infinity).map((a) => a.finished.catch(() => undefined))),
+      new Promise((r) => setTimeout(r, 1500)),
+    ]));
     const r = await new AxeBuilder({ page }).withRules(['color-contrast-enhanced']).analyze();
     expect(r.violations.map((v) => v.nodes.map((n) => n.target.join(' ')))).toEqual([]);
   }

@@ -74,7 +74,7 @@ export const FACTS: readonly Fact[] = [
 ];
 
 /** Hungarian for the tags that are phrases rather than product names; for a tag that is also a skill, the skill's own label is used. */
-const TAG_HU: Record<string, string> = { 'Legacy PHP refactor': 'Legacy PHP refaktorálás', 'Legacy PHP': 'Legacy PHP', 'Mutation testing': 'Mutációs tesztelés' };
+const TAG_HU: Record<string, string> = { 'Legacy PHP refactor': 'Legacy PHP refaktorálás', 'Legacy PHP': 'Legacy PHP', 'Mutation testing': 'Mutációs tesztelés', Caching: 'Gyorsítótárazás' };
 
 /** A tag of a job or project, in the language of the page: the same words as the skills list uses, never English left in the Hungarian page. */
 export function tagLabel(name: string, lang: Locale): string {
@@ -123,8 +123,8 @@ export const SKILLS: readonly { group: SkillGroupId; items: readonly SkillFact[]
     { name: 'PostgreSQL' },
     { name: 'MariaDB' },
     { name: 'MySQL' },
-    { name: 'Triggers' },
-    { name: 'Stored procedures' },
+    { name: 'Triggers', label: { hu: 'Triggerek' } },
+    { name: 'Stored procedures', label: { hu: 'Tárolt eljárások' } },
   ] },
   { group: 'devops', items: [
     { name: 'GitLab' },
