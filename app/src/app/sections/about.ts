@@ -33,9 +33,9 @@ import { FILES, type SiteContent } from '../content/model';
           <p class="intro">{{ c().about.research.intro }}</p>
           @if (topics().length) {
             <div class="topics" role="group" [attr.aria-label]="x().filterLabel">
-              <button type="button" class="topic" [attr.aria-pressed]="topic() === null" (click)="pick(null)">{{ x().allArticles }} <small>{{ list().length }}</small></button>
+              <button type="button" class="topic" [attr.aria-pressed]="topic() === null" (click)="pick(null)">{{ x().allArticles }} <small>({{ list().length }})</small></button>
               @for (t of topics(); track t.id) {
-                <button type="button" class="topic" [attr.aria-pressed]="topic() === t.id" (click)="pick(t.id)">{{ label(t.id) }} <small>{{ t.count }}</small></button>
+                <button type="button" class="topic" [attr.aria-pressed]="topic() === t.id" (click)="pick(t.id)">{{ label(t.id) }} <small>({{ t.count }})</small></button>
               }
             </div>
           }
@@ -55,7 +55,7 @@ import { FILES, type SiteContent } from '../content/model';
             @for (a of shown(); track a.url) {
               <li>
                 <a class="art" [attr.href]="a.url" target="_blank" rel="noopener noreferrer">
-                  <span class="meta mono"><time [attr.datetime]="a.date">{{ date(a.date) }}</time><span aria-hidden="true">·</span><span>{{ mins(a.minutes) }}</span></span>
+                  <span class="meta"><time [attr.datetime]="a.date">{{ date(a.date) }}</time><span aria-hidden="true">·</span><span>{{ mins(a.minutes) }}</span></span>
                   <span class="t">{{ a.title }}<span class="sr-only"> {{ x().newTab }}</span></span>
                   @if (pills(a).length) {
                     <span class="tags pills" aria-hidden="true">@for (id of pills(a); track id) { <span>{{ label(id) }}</span> }<i class="sel"></i></span>
@@ -68,7 +68,7 @@ import { FILES, type SiteContent } from '../content/model';
           </ul>
           @if ((rest() > 0 || restOnPhone() > 0) && !loading()) {
             <div class="more-wrap" [class.phone-only]="rest() === 0" [class.wide-only]="restOnPhone() === 0">
-              <button type="button" class="chip more-articles" (click)="expanded.set(true)"><span class="wide">{{ x().moreArticles.replace('{n}', '' + rest()) }}</span><span class="phone">{{ x().moreArticles.replace('{n}', '' + restOnPhone()) }}</span></button>
+              <button type="button" class="chip more-articles" (click)="expanded.set(true)"><span class="wide">{{ x().moreArticles.replace('{n}', '' + rest()) }}</span><span class="phone">{{ x().moreArticles.replace('{n}', '' + restOnPhone()) }}</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6" /></svg></button>
             </div>
           }
         </div>
@@ -84,8 +84,8 @@ import { FILES, type SiteContent } from '../content/model';
     .research .eyebrow { margin-bottom: 0.75rem; }
     .cards { list-style: none; margin: 1.25rem 0 0; padding: 0; display: grid; gap: 0.75rem; }
     .cards li + li { margin-top: 0; }
-    .art { position: relative; display: grid; grid-template-rows: auto 1fr auto; gap: 0.5rem; height: 100%; padding: 1rem 2.5rem 1rem 1rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-2); color: var(--fg); text-decoration: none; transition: border-color var(--dur-fade) var(--ease-out), scale var(--dur-short) var(--ease-spring); }
-    .meta { display: flex; flex-wrap: wrap; gap: 0 0.5rem; font-size: 0.75rem; color: var(--fg-2); white-space: nowrap; }
+    .art { position: relative; display: grid; grid-template-rows: auto 1fr auto; gap: 0.5rem; height: 100%; padding: 1rem 2.5rem 1rem 1rem; border: 1px solid transparent; border-radius: var(--radius); background: var(--bg-2); color: var(--fg); text-decoration: none; transition: border-color var(--dur-fade) var(--ease-out), scale var(--dur-short) var(--ease-spring); }
+    .meta { display: flex; flex-wrap: wrap; gap: 0 0.5rem; font: 400 0.8125rem / 1.4 var(--font); font-variant-numeric: tabular-nums; color: var(--fg-2); white-space: nowrap; }
     /* the topics of an article: the same pills as the tags of the role cards, every one of them (a smaller size, one row; they take the room under the arrow as well) */
     .pills { align-self: end; margin-right: -1.5rem; font-size: 0.75rem; }
     .pills span { padding: 0.2rem 0.5rem; }
@@ -97,7 +97,7 @@ import { FILES, type SiteContent } from '../content/model';
     .topic small { font-size: inherit; color: var(--fg-2); font-variant-numeric: tabular-nums; } /* a colour, not an opacity: the count keeps the 7:1 contrast */
     .topic[aria-pressed='true'] small { color: var(--fg); }
     @media (hover: hover) { .topic:hover { background: var(--tint-hover); color: var(--fg); } }
-    .topic[aria-pressed='true'] { background: var(--tint-accent); border-color: var(--ring-accent); color: var(--fg); }
+    .topic[aria-pressed='true'] { background: var(--tint-hover); border-color: var(--line); color: var(--fg); }
     .topic:active { scale: var(--press-scale); transition-duration: var(--dur-tap); transition-timing-function: var(--ease-out); }
     @media (pointer: coarse) { .topic { min-height: 44px; } }
     @media (prefers-reduced-motion: reduce) { .topic:active { scale: none; } }
@@ -106,16 +106,18 @@ import { FILES, type SiteContent } from '../content/model';
     .notice .link-action { min-height: 44px; margin-inline: 0; }
     .retry { border: 1px solid var(--ring); }
     .more-wrap { display: flex; justify-content: center; margin-top: 1.25rem; }
-    .more-articles { border: 1px solid var(--ring); padding-inline: 1.25rem; }
-    @media (hover: hover) { .more-articles:hover { border-color: var(--ring-accent); } }
+    .more-articles { gap: 0.4rem; border: 1px solid var(--ring); padding-inline: 1.25rem 1rem; background: var(--bg-2); }
+    @media (hover: hover) and (prefers-reduced-motion: no-preference) { .more-articles:hover svg { animation: dip-more var(--dur-short) linear; } }
+    @keyframes dip-more { 0% { animation-timing-function: var(--ease-out); } 35% { translate: 0 2px; animation-timing-function: var(--ease-in-out); } 100% { translate: 0 0; } }
+    @media (hover: hover) { .chip.more-articles:hover { border-color: var(--ring-accent); background: linear-gradient(var(--tint-hover), var(--tint-hover)), var(--bg-2); } }
     /* while the list is being fetched: cards in the same place, with a soft light running through their lines */
-    .skel { display: grid; align-content: start; gap: 0.75rem; min-height: 8.5rem; padding: 1rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-2); }
+    .skel { display: grid; align-content: start; gap: 0.75rem; min-height: 8.5rem; padding: 1rem; border: 1px solid transparent; border-radius: var(--radius); background: var(--bg-2); }
     .skel i { display: block; height: 0.75rem; border-radius: 6px; background: linear-gradient(90deg, var(--tint-current) 0%, var(--tint-hover) 50%, var(--tint-current) 100%); background-size: 250% 100%; }
     .skel i:nth-child(1) { width: 40%; }
     .skel i:nth-child(3) { width: 70%; }
     @media (prefers-reduced-motion: no-preference) { .skel i { animation: skel 1.4s linear infinite; } }
     @keyframes skel { from { background-position: 100% 0; } to { background-position: -150% 0; } }
-    .t { font-weight: 600; line-height: 1.35; }
+    .t { font-weight: 600; font-size: var(--t-headline); line-height: 1.3; }
     .go { position: absolute; top: 0.9rem; right: 0.9rem; opacity: 0.55; }
     /* the same hover language as the role cards and the skill pills (an accent outline and a tint), not a lift: nothing here moves away from the pointer, and nothing sticks on a touch screen */
     @media (hover: hover) { .art:hover { border-color: var(--ring-accent); background-image: linear-gradient(var(--tint-hover), var(--tint-hover)); } }

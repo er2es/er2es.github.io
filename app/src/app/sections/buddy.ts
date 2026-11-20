@@ -149,7 +149,7 @@ export class BuddyFigure {
         readTiles(); // before the step, so that the very first one already stands on the tile as it is
         buddy.tick(dt);
         const fell = buddy.takeDeath();
-        if (fell) graveyard.add(fell);
+        if (fell) graveyard.add(stacked ? 1 : fell); // off a column of tiles (the hobbies) it is always the right-hand patch at the foot of the page, whichever edge it fell off
         const v = buddy.view();
         draw(v);
         const adrift = v.visible && (v.spin !== 0 || v.web !== null);

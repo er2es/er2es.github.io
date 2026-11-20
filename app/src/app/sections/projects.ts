@@ -2,6 +2,9 @@ import { Component, computed, input, signal } from '@angular/core';
 import { EXTRA } from '../content/extra';
 import { FACT_BY_ID, FILES, PROJECT_ORDER, period, tagLabel, type SiteContent } from '../content/model';
 
+/** The rows of three tiles of the wide bento (see the grid areas below). */
+const ROWS: readonly (readonly string[])[] = [['cv-site', 'audit', 'gov-reporting'], ['wordpress', 'surveys', 'sport-programme']];
+
 @Component({
   selector: 'app-projects',
   template: `
@@ -14,14 +17,14 @@ import { FACT_BY_ID, FILES, PROJECT_ORDER, period, tagLabel, type SiteContent } 
             <li class="card reveal" [class.big]="big(id)" [attr.data-p]="id" [id]="'p-' + id" tabindex="-1">
               <h3>{{ c().items[id].title }}</h3>
               @if (per(id)) { <p class="per">{{ per(id) }}</p> }
-              <div class="fold" [id]="'sum-' + id" [class.cut]="long(id)" [class.open]="opened().has(id)">
+              <div class="fold" [id]="'sum-' + id" [class.cut]="long(id)" [class.wide]="wide(id)" [class.open]="opened().has(id)">
                 <p class="sum">{{ c().items[id].summary }}</p>
                 @if (c().items[id].points.length) {
                   <ul class="pts">@for (p of c().items[id].points; track $index) { <li>{{ p }}</li> }</ul>
                 }
               </div>
               @if (long(id)) {
-                <button type="button" class="more" [attr.aria-expanded]="opened().has(id)" [attr.aria-controls]="'sum-' + id" (click)="fold(id)">
+                <button type="button" class="more" [class.wide]="wide(id)" [attr.aria-expanded]="opened().has(id)" [attr.aria-controls]="'sum-' + id" (click)="fold(id)">
                   <span class="lbl">{{ opened().has(id) ? x().less : x().more }}</span>
                   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6" /></svg>
                 </button>
@@ -51,22 +54,36 @@ import { FACT_BY_ID, FILES, PROJECT_ORDER, period, tagLabel, type SiteContent } 
     .fold { display: grid; gap: 0.75rem; }
     /* a pill in the accent tint, with its words: it sits on the fade where the text trails off, and its chevron nods twice (not for ever: movement that starts by itself and goes on beside the text is not allowed to) */
     .more {
-      position: relative; justify-self: center; margin-top: -0.375rem; display: inline-flex; align-items: center; gap: 0.4rem; height: 44px; padding: 0 1rem 0 1.1rem;
-      border: 1px solid var(--ring-accent); border-radius: 999px; background: var(--tint-accent); color: var(--fg); font: 600 var(--t-footnote) / 1 var(--font); cursor: pointer;
-      box-shadow: 0 8px 20px -12px var(--ring-accent); transition: scale var(--dur-short) var(--ease-spring), background-color var(--dur-fade) var(--ease-out);
+      position: relative; justify-self: center; align-self: center; margin-top: -0.375rem; display: inline-flex; align-items: center; gap: 0.4rem; height: 36px; padding: 0 1rem;
+      border: 1px solid var(--ring); border-radius: 999px; background: transparent; color: var(--fg); font: 500 var(--t-footnote) / 1 var(--font); cursor: pointer;
+      transition: scale var(--dur-short) var(--ease-spring), background-color var(--dur-fade) var(--ease-out), border-color var(--dur-fade) var(--ease-out);
     }
-    .more:active { scale: var(--press-scale); background: var(--tint-accent-strong); transition-duration: var(--dur-tap); transition-timing-function: var(--ease-out); }
+    @media (hover: hover) { .more:hover { background: var(--tint-hover); border-color: var(--ring-accent); } }
+    @media (pointer: coarse), (max-width: 799px) { .more { height: 44px; } } /* a finger needs the full 44 px */
+    .more:active { scale: var(--press-scale); background: var(--tint-hover); transition-duration: var(--dur-tap); transition-timing-function: var(--ease-out); }
     .more svg { transition: rotate var(--dur-short) var(--ease-out); }
     .more[aria-expanded='true'] svg { rotate: 180deg; }
     @media (prefers-reduced-motion: no-preference) {
       .more[aria-expanded='false'] svg { animation: nod 2.8s var(--ease-in-out) 1.2s 2; }
     }
+    /* on hover the chevron dips and comes back to its place, once */
+    @media (hover: hover) and (prefers-reduced-motion: no-preference) { .more:hover svg { animation: dip var(--dur-short) linear; } }
+    @keyframes dip { 0% { animation-timing-function: var(--ease-out); } 35% { translate: 0 2px; animation-timing-function: var(--ease-in-out); } 100% { translate: 0 0; } }
     @keyframes nod { 0%, 70%, 100% { translate: 0 0; } 80% { translate: 0 3px; } 90% { translate: 0 0; } }
     /* on a phone a long tile (the text and its list together) is cut off a few lines down, fading out instead of ending mid-word */
     @property --keep { syntax: '<percentage>'; inherits: false; initial-value: 100%; }
     @media (max-width: 799px) {
       .fold.cut { overflow: hidden; --keep: 100%; -webkit-mask-image: linear-gradient(#000 var(--keep), transparent); mask-image: linear-gradient(#000 var(--keep), transparent); transition: --keep var(--dur-med) var(--ease-out), max-height var(--dur-med) var(--ease-out); }
       .fold.cut:not(.open) { max-height: 8.5em; --keep: 45%; }
+    }
+    /*
+     * In the rows of three of the bento a long text folds too, and by the row: the fold takes the room that the other tiles of the row leave
+     * it (it is a flexible part of its tile, which is as tall as the row), with a floor of a few lines, so a row is as tall as its
+     * shortest-text tiles need and "more" opens what is really hidden. Not the two big tiles, and not the strip.
+     */
+    @media (min-width: 1000px) {
+      .fold.wide { flex: 1 1 0; min-height: 5.5em; overflow: hidden; --keep: 45%; -webkit-mask-image: linear-gradient(#000 var(--keep), transparent); mask-image: linear-gradient(#000 var(--keep), transparent); transition: --keep var(--dur-med) var(--ease-out); }
+      .fold.wide.open { flex: none; --keep: 100%; }
     }
     /*
      * A bento grid, with no script: the two big projects first, then three tiles to a row, then the last one as a slim strip. Every tile
@@ -84,6 +101,7 @@ import { FACT_BY_ID, FILES, PROJECT_ORDER, period, tagLabel, type SiteContent } 
       .more { display: none; }
     }
     @media (min-width: 1000px) {
+      .more.wide { display: inline-flex; }
       .cards { grid-template-columns: repeat(12, minmax(0, 1fr)); grid-template-areas: 'a a a a a a b b b b b b' 'c c c c d d d d e e e e' 'f f f f g g g g h h h h' 'i i i i i i i i i i i i'; }
       /* the last project is a strip: its name and years, its text, its tags, side by side */
       .card[data-p='admissions-map'] { display: grid; grid-template-columns: 15rem minmax(0, 1fr) auto; grid-template-areas: 't s g' 'p s g'; align-items: center; column-gap: 1.5rem; row-gap: 0.125rem; }
@@ -110,11 +128,19 @@ export class Projects {
   protected big = (id: (typeof PROJECT_ORDER)[number]): boolean => id === 'fuzzphony' || id === 'slimfony';
   protected readonly opened = signal<ReadonlySet<string>>(new Set());
   protected long = (id: (typeof PROJECT_ORDER)[number]): boolean => (this.c().items[id].summary ?? '').length > 220;
+  /** A long text of one of the smaller tiles (not the two big ones, not the strip), which folds on a wide screen too. */
+  protected wide = (id: (typeof PROJECT_ORDER)[number]): boolean => !this.big(id) && id !== 'admissions-map' && (this.c().items[id].summary ?? '').length > 300;
   protected fold(id: string): void {
     const el = document.getElementById('sum-' + id);
-    if (el && matchMedia('(max-width: 799px)').matches) this.glide(el, !this.opened().has(id));
+    if (el && matchMedia('(max-width: 799px)').matches) this.glide(el, !this.opened().has(id)); // (on a wide screen the fold opens at once: its row grows with it)
     const next = new Set(this.opened());
-    if (!next.delete(id)) next.add(id);
+    const open = !next.has(id);
+    // in the rows of three the tiles share the row's height, so the whole row opens and closes together (its buttons never disagree)
+    const group = matchMedia('(min-width: 1000px)').matches ? (ROWS.find((r) => r.includes(id)) ?? [id]) : [id];
+    for (const g of group) {
+      if (open) next.add(g);
+      else next.delete(g);
+    }
     this.opened.set(next);
   }
   /** Moves a fold between its cut height and its full height in pixels (max-height cannot animate to "none"), then hands the height back to the stylesheet. */

@@ -110,7 +110,7 @@ export class Home {
       const warm = (e: KeyboardEvent): void => {
         if (e.key !== 'Shift') return;
         window.removeEventListener('keydown', warm);
-        new Image().src = '/img/pup.webp';
+        for (const f of ['pup', 'dog-teen', 'dog-adult']) new Image().src = `/img/${f}.webp`;
       };
       window.addEventListener('keydown', warm);
       destroy.onDestroy(() => window.removeEventListener('keydown', warm));

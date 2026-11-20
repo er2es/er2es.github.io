@@ -39,6 +39,11 @@ import { Email } from './email';
   styles: [`
     .act { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1rem; }
     .icons { display: flex; gap: 0.5rem; }
+    /* under the e-mail button (a phone) the icons are as wide as the button: the first at its left edge, the last at its right, the gaps a little wider */
+    @media (max-width: 639px) {
+      .act { display: grid; width: fit-content; max-width: 100%; justify-items: stretch; }
+      .icons { justify-content: space-between; }
+    }
     .icon {
       display: inline-grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; color: var(--fg);
       border: 1px solid var(--line); transition: background-color var(--dur-fade) var(--ease-out), scale var(--dur-short) var(--ease-spring);

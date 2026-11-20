@@ -10,14 +10,14 @@ const REPO = 'https://github.com/er2es/er2es.github.io';
 @Component({
   selector: 'app-footer',
   template: `
-    <footer class="block alt foot">
-      <div class="wrap mono">
+    <footer class="block alt foot" [class.haunted]="ground().l || ground().r">
+      <div class="wrap">
         <span>© {{ year }} {{ c().hero.name }}</span>
         <a [attr.href]="release" target="_blank" rel="noopener noreferrer">v{{ version }}<span class="sr-only"> {{ x().newTab }}</span></a>
         <a [attr.href]="licence" target="_blank" rel="noopener noreferrer">{{ x().source }}: MIT<span class="sr-only"> {{ x().newTab }}</span></a>
         <a [attr.href]="contentLicence" target="_blank" rel="noopener noreferrer">{{ x().contentLicence }}<span class="sr-only"> {{ x().newTab }}</span></a>
         <a class="cvp" [attr.href]="cvp" target="_blank" rel="noopener noreferrer"><i aria-hidden="true"></i>Anthropic CVP: Defense Access<span class="sr-only"> {{ x().newTab }}</span></a>
-        <a class="up" href="#" (click)="toTop($event)"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 19V5M5 12l7-7 7 7" /></svg><span class="sr-only">{{ x().toTop }}</span></a>
+        <a class="up" href="#" (click)="toTop($event)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 19V5M5 12l7-7 7 7" /></svg><span class="sr-only">{{ x().toTop }}</span></a>
       </div>
       <div class="yard" aria-hidden="true"><div class="wrap lot">
         @if (ground().l) { <i class="ground l"></i> }
@@ -32,8 +32,9 @@ const REPO = 'https://github.com/er2es/er2es.github.io';
     </footer>
   `,
   styles: [`
-    .foot { position: relative; padding-block: 1.5rem 2.75rem; font-size: var(--t-footnote); color: var(--fg-2); }
+    .foot { position: relative; padding-block: 0.75rem; font-size: var(--t-footnote); color: var(--fg-2); }
     /* those who fell off the tiles are gone: a small cross, leaning, over a patch of swamp that has closed over them */
+    .foot.haunted { padding-bottom: 2.25rem; } /* room for the swamp patches, only where there are any */
     .yard { position: absolute; inset-inline: 0; bottom: 6px; height: 40px; pointer-events: none; overflow: hidden; }
     .lot { position: relative; height: 100%; } /* the same column as the text above: the two patches lie at its two edges */
     /* a hairline of ground along the patch, fading out at the ends */
@@ -64,9 +65,11 @@ const REPO = 'https://github.com/er2es/er2es.github.io';
     @keyframes ring { 0% { opacity: 0.8; scale: 0.3 0.3; } 100% { opacity: 0; scale: 1.5 1.5; } }
     @keyframes bubble { 0% { opacity: 0; translate: 0 2px; } 25% { opacity: 1; } 100% { opacity: 0; translate: 0 -10px; } }
     @keyframes rise { 0% { opacity: 0; translate: 0 6px; } 100% { opacity: 1; translate: 0 0; } }
-    .foot.block { border-top: 1px solid var(--accent); } /* the page ends on a line in the accent colour */
+    .foot.block { background: color-mix(in srgb, var(--bg-2) 45%, transparent); border-top: 0; }
+    /* the line the page ends on: the accent colour, fading out toward both edges */
+    .foot::before { content: ''; position: absolute; inset: 0 0 auto; height: 1px; background: linear-gradient(90deg, transparent, var(--accent) 20% 80%, transparent); pointer-events: none; } /* a soft surface, lighter than the cards: the backdrop still shows faintly through the end of the page */ /* the page ends on a line in the accent colour */
     .wrap { display: flex; flex-wrap: wrap; gap: 0.25rem 1.25rem; align-items: center; }
-    a { display: inline-flex; align-items: center; min-height: 44px; margin-inline: -0.5rem; padding-inline: 0.5rem; color: inherit; text-underline-offset: 0.2em; }
+    a { display: inline-flex; align-items: center; min-height: 32px; margin-inline: -0.5rem; padding-inline: 0.5rem; color: inherit; text-underline-offset: 0.2em; }
     @media (hover: hover) { a:hover { color: var(--fg); } }
     /* the last item, at the far end of the line: a round button like the contact icons above, not one more underlined line of text */
     /* the verification badge: one more link of the line, with a small dot in front (the page's accent): no box, no logo, no colour of the other party */
@@ -79,8 +82,16 @@ const REPO = 'https://github.com/er2es/er2es.github.io';
       .cvp:is(:hover, :focus-visible) i::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: var(--accent); animation: dot-pulse 1.8s var(--ease-out) infinite; }
     }
     @keyframes dot-pulse { from { scale: 1; opacity: 0.55; } to { scale: 3; opacity: 0; } }
-    .up { justify-content: center; width: 44px; margin: 0 0 0 auto; padding: 0; border: 1px solid var(--line); border-radius: 50%; text-decoration: none; transition: background-color var(--dur-fade) var(--ease-out), color var(--dur-fade) var(--ease-out); }
-    @media (hover: hover) { .up:hover { background: var(--tint-hover); } }
+    /* the way back to the top: the same shape and size as the monogram at the other corner of the page (36px, the same rounded square), so the two mirror each other */
+    .up { position: relative; justify-content: center; width: 36px; height: 36px; min-height: 36px; margin: 0 0 0 auto; padding: 0; border: 1px solid var(--ring); border-radius: var(--r-pop); text-decoration: none; transition: background-color var(--dur-fade) var(--ease-out), border-color var(--dur-fade) var(--ease-out); }
+    @media (hover: hover) { .up:hover { background: var(--tint-hover); border-color: var(--ring-accent); } }
+    @media (hover: hover) and (prefers-reduced-motion: no-preference) { .up:hover svg { animation: lift var(--dur-short) linear; } }
+    @keyframes lift { 0% { animation-timing-function: var(--ease-out); } 35% { translate: 0 -2px; animation-timing-function: var(--ease-in-out); } 100% { translate: 0 0; } }
+    @media (pointer: coarse), (max-width: 799px) {
+      a { min-height: 44px; }
+      .up { width: 44px; height: 44px; min-height: 44px; border-color: transparent; }
+      .up::before { content: ''; position: absolute; inset: 3px; border: 1px solid var(--ring); border-radius: var(--r-pop); transition: background-color var(--dur-fade) var(--ease-out); }
+    }
     /* room for the floating tab bar on phones */
     @media (max-width: 899px) { .foot { padding-bottom: calc(var(--tabbar-h) + 2rem + env(safe-area-inset-bottom)); } }
   `],
