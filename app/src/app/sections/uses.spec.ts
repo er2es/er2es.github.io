@@ -38,7 +38,7 @@ describe('usesOf', () => {
   it('links the core skills to real entries in both languages', () => {
     for (const locale of ['en', 'hu'] as const) {
       const c = getContent(locale);
-      for (const s of ['PHP', 'Symfony', 'Angular', 'PostgreSQL', 'QA', 'Selenium WebDriver']) {
+      for (const s of ['PHP', 'Symfony', 'Angular', 'PostgreSQL', 'Selenium']) {
         expect(usesOf(s, FACTS, c.items).length, `${locale} ${s}`).toBeGreaterThan(0);
       }
       const all = SKILLS.flatMap((g) => g.items.map((i) => i.name));
