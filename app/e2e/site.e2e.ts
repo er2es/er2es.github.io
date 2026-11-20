@@ -1105,6 +1105,19 @@ test.describe('HIG and motion polish', () => {
       await expect.poll(() => woods.evaluate((e) => getComputedStyle(e).color)).not.toBe(before); // the accent colour, as under a mouse (it fades in)
       await expect.poll(() => woods.evaluate((e) => e.querySelector('.tree')!.getAnimations().map((a) => (a as CSSAnimation).animationName).join())).toContain('sway'); // the trees sway
     });
+
+    test('three quick taps on the address button bring up the dog scene, and the round X closes it', async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 800 });
+      await ready(page, '/hu/');
+      const addr = page.locator('.addr').first();
+      await addr.scrollIntoViewIfNeeded();
+      await addr.tap();
+      await addr.tap();
+      await addr.tap();
+      await expect(page.locator('app-pup .pup')).toBeVisible();
+      await page.getByRole('button', { name: 'Bezárás' }).tap();
+      await expect(page.locator('app-pup')).toHaveCount(0, { timeout: 3000 });
+    });
   });
 
   test('the theme answer is a live region that is always there, so it is announced', async ({ page }) => {

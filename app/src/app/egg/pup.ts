@@ -9,6 +9,9 @@ import { Component, input, output } from '@angular/core';
 @Component({
   selector: 'app-pup',
   template: `
+    <button type="button" class="x" [class.leave]="leaving()" [class.sheet]="state() === 'sheet'" [attr.aria-label]="closeLabel()" (click)="dismiss.emit()">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18" /></svg>
+    </button>
     <div class="pup" [class.sheet]="state() === 'sheet'" [class.leave]="leaving()" aria-hidden="true"
          (click)="advance.emit()" (pointermove)="lean($event)">
       <img class="bg" src="/img/pup.webp" alt="" decoding="async">
@@ -37,7 +40,7 @@ import { Component, input, output } from '@angular/core';
   styles: [`
     :host { display: contents; }
     .pup {
-      position: fixed; inset: 0; z-index: 15; overflow: hidden; cursor: pointer; background: #1a0f08;
+      position: fixed; inset: 0; z-index: 25; overflow: hidden; cursor: pointer; background: #1a0f08; /* over the bar and the tab bar (z-index 20): the scene is a layer of its own */
       animation: pup-in var(--dur-long) var(--ease-out) both;
     }
     .pup.sheet { cursor: default; }
@@ -59,8 +62,10 @@ import { Component, input, output } from '@angular/core';
     .pup::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at center, transparent 35%, rgba(0, 0, 0, 0.6)); }
     @keyframes drift { to { scale: 1.1; translate: -2% 1.5%; } }
 
-    .eyebrow { position: absolute; z-index: 2; left: max(1.5rem, 6vw); top: 5.5rem; margin: 0; font: 500 var(--t-footnote) / 1 var(--mono); letter-spacing: 0.04em; color: rgba(255, 255, 255, 0.75); pointer-events: none; }
-    .stage { position: absolute; inset: 0; display: grid; place-items: center; perspective: 1100px; pointer-events: none; z-index: 1; padding: 6.5rem 1.5rem 7.5rem; transition: opacity var(--dur-fade) var(--ease-out), scale var(--dur-med) var(--ease-out); }
+    .eyebrow { position: absolute; z-index: 2; left: max(1.5rem, 6vw); top: 1.75rem; margin: 0; font: 500 var(--t-footnote) / 1 var(--mono); letter-spacing: 0.04em; color: rgba(255, 255, 255, 0.75); pointer-events: none; }
+    .eyebrow { transition: opacity var(--dur-fade) var(--ease-out); }
+    .pup.sheet .eyebrow, .pup.leave .eyebrow { opacity: 0; }
+    .stage { position: absolute; inset: 0; display: grid; place-items: center; perspective: 1100px; pointer-events: none; z-index: 1; padding: 4.5rem 1.5rem 7.5rem; transition: opacity var(--dur-fade) var(--ease-out), scale var(--dur-med) var(--ease-out); }
     .pup.sheet .stage { opacity: 0; scale: 0.94; }
     /* the life of the dog on one screen: three photos, a dotted trail winding between them, each a little off from the others */
     .map { display: flex; align-items: center; justify-content: center; transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform var(--dur-press) var(--ease-out); }
@@ -100,9 +105,9 @@ import { Component, input, output } from '@angular/core';
     @keyframes trail-draw { from { clip-path: inset(-12px 100% -12px -12px); } to { clip-path: inset(-12px); } }
     @keyframes trail-draw-v { from { clip-path: inset(-12px -12px 100% -12px); } to { clip-path: inset(-12px); } }
     @media (max-width: 759px) {
-      .stage { padding: 5.5rem 1.25rem calc(var(--tabbar-h, 64px) + 6rem + env(safe-area-inset-bottom)); }
+      .stage { padding: 4.5rem 1.25rem calc(6.25rem + env(safe-area-inset-bottom)); }
       .map { flex-direction: column; }
-      .p .frame { height: min(19vh, 9.5rem); }
+      .p .frame { height: min(18vh, 9rem); }
       .l .frame { width: min(52vw, 13rem); }
       .stop { grid-auto-flow: column; align-items: center; gap: 0.75rem; }
       .stop:nth-of-type(1) { translate: -12vw 0; } .stop:nth-of-type(2) { translate: 6vw 0; } .stop:nth-of-type(3) { translate: -8vw 0; }
@@ -111,6 +116,17 @@ import { Component, input, output } from '@angular/core';
       .trail:nth-of-type(2) path { d: path('M70 0 C 100 24, 14 36, 40 62 S 6 84, 30 100'); }
     }
 
+    /* the way out: a small round glass button, above the scene, under the bar's right end */
+    .x {
+      position: fixed; z-index: 26; top: 1.25rem; right: max(1.5rem, 6vw); width: 44px; height: 44px; display: grid; place-items: center; padding: 0; border-radius: 50%; color: #fff; cursor: pointer;
+      background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.38); -webkit-backdrop-filter: blur(14px) saturate(160%); backdrop-filter: blur(14px) saturate(160%);
+      box-shadow: 0 10px 30px -8px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+      animation: pup-in var(--dur-long) var(--ease-out) both; transition: opacity var(--dur-fade) var(--ease-out), background-color var(--dur-fade) var(--ease-out), scale var(--dur-short) var(--ease-spring);
+    }
+    .x.sheet, .x.leave { opacity: 0; pointer-events: none; }
+    @media (hover: hover) { .x:hover { background: rgba(255, 255, 255, 0.28); } }
+    .x:active { scale: var(--press-scale); transition-duration: var(--dur-tap); transition-timing-function: var(--ease-out); }
+    .x:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
     /* "click to go on": a glass bubble with rings that spread out of it, until the photo is dismissed */
     .hint {
       position: absolute; z-index: 2; left: 50%; bottom: max(2.5rem, env(safe-area-inset-bottom)); translate: -50% 0;
@@ -127,10 +143,12 @@ import { Component, input, output } from '@angular/core';
     @keyframes hint-in { from { opacity: 0; scale: 0.6; } }
     @keyframes ring { from { scale: 1; opacity: 0.8; } to { scale: 2.1; opacity: 0; } }
     @keyframes nudge { 50% { translate: 3px 0; } }
-    @media (max-width: 899px) { .hint { bottom: calc(var(--tabbar-h, 64px) + 2.5rem + env(safe-area-inset-bottom)); } }
+    @media (max-width: 899px) { .hint { bottom: calc(2.25rem + env(safe-area-inset-bottom)); } }
+    /* on a phone both round buttons are smaller */
+    @media (max-width: 759px) { .hint { width: 44px; height: 44px; } .hint svg { width: 18px; height: 18px; } .x { top: max(1rem, env(safe-area-inset-top)); width: 38px; height: 38px; } .x svg { width: 16px; height: 16px; } }
 
     @media (prefers-reduced-motion: reduce) {
-      .pup, .pup.leave, .bg, .frame, .tag, .trail, .hint, .hint svg, .stage, .map, .pup::before { animation: none; transition: none; }
+      .pup, .pup.leave, .x, .bg, .frame, .tag, .trail, .hint, .hint svg, .stage, .map, .pup::before { animation: none; transition: none; }
       .hint::before, .hint::after { animation: none; }
     }
   `],
@@ -140,6 +158,10 @@ export class Pup {
   /** Fading out: whatever is showing (the photo, or only the glow behind the sheet) fades with it. */
   readonly leaving = input(false);
   readonly advance = output<void>();
+  /** Spoken on the round close button. */
+  readonly closeLabel = input('Close');
+  /** The close button: the way out on a touch screen (a keyboard has Escape). */
+  readonly dismiss = output<void>();
 
   protected lean(e: PointerEvent): void {
     if (e.pointerType !== 'mouse') return;

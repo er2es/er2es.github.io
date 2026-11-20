@@ -11,6 +11,8 @@ import { onTripleShift } from './core/triple-shift';
 import { Egg } from './egg/egg';
 import { Footer } from './shell/footer';
 import { Pup } from './egg/pup';
+import { onTripleTap } from './core/triple-tap';
+import { EXTRA } from './content/extra';
 import { Palette } from './search/palette';
 import { About } from './sections/about';
 import { Contact } from './sections/contact';
@@ -58,7 +60,7 @@ import { TabBar } from './shell/tabbar';
     }
     @if (pupShown(); as shown) {
       @defer (on immediate) {
-        <app-pup [state]="shown" [leaving]="pupLeaving()" (advance)="openSheet()" />
+        <app-pup [state]="shown" [leaving]="pupLeaving()" [closeLabel]="closeLabel()" (advance)="openSheet()" (dismiss)="leavePup()" />
       }
     }
     @if (eggOpen()) {
@@ -88,6 +90,7 @@ export class Home {
   /** The pup's scene or sheet, or null while it is off: narrows the state for the template without a cast. */
   protected readonly pupShown = computed(() => { const p = this.pup(); return p === 'off' ? null : p; });
   protected readonly behind = computed(() => (this.pup() === 'off' ? null : ''));
+  protected readonly closeLabel = computed(() => EXTRA[this.c().lang].close);
   protected readonly mainHref = computed(() => `${this.locale() === 'hu' ? '/hu/' : '/'}#main`);
 
   constructor() {
@@ -106,6 +109,8 @@ export class Home {
       destroy.onDestroy(stop);
       destroy.onDestroy(initLit());
       destroy.onDestroy(onTripleShift(() => this.egg()));
+      // a touch screen has no Shift: three quick taps on the address button, which copies, do the same
+      if (matchMedia('(pointer: coarse)').matches) destroy.onDestroy(onTripleTap('.addr', () => this.egg()));
       // the first Shift already warms the photo, so it is there by the third
       const warm = (e: KeyboardEvent): void => {
         if (e.key !== 'Shift') return;
@@ -145,7 +150,7 @@ export class Home {
     this.eggOpen.set(true);
   }
 
-  private leavePup(): void {
+  protected leavePup(): void {
     if (this.pup() === 'off' || this.pupLeaving()) return;
     this.pupLeaving.set(true);
     // the fade-out lasts 520 ms; with reduced motion there is none, so nothing waits

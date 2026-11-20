@@ -21,7 +21,12 @@ export class Backdrop {
 
   constructor() {
     const destroy = inject(DestroyRef);
-    afterNextRender(() => {
+    let gone = false;
+    destroy.onDestroy(() => (gone = true));
+    // started after the first frame has been laid out: reading scrollY and scrollHeight in the middle of hydration would force the page's layout (33 ms)
+    afterNextRender(() => requestAnimationFrame(() => setTimeout(init)));
+    const init = (): void => {
+      if (gone) return;
       const cv = this.canvas().nativeElement;
       const ctx = cv.getContext('2d');
       if (!ctx) return;
@@ -158,6 +163,6 @@ export class Backdrop {
         removeEventListener('pointermove', onMove);
         document.documentElement.removeEventListener('pointerleave', onLeave);
       });
-    });
+    };
   }
 }

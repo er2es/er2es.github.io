@@ -77,31 +77,49 @@ function measure(t: SiteContent['ui']['egg']): Promise<Row[]> {
     <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -- a click on the dialog's own backdrop closes it; Esc and the Close button are the keyboard routes -->
     <dialog #dlg class="egg glass" [attr.aria-label]="c().ui.egg.title" (close)="closed.emit()" (click)="backdrop($event)">
       <div class="in" tabindex="-1" autofocus>
-        <h2>{{ c().ui.egg.title }}</h2>
-        <p class="sub">{{ c().ui.egg.intro }}</p>
-        <dl>
-          @for (r of rows(); track r.label) {
-            <div class="r"><dt>{{ r.label }}</dt><dd class="mono">{{ r.value }}</dd></div>
-          }
-        </dl>
-        <div class="foot">
-          <a class="btn" [attr.href]="pagespeed()" target="_blank" rel="noopener noreferrer">
-            <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-              <path d="M3 14a7 7 0 1 1 14 0" /><path d="M10 14l3.2-4.2" /><circle cx="10" cy="14" r="1" fill="currentColor" stroke="none" />
-            </svg>
-            <span>{{ c().ui.egg.pagespeed }}</span>
-            <span class="sr-only"> {{ extra().newTab }}</span>
-          </a>
-          <button type="button" class="chip" (click)="dlg.close()">{{ c().ui.egg.close }}</button>
+        <header class="top">
+          <h2>{{ c().ui.egg.title }}</h2>
+          <button type="button" class="x" [attr.aria-label]="c().ui.egg.close" (click)="dlg.close()">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18" /></svg>
+          </button>
+        </header>
+        <div class="body">
+          <p class="sub">{{ c().ui.egg.intro }}</p>
+          <dl>
+            @for (r of rows(); track r.label) {
+              <div class="r"><dt>{{ r.label }}</dt><dd class="mono">{{ r.value }}</dd></div>
+            }
+          </dl>
+          <div class="foot">
+            <a class="btn" [attr.href]="pagespeed()" target="_blank" rel="noopener noreferrer">
+              <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <path d="M3 14a7 7 0 1 1 14 0" /><path d="M10 14l3.2-4.2" /><circle cx="10" cy="14" r="1" fill="currentColor" stroke="none" />
+              </svg>
+              <span>{{ c().ui.egg.pagespeed }}</span>
+              <span class="sr-only"> {{ extra().newTab }}</span>
+            </a>
+            <button type="button" class="chip" (click)="dlg.close()">{{ c().ui.egg.close }}</button>
+          </div>
         </div>
       </div>
     </dialog>
   `,
   styles: [`
-    .egg { width: min(100% - 24px, 42rem); margin: 14vh auto auto; padding: 0; border-radius: var(--radius); color: var(--fg); }
+    .egg { width: min(100% - 24px, 42rem); max-height: calc(100dvh - 14vh - 1rem); margin: 14vh auto auto; padding: 0; border-radius: var(--radius); color: var(--fg); }
     .egg::backdrop { background: rgba(0, 0, 0, 0.35); }
-    .in { padding: 1.5rem; display: grid; gap: 0.75rem; outline: none; }
+    /* the title and the way out stay put; only what is under them scrolls (on a phone the sheet is taller than the screen) */
+    .egg[open] { display: flex; flex-direction: column; overflow: hidden; }
+    .in { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; outline: none; }
+    .top { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.25rem 1.25rem 0.5rem 1.5rem; }
+    .body { display: grid; gap: 0.75rem; overflow: auto; min-height: 0; padding: 0.25rem 1.5rem 1.5rem; }
     h2 { font: 700 var(--t-title2) / 1.2 var(--font); }
+    .x {
+      flex: none; width: 38px; height: 38px; display: grid; place-items: center; padding: 0; border-radius: 50%;
+      border: 1px solid var(--ring); background: var(--bg-2); color: var(--fg); cursor: pointer;
+      transition: background-color var(--dur-fade) var(--ease-out), border-color var(--dur-fade) var(--ease-out), scale var(--dur-short) var(--ease-spring);
+    }
+    @media (hover: hover) { .x:hover { background: var(--tint-hover); border-color: var(--ring-accent); } }
+    .x:active { scale: var(--press-scale); transition-duration: var(--dur-tap); transition-timing-function: var(--ease-out); }
     .sub, .note { color: var(--fg-2); font-size: var(--t-subhead); }
     dl { margin: 0.25rem 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 2rem; }
     @media (max-width: 560px) { dl { grid-template-columns: 1fr; } }

@@ -36,6 +36,8 @@ export interface ExtraText {
   /** Unfold / fold a long project description on narrow screens (spoken only). */
   more: string;
   less: string;
+  /** Spoken on the round button that closes the dog's scene (the Shift x3 one) on a touch screen. */
+  close: string;
 }
 
 export const EXTRA: Record<Locale, ExtraText> = {
@@ -74,6 +76,7 @@ export const EXTRA: Record<Locale, ExtraText> = {
     retry: 'Try again',
     more: 'Read more',
     less: 'Show less',
+    close: 'Close',
   },
   hu: {
     copy: 'másolás',
@@ -110,5 +113,6 @@ export const EXTRA: Record<Locale, ExtraText> = {
     retry: 'Újra',
     more: 'Teljes leírás',
     less: 'Kevesebb',
+    close: 'Bezárás',
   },
 };
