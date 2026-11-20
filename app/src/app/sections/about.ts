@@ -1,4 +1,4 @@
-import { Component, DestroyRef, ElementRef, afterNextRender, computed, inject, input, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, Injector, afterNextRender, afterRenderEffect, computed, inject, input, signal } from '@angular/core';
 import { EXTRA } from '../content/extra';
 import { Soft } from './soft';
 import { fetchArticles } from '../content/devto';
@@ -33,6 +33,7 @@ import { FILES, type SiteContent } from '../content/model';
           <p class="intro">{{ c().about.research.intro }}</p>
           @if (topics().length) {
             <div class="topics" role="group" [attr.aria-label]="x().filterLabel">
+              <i class="ind" aria-hidden="true"></i>
               <button type="button" class="topic" [attr.aria-pressed]="topic() === null" (click)="pick(null)">{{ x().allArticles }} <small>({{ list().length }})</small></button>
               @for (t of topics(); track t.id) {
                 <button type="button" class="topic" [attr.aria-pressed]="topic() === t.id" (click)="pick(t.id)">{{ label(t.id) }} <small>({{ t.count }})</small></button>
@@ -52,8 +53,8 @@ import { FILES, type SiteContent } from '../content/model';
             @if (loading()) {
               @for (n of [1, 2, 3, 4]; track n) { <li class="skel" aria-hidden="true"><i></i><i></i><i></i></li> }
             } @else {
-            @for (a of shown(); track a.url) {
-              <li>
+            @for (a of shown(); track key(a); let i = $index) {
+              <li animate.enter="art-in" [style.--d.ms]="delay(i)">
                 <a class="art" [attr.href]="a.url" target="_blank" rel="noopener noreferrer">
                   <span class="meta"><time [attr.datetime]="a.date">{{ date(a.date) }}</time><span aria-hidden="true">·</span><span>{{ mins(a.minutes) }}</span></span>
                   <span class="t">{{ a.title }}<span class="sr-only"> {{ x().newTab }}</span></span>
@@ -67,8 +68,8 @@ import { FILES, type SiteContent } from '../content/model';
             }
           </ul>
           @if ((rest() > 0 || restOnPhone() > 0) && !loading()) {
-            <div class="more-wrap" [class.phone-only]="rest() === 0" [class.wide-only]="restOnPhone() === 0">
-              <button type="button" class="chip more-articles" (click)="expanded.set(true)"><span class="wide">{{ x().moreArticles.replace('{n}', '' + rest()) }}</span><span class="phone">{{ x().moreArticles.replace('{n}', '' + restOnPhone()) }}</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6" /></svg></button>
+            <div class="more-wrap" animate.leave="more-out" [class.phone-only]="rest() === 0" [class.wide-only]="restOnPhone() === 0">
+              <button type="button" class="chip more-articles" (click)="expand()"><span class="wide">{{ x().moreArticles.replace('{n}', '' + rest()) }}</span><span class="phone">{{ x().moreArticles.replace('{n}', '' + restOnPhone()) }}</span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 9l6 6 6-6" /></svg></button>
             </div>
           }
         </div>
@@ -82,14 +83,20 @@ import { FILES, type SiteContent } from '../content/model';
     .soft-row { margin-top: 2.5rem; scroll-margin-top: calc(var(--bar-h) + 1.25rem); outline: none; border-radius: var(--r-ctl); }
     .research { margin-top: 3.5rem; scroll-margin-top: calc(var(--bar-h) + 1.25rem); outline: none; border-radius: var(--r-ctl); }
     .research .eyebrow { margin-bottom: 0.75rem; }
-    .cards { list-style: none; margin: 1.25rem 0 0; padding: 0; display: grid; gap: 0.75rem; }
+    .cards { list-style: none; margin: 1.25rem 0 0; padding: 0; display: grid; gap: 0.75rem; align-content: start; } /* (start: while the list's height is set in between, its rows keep their own height instead of stretching) */
     .cards li + li { margin-top: 0; }
     .art { position: relative; display: grid; grid-template-rows: auto 1fr auto; gap: 0.5rem; height: 100%; padding: 1rem 2.5rem 1rem 1rem; border: 1px solid transparent; border-radius: var(--radius); background: var(--bg-2); color: var(--fg); text-decoration: none; transition: border-color var(--dur-fade) var(--ease-out), scale var(--dur-short) var(--ease-spring); }
     .meta { display: flex; flex-wrap: wrap; gap: 0 0.5rem; font: 400 0.8125rem / 1.4 var(--font); font-variant-numeric: tabular-nums; color: var(--fg-2); white-space: nowrap; }
     /* the topics of an article: the same pills as the tags of the role cards, every one of them (a smaller size, one row; they take the room under the arrow as well) */
     .pills { align-self: end; margin-right: -1.5rem; font-size: 0.75rem; }
     .pills span { padding: 0.2rem 0.5rem; }
-    .topics { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+    .topics { position: relative; display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+    /* the chosen chip's tint is a layer of its own, which slides to the chip that is chosen next (it is the chip's own background until the script has measured) */
+    .ind { position: absolute; left: 0; top: 0; z-index: 0; width: var(--iw, 0px); height: var(--ih, 0px); translate: var(--ix, 0px) var(--iy, 0px); border-radius: 999px; background: var(--tint-hover); border: 1px solid var(--line); pointer-events: none; opacity: 0; }
+    .topics.ind-on .ind { opacity: 1; }
+    .topics.slide .ind { transition: translate var(--dur-short) var(--ease-spring), width var(--dur-short) var(--ease-spring), height var(--dur-short) var(--ease-spring); }
+    .topics.ind-on .topic[aria-pressed='true'] { background: none; border-color: transparent; }
+    .topic { position: relative; z-index: 1; }
     .topic {
       padding: 0.4rem 0.85rem; border: 1px solid var(--line); border-radius: 999px; background: none; color: var(--fg-2); cursor: pointer;
       font: 500 var(--t-footnote) / 1.2 var(--font); transition: background-color var(--dur-fade) var(--ease-out), border-color var(--dur-fade) var(--ease-out), color var(--dur-fade) var(--ease-out), scale var(--dur-short) var(--ease-spring);
@@ -117,6 +124,14 @@ import { FILES, type SiteContent } from '../content/model';
     .skel i:nth-child(3) { width: 70%; }
     @media (prefers-reduced-motion: no-preference) { .skel i { animation: skel 1.4s linear infinite; } }
     @keyframes skel { from { background-position: 100% 0; } to { background-position: -150% 0; } }
+    /* a new set of cards comes in one after the other, a little from below; the button that shows more turns its chevron and goes */
+    .art-in { animation: art-in var(--dur-med) var(--ease-out) var(--d, 0ms) both; }
+    @keyframes art-in { from { opacity: 0; translate: 0 10px; scale: 0.985; } }
+    .more-out { overflow: clip; animation: more-out var(--dur-med) var(--ease-settle) both; } /* its place goes with it, in the same motion as the list grows: what is below does not jump */
+    .more-out svg { animation: more-chev var(--dur-fade) var(--ease-out) both; }
+    @keyframes more-out { from { height: 44px; margin-top: 1.25rem; } to { height: 0; margin-top: 0; opacity: 0; } }
+    @keyframes more-chev { to { rotate: 180deg; } }
+    @media (prefers-reduced-motion: reduce) { .art-in, .more-out, .more-out svg { animation: none; } }
     .t { font-weight: 600; font-size: var(--t-headline); line-height: 1.3; }
     .go { position: absolute; top: 0.9rem; right: 0.9rem; opacity: 0.55; }
     /* the same hover language as the role cards and the skill pills (an accent outline and a tint), not a lift: nothing here moves away from the pointer, and nothing sticks on a touch screen */
@@ -149,14 +164,113 @@ export class About {
   protected readonly rest = computed(() => this.chosen().length - this.shown().length);
   /** How many a phone does not show (it starts with three, the CSS hides the others) until "more" is pressed. */
   protected readonly restOnPhone = computed(() => (this.expanded() ? 0 : Math.max(0, this.chosen().length - 3)));
+  /** Where the cards that are new in this set begin (the ones before it have been shown already): they come in one after another from there. */
+  private from = 0;
+  /** A card is the same card only within one filter: a new filter brings in a new set. */
+  protected key = (a: Article): string => `${this.topic()}|${a.url}`;
+  protected delay = (i: number): number => Math.min(400, Math.max(0, i - this.from) * 40);
   /** A chip that is already chosen puts the filter away again. */
   protected pick(id: string | null): void {
-    this.topic.set(id === this.topic() ? null : id);
+    this.glide(() => {
+      this.from = 0;
+      this.topic.set(id === this.topic() ? null : id);
+    });
   }
-  constructor() {
-    const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
-    const destroy = inject(DestroyRef);
+  /** "More": the older cards come in below, the page brings the first of them into view, and the focus goes to it (the button it was on is gone). */
+  protected expand(): void {
+    const first = matchMedia('(max-width: 559px)').matches ? 3 : this.shown().length;
+    this.glide(() => {
+      this.from = first;
+      this.expanded.set(true);
+    }, () => {
+      const li = this.host.querySelectorAll<HTMLElement>('.research .cards > li')[first];
+      if (!li) return;
+      li.querySelector<HTMLElement>('a')?.focus({ preventScroll: true });
+      const over = li.getBoundingClientRect().bottom + 16 - innerHeight;
+      if (over > 0) scrollBy({ top: Math.min(over, li.getBoundingClientRect().top - 100), behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    });
+  }
+  /**
+   * A list that gets shorter under a reader who is near the end of the page would pull the end of the page up to the reader (the browser keeps the scroll position inside the page): the menu would name the last section, and the
+   * block would shift down the screen. The page keeps its height instead, by a gap under the list that is released once the reader has scrolled away from it, and that growing lists use up first.
+   */
+  private keepPlace(delta: number, y0: number): void {
+    const box = this.host.querySelector<HTMLElement>('#about-research');
+    if (!box) return;
+    let pad = parseFloat(box.style.paddingBottom) || 0;
+    if (delta > 0) pad = Math.max(0, pad - delta);
+    else {
+      const over = y0 + innerHeight - document.documentElement.scrollHeight; // (where the reader was, not where the browser has put them since)
+      if (over > -48) pad += over + 48; // and a little more: the reader is not made to be at the very end, which the menu would take for the last section
+    }
+    if (pad <= 0) return void box.style.removeProperty('padding-bottom');
+    box.style.paddingBottom = `${pad}px`;
+    if (Math.abs(scrollY - y0) > 1) scrollTo({ top: y0, behavior: 'instant' });
+    if (this.letGo) return;
+    this.letGo = (): void => {
+      const gap = parseFloat(box.style.paddingBottom) || 0;
+      if (scrollY + innerHeight > document.documentElement.scrollHeight - gap - 24) return; // the reader is still where the gap is
+      box.style.removeProperty('padding-bottom');
+      removeEventListener('scroll', this.letGo!);
+      this.letGo = undefined;
+    };
+    addEventListener('scroll', this.letGo, { passive: true });
+  }
+  private letGo: (() => void) | undefined;
+
+  /** Changes what the list shows, with the list growing or shrinking from the height it had to the one it has now in one motion (everything below follows it, instead of jumping by a row at once). */
+  private glide(change: () => void, after?: () => void): void {
+    const ul = this.host.querySelector<HTMLElement>('.research .cards');
+    const from = ul?.offsetHeight ?? 0;
+    const y0 = scrollY;
+    change();
     afterNextRender(() => {
+      after?.();
+      if (!ul || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      const to = ul.offsetHeight;
+      if (Math.abs(to - from) < 2) return;
+      this.keepPlace(to - from, y0);
+      ul.style.overflow = 'clip';
+      ul.style.overflowClipMargin = '8px';
+      ul.style.transition = 'none';
+      ul.style.height = `${from}px`;
+      void ul.offsetHeight; // the height it had is taken in before the one it will have is set
+      ul.style.transition = 'height var(--dur-med) var(--ease-settle)';
+      ul.style.height = `${to}px`;
+      setTimeout(() => {
+        for (const prop of ['overflow', 'overflow-clip-margin', 'transition', 'height']) ul.style.removeProperty(prop);
+      }, 450);
+    }, { injector: this.injector });
+  }
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+  private readonly injector = inject(Injector);
+  /** Puts the sliding tint under the chosen chip (and again when the chips change or wrap). */
+  private tint(): void {
+    const box = this.host.querySelector<HTMLElement>('.topics');
+    const on = box?.querySelector<HTMLElement>('.topic[aria-pressed="true"]');
+    if (!box || !on) return;
+    const first = !box.classList.contains('ind-on');
+    box.style.setProperty('--ix', `${on.offsetLeft}px`);
+    box.style.setProperty('--iy', `${on.offsetTop}px`);
+    box.style.setProperty('--iw', `${on.offsetWidth}px`);
+    box.style.setProperty('--ih', `${on.offsetHeight}px`);
+    box.classList.add('ind-on');
+    if (first) requestAnimationFrame(() => box.classList.add('slide')); // the first one is put in place, not slid to
+  }
+
+  constructor() {
+    const host = this.host;
+    const destroy = inject(DestroyRef);
+    afterRenderEffect(() => {
+      this.topic();
+      this.topics();
+      this.c();
+      this.tint();
+    });
+    afterNextRender(() => {
+      const onResize = (): void => this.tint();
+      addEventListener('resize', onResize);
+      destroy.onDestroy(() => removeEventListener('resize', onResize));
       // once, when the block comes near the screen: nobody who does not scroll to it makes the request
       const target = host.querySelector('#about-research');
       if (!target || typeof IntersectionObserver === 'undefined') return;

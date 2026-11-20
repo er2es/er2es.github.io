@@ -1,9 +1,6 @@
-import { Component, computed, input, signal } from '@angular/core';
+import { Component, DestroyRef, afterNextRender, computed, inject, input, signal } from '@angular/core';
 import { EXTRA } from '../content/extra';
 import { FACT_BY_ID, FILES, PROJECT_ORDER, period, tagLabel, type SiteContent } from '../content/model';
-
-/** The rows of three tiles of the wide bento (see the grid areas below). */
-const ROWS: readonly (readonly string[])[] = [['cv-site', 'audit', 'gov-reporting'], ['wordpress', 'surveys', 'sport-programme']];
 
 @Component({
   selector: 'app-projects',
@@ -73,7 +70,7 @@ const ROWS: readonly (readonly string[])[] = [['cv-site', 'audit', 'gov-reportin
     /* on a phone a long tile (the text and its list together) is cut off a few lines down, fading out instead of ending mid-word */
     @property --keep { syntax: '<percentage>'; inherits: false; initial-value: 100%; }
     @media (max-width: 799px) {
-      .fold.cut { overflow: hidden; --keep: 100%; -webkit-mask-image: linear-gradient(#000 var(--keep), transparent); mask-image: linear-gradient(#000 var(--keep), transparent); transition: --keep var(--dur-med) var(--ease-out), max-height var(--dur-med) var(--ease-out); }
+      .fold.cut { overflow: hidden; --keep: 100%; -webkit-mask-image: linear-gradient(#000 var(--keep), transparent); mask-image: linear-gradient(#000 var(--keep), transparent); transition: --keep var(--dur-med) var(--ease-settle), max-height var(--dur-med) var(--ease-settle); }
       .fold.cut:not(.open) { max-height: 8.5em; --keep: 45%; }
     }
     /*
@@ -82,8 +79,17 @@ const ROWS: readonly (readonly string[])[] = [['cv-site', 'audit', 'gov-reportin
      * shortest-text tiles need and "more" opens what is really hidden. Not the two big tiles, and not the strip.
      */
     @media (min-width: 1000px) {
-      .fold.wide { flex: 1 1 0; min-height: 5.5em; overflow: hidden; --keep: 45%; -webkit-mask-image: linear-gradient(#000 var(--keep), transparent); mask-image: linear-gradient(#000 var(--keep), transparent); transition: --keep var(--dur-med) var(--ease-out); }
+      .fold.wide { flex: 1 1 0; min-height: 5.5em; overflow: hidden; --keep: 45%; -webkit-mask-image: linear-gradient(#000 var(--keep), transparent); mask-image: linear-gradient(#000 var(--keep), transparent); transition: --keep var(--dur-med) var(--ease-settle); }
       .fold.wide.open { flex: none; --keep: 100%; }
+      /*
+       * An opened tile is a card that comes forward: it grows downward over the tiles below it, and its row does not change (its height is set by the script, and its bottom margin takes back what it grew by, so the grid
+       * still sees the height of its place). The others stay as they are. One at a time; a click outside it, or Escape, puts it away.
+       */
+      .card.float { align-self: start; z-index: 10; overflow: hidden; transform-origin: 50% 0; transition: box-shadow var(--dur-fade) var(--ease-out) 250ms, scale var(--dur-med) var(--ease-settle), translate var(--dur-med) var(--ease-settle); }
+      /* it is a little larger than its place and lifted off the page: it overlaps its neighbours' edges, with a shadow under it, so that it is clearly above them, not fitted between them */
+      .card.float.lifted { scale: 1.035; translate: 0 -8px; box-shadow: 0 40px 80px -24px rgb(0 0 0 / 0.5), 0 14px 30px -14px rgb(0 0 0 / 0.3), 0 0 0 1px var(--ring); transition-delay: 0ms; }
+      .card.float.opening { transition: height var(--dur-med) var(--ease-spring), margin-bottom var(--dur-med) var(--ease-spring), box-shadow var(--dur-fade) var(--ease-out), scale var(--dur-med) var(--ease-spring), translate var(--dur-med) var(--ease-spring); }
+      .card.float.closing { transition: height var(--dur-med) var(--ease-settle), margin-bottom var(--dur-med) var(--ease-settle), box-shadow var(--dur-fade) var(--ease-out) 250ms, scale var(--dur-med) var(--ease-settle), translate var(--dur-med) var(--ease-settle); }
     }
     /*
      * A bento grid, with no script: the two big projects first, then three tiles to a row, then the last one as a slim strip. Every tile
@@ -130,18 +136,102 @@ export class Projects {
   protected long = (id: (typeof PROJECT_ORDER)[number]): boolean => (this.c().items[id].summary ?? '').length > 220;
   /** A long text of one of the smaller tiles (not the two big ones, not the strip), which folds on a wide screen too. */
   protected wide = (id: (typeof PROJECT_ORDER)[number]): boolean => !this.big(id) && id !== 'admissions-map' && (this.c().items[id].summary ?? '').length > 300;
+  /** The height of an open tile's place in its row, to which it returns. */
+  private readonly slot = new WeakMap<HTMLElement, number>();
+
+  constructor() {
+    const destroy = inject(DestroyRef);
+    afterNextRender(() => {
+      // a wide screen's open tile is a layer: a click in the page outside it, or Escape, puts it away
+      const away = (e: Event): void => {
+        if (!matchMedia('(min-width: 1000px)').matches) return;
+        const id = [...this.opened()].find((i) => this.wide(i as (typeof PROJECT_ORDER)[number]));
+        if (!id) return;
+        if (e instanceof KeyboardEvent) {
+          if (e.key === 'Escape') this.fold(id);
+          return;
+        }
+        const t = e.target as Element;
+        if (t.closest('main') && !document.getElementById('p-' + id)?.contains(t)) this.fold(id);
+      };
+      document.addEventListener('click', away);
+      document.addEventListener('keydown', away);
+      destroy.onDestroy(() => {
+        document.removeEventListener('click', away);
+        document.removeEventListener('keydown', away);
+      });
+    });
+  }
+
   protected fold(id: string): void {
-    const el = document.getElementById('sum-' + id);
-    if (el && matchMedia('(max-width: 799px)').matches) this.glide(el, !this.opened().has(id)); // (on a wide screen the fold opens at once: its row grows with it)
     const next = new Set(this.opened());
     const open = !next.has(id);
-    // in the rows of three the tiles share the row's height, so the whole row opens and closes together (its buttons never disagree)
-    const group = matchMedia('(min-width: 1000px)').matches ? (ROWS.find((r) => r.includes(id)) ?? [id]) : [id];
-    for (const g of group) {
-      if (open) next.add(g);
-      else next.delete(g);
+    const wide = matchMedia('(min-width: 1000px)').matches && this.wide(id as (typeof PROJECT_ORDER)[number]);
+    if (wide) {
+      for (const other of next) {
+        if (other !== id) {
+          this.shut(document.getElementById('p-' + other)); // one at a time
+          next.delete(other);
+        }
+      }
+      if (open) this.lift(document.getElementById('p-' + id));
+      else this.shut(document.getElementById('p-' + id));
+    } else {
+      const el = document.getElementById('sum-' + id);
+      if (el && matchMedia('(max-width: 799px)').matches) this.glide(el, open);
     }
+    if (open) next.add(id);
+    else next.delete(id);
     this.opened.set(next);
+  }
+
+  /** A tile comes forward: it is held at the height of its place, then grows to the height of all its text over the tiles below (and brings itself into view if that reaches below the screen). */
+  private lift(card: HTMLElement | null): void {
+    const fold = card?.querySelector<HTMLElement>('.fold');
+    if (!card || !fold) return;
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const from = card.offsetHeight;
+    card.classList.add('float', 'lifted');
+    fold.classList.add('open'); // all of its text: its natural height is the one to grow to (read before anything is painted, so the row does not show it)
+    const to = card.offsetHeight;
+    this.slot.set(card, from);
+    card.style.height = `${from}px`;
+    card.style.marginBottom = '0px';
+    if (!reduced) {
+      void card.offsetHeight; // the place it starts from is taken in before the target is set
+      card.classList.add('opening');
+    }
+    card.style.height = `${to}px`;
+    card.style.marginBottom = `${from - to}px`;
+    this.bring(card.getBoundingClientRect().top, to);
+  }
+
+  /** A tile goes back to its place: its height shrinks to the height it had, its text is clipped by it, and its shadow goes at the end. */
+  private shut(card: HTMLElement | null): void {
+    const fold = card?.querySelector<HTMLElement>('.fold');
+    const from = card && this.slot.get(card);
+    if (!card || !fold || from === undefined) return;
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    fold.classList.remove('open');
+    card.classList.remove('lifted', 'opening');
+    const done = (): void => {
+      card.classList.remove('float', 'closing');
+      card.style.removeProperty('height');
+      card.style.removeProperty('margin-bottom');
+      this.slot.delete(card);
+    };
+    if (reduced) return done();
+    card.classList.add('closing');
+    card.style.height = `${from}px`;
+    card.style.marginBottom = '0px';
+    setTimeout(done, 520);
+  }
+
+  /** A tile that reaches below the screen brings itself into view: the page scrolls, gently, as far as its last line needs (never so far that its top goes under the bar). */
+  private bring(top: number, height: number): void {
+    const bar = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bar-h')) || 64;
+    const delta = Math.min(top + height + 16 - innerHeight, top - (bar + 24));
+    if (delta > 4) scrollBy({ top: delta, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   }
   /** Moves a fold between its cut height and its full height in pixels (max-height cannot animate to "none"), then hands the height back to the stylesheet. */
   private glide(el: HTMLElement, open: boolean): void {
