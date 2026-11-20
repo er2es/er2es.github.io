@@ -133,13 +133,16 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
       details { position: absolute; inset-inline: 0; top: 0; }
       summary { white-space: nowrap; }
       .org { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-      .row:has(details[open]), .row:has(details.closing) { position: relative; z-index: 10; }
+      .row:has(details.closing) { position: relative; z-index: 9; } /* a card that is going away lies under the one that is coming */
+      .row:has(details[open]) { position: relative; z-index: 10; }
       details[open] { -webkit-backdrop-filter: blur(18px) saturate(140%); backdrop-filter: blur(18px) saturate(140%); box-shadow: 0 0 0 1px var(--ring), 0 30px 70px -28px rgb(0 0 0 / 0.45), 0 10px 24px -14px rgb(0 0 0 / 0.25); scale: 1.008; translate: 0 -3px; }
       details { -webkit-backdrop-filter: blur(0px); backdrop-filter: blur(0px); transition: margin-inline var(--dur-med) step-end, padding-bottom var(--dur-med) var(--ease-settle), background-color var(--dur-fade) var(--ease-out) 250ms, box-shadow var(--dur-fade) var(--ease-out) 250ms, -webkit-backdrop-filter var(--dur-fade) var(--ease-out) 250ms, backdrop-filter var(--dur-fade) var(--ease-out) 250ms, scale var(--dur-med) var(--ease-settle), translate var(--dur-med) var(--ease-settle); }
-      details[open] { transition: margin-inline var(--dur-med) var(--ease-in-out), padding-bottom var(--dur-med) var(--ease-in-out), background-color var(--dur-fade) var(--ease-out), box-shadow var(--dur-fade) var(--ease-out), -webkit-backdrop-filter var(--dur-fade) var(--ease-out), backdrop-filter var(--dur-fade) var(--ease-out), scale var(--dur-med) var(--ease-spring), translate var(--dur-med) var(--ease-spring); }
+      /* opening: the frame (its fill and its blur) is there from the first frame, not faded in, or the entries and the text under a card that has hardly grown yet would show through it */
+      details[open] { background: color-mix(in srgb, var(--bg-2) 90%, transparent); transition: margin-inline var(--dur-med) var(--ease-in-out), padding-bottom var(--dur-med) var(--ease-in-out), background-color 0s, box-shadow var(--dur-fade) var(--ease-out), -webkit-backdrop-filter 0s, backdrop-filter 0s, scale var(--dur-med) var(--ease-spring), translate var(--dur-med) var(--ease-spring); }
       /* the others step back */
       .log:has(details[open]) .row:not(:has(details[open])) .body { opacity: 0.55; filter: blur(0.6px); } /* (they come back as soon as the card starts to close: the card is still blurred and opaque while it shrinks, and the rows it uncovers are already sharp) */
       .body { transition: opacity var(--dur-fade) var(--ease-out), filter var(--dur-fade) var(--ease-out); }
+      .log .row:has(details[open]) .body { transition: none; } /* the entry that opens is at full strength at once: a body that is still fading up would make its card translucent and take its blur away (an opacity or a filter above it limits what its backdrop sees) */
       .dot, .halo { transition: scale var(--dur-short) var(--ease-spring); }
     }
     .role { font-weight: 700; }
