@@ -1,4 +1,4 @@
-import { careerGrid, MAX_LEVEL } from './grid';
+import { careerGrid, cellRuns, emptyStretch, MAX_LEVEL, type GridCell } from './grid';
 
 const jobs = [
   { id: 'base', start: 2008, end: 2010, main: true },
@@ -40,5 +40,25 @@ describe('careerGrid', () => {
   it('starts an unused family at the beginning of the axis', () => {
     expect(g.lanes[1].since).toBe(2008);
     expect(g.lanes[1].cells.every((c) => c.level === 0)).toBe(true);
+  });
+});
+
+describe('cellRuns and emptyStretch', () => {
+  const cell = (year: number, level: number): GridCell => ({ year, level, jobs: [], tags: [] });
+  const cells = [cell(2010, 0), cell(2011, 0), cell(2012, 2), cell(2013, 0), cell(2014, 0), cell(2015, 0), cell(2016, 4), cell(2017, 0)];
+
+  it('draws every stretch of empty years as one bar, and the other years as squares', () => {
+    const runs = cellRuns(cells);
+    expect(runs.map((r) => (r.cell ? r.cell.year : `gap${r.gap}`))).toEqual(['gap2', 2012, 'gap3', 2016, 'gap1']);
+  });
+
+  it('draws nothing for no cells', () => {
+    expect(cellRuns([])).toEqual([]);
+  });
+
+  it('finds the whole stretch of empty years around an index', () => {
+    expect(emptyStretch(cells, 1)).toEqual([0, 1]);
+    expect(emptyStretch(cells, 4)).toEqual([3, 5]);
+    expect(emptyStretch(cells, 7)).toEqual([7, 7]);
   });
 });
