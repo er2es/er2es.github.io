@@ -83,6 +83,7 @@ import { MONOGRAM, MONOGRAM_EN } from './monogram';import { SectionIcon } from '
       -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
       -webkit-mask-image: linear-gradient(#000 35%, transparent); mask-image: linear-gradient(#000 35%, transparent);
     }
+    :host([inert]) .edge { display: none; } /* while a scene or the sheet covers the page, nothing scrolls under the bar: the soft band over the scene would only show as a grey strip */
     @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
       .edge { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--bg); }
     }

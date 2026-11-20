@@ -257,6 +257,9 @@ test.describe('easter egg', () => {
     // first the photo, then any key moves on to the sheet, which sits on the photo's glow
     await expect(page.locator('app-pup .pup')).toBeVisible();
     await expect(page.getByRole('dialog')).toHaveCount(0);
+    // the scene is the dog's life on one screen: born, teen, adult, each with its picture
+    await expect(page.locator('app-pup .tag')).toHaveText(['born', 'teen', 'adult']);
+    await expect(page.locator('app-pup .frame img')).toHaveCount(3);
     await page.keyboard.press('Space');
     await expect(page.locator('app-pup .pup.sheet')).toBeAttached();
     const dlg = page.getByRole('dialog', { name: 'Under the hood' });
@@ -910,7 +913,7 @@ test.describe('review fixes', () => {
     const chips = block(page).locator('.topics .topic');
     await expect(chips.first()).toContainText('Mind');
     await expect(chips.first()).toHaveAttribute('aria-pressed', 'true');
-    const names = (await chips.allTextContents()).map((t) => t.replace(/\s*\d+$/, '').trim());
+    const names = (await chips.allTextContents()).map((t) => t.replace(/\s*\(\d+\)$/, '').trim());
     expect(names.every((n) => ['Mind', 'Symfony', 'PostgreSQL', 'QA', 'Angular'].includes(n))).toBe(true);
     await chips.filter({ hasText: 'QA' }).click(); // the articles tagged "testing"
     await expect(block(page).locator('.art')).toHaveCount(4);
@@ -1089,6 +1092,18 @@ test.describe('HIG and motion polish', () => {
       await page.locator('.tile.cinema').tap();
       await expect(tile).not.toHaveClass(/tip-open/);
       await expect(page.locator('.tile.cinema')).toHaveClass(/tip-open/);
+    });
+
+    test('a tap gives the tile the look and the icon motion that a mouse hover gives', async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 800 });
+      await ready(page, '/hu/');
+      const woods = page.locator('.tile.woods');
+      await woods.scrollIntoViewIfNeeded();
+      const before = await woods.evaluate((e) => getComputedStyle(e).color);
+      await woods.tap();
+      await expect(woods).toHaveClass(/tip-open/);
+      expect(await woods.evaluate((e) => getComputedStyle(e).color)).not.toBe(before); // the accent colour, as under a mouse
+      await expect.poll(() => woods.evaluate((e) => e.querySelector('.tree')!.getAnimations().map((a) => (a as CSSAnimation).animationName).join())).toContain('sway'); // the trees sway
     });
   });
 

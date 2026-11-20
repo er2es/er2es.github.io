@@ -90,6 +90,8 @@ import { BuddyFigure } from './buddy';
     @media (hover: hover) {
       .tile:hover { color: var(--accent); background: linear-gradient(var(--tint-accent), var(--tint-accent)), var(--bg); translate: 0 -4px; rotate: 0deg; box-shadow: 0 0 0 1px var(--ring-accent), 0 14px 28px -14px color-mix(in srgb, var(--accent) 55%, transparent); }
     }
+    /* a touch has no hover: the tile whose name is shown (a tap) takes the same look, and the same motion of its icon, for as long */
+    .tile.tip-open { color: var(--accent); background: linear-gradient(var(--tint-accent), var(--tint-accent)), var(--bg); translate: 0 -4px; rotate: 0deg; box-shadow: 0 0 0 1px var(--ring-accent), 0 14px 28px -14px color-mix(in srgb, var(--accent) 55%, transparent); }
 
     .tile:nth-of-type(1) { rotate: -5deg; margin-top: 0; }
     .tile:nth-of-type(2) { rotate: 4deg; margin-top: 40%; }
@@ -128,6 +130,24 @@ import { BuddyFigure } from './buddy';
       .games:hover .pad { animation: wiggle var(--dur-long) var(--ease-spring) both; }
       .games:hover .b1 { animation: press var(--dur-long) ease-in-out 120ms both; }
       .games:hover .b2 { animation: press var(--dur-long) ease-in-out 320ms both; }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .cinema.tip-open .clap { transform: rotate(0deg); }
+      .woods.tip-open .tree { animation: sway 1.8s ease-in-out 2; }
+      .woods.tip-open .tree.b { animation-delay: -0.6s; }
+      .woods.tip-open .tree.c { animation-delay: -1.2s; }
+      .dog.tip-open .toe { animation: pop var(--dur-play) var(--ease-spring) both; }
+      .dog.tip-open .t2 { animation-delay: 90ms; }
+      .dog.tip-open .t3 { animation-delay: 180ms; }
+      .dog.tip-open .t4 { animation-delay: 270ms; }
+      .walk.tip-open .foot { animation: step 1.4s ease-in-out 2; }
+      .walk.tip-open .foot.r { animation-delay: 0.7s; }
+      .pho.tip-open .steam path { animation: rise 1.6s ease-in-out 2; }
+      .pho.tip-open .s2 { animation-delay: 0.25s; }
+      .pho.tip-open .s3 { animation-delay: 0.5s; }
+      .games.tip-open .pad { animation: wiggle var(--dur-long) var(--ease-spring) both; }
+      .games.tip-open .b1 { animation: press var(--dur-long) ease-in-out 120ms both; }
+      .games.tip-open .b2 { animation: press var(--dur-long) ease-in-out 320ms both; }
     }
     @keyframes sway { 50% { transform: rotate(4deg); } 0%, 100% { transform: rotate(-3deg); } }
     @keyframes pop { 40% { transform: translateY(-4px) scale(1.12); } }

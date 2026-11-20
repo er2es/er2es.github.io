@@ -13,7 +13,7 @@ Personal CV site of József Szabó, in English (`/`) and Hungarian (`/hu/`). Liv
 
 - Angular 22 (standalone components, signals, zoneless), TypeScript, SCSS
 - Static prerender (SSG) with hydration, no server at runtime
-- No UI library, no webfonts, no analytics, no cookies, no third-party requests except one: the list of the author's articles is fetched from the public dev.to API when the research block nears the screen (no cookies, no referrer; the list from the build is shown if it fails)
+- No UI library, one self-hosted variable font (Source Sans 3, OFL), no analytics, no cookies, no third-party requests except one: the list of the author's articles is fetched from the public dev.to API when the research block nears the screen (no cookies, no referrer; the list from the build is shown if it fails)
 - Strict Content Security Policy as a `<meta>` tag: scripts only from the site itself or by hash, written into the pages at build time; `connect-src` lets through only that one address
 - Quality gates: type check (strict TypeScript, strict Angular templates), ESLint with angular-eslint, Vitest (unit), Playwright and axe-core (end-to-end and accessibility), Lighthouse (performance gate)
 

@@ -52,6 +52,8 @@ import { BuddyFigure } from './buddy';
     @media (hover: hover) {
       .tile:hover { color: var(--accent); background: linear-gradient(var(--tint-accent), var(--tint-accent)), var(--bg); translate: 0 -4px; rotate: 0deg; box-shadow: 0 0 0 1px var(--ring-accent), 0 14px 28px -14px color-mix(in srgb, var(--accent) 55%, transparent); }
     }
+    /* a touch has no hover: the tile whose name is shown (a tap) takes the same look, and the same motion of its icon, for as long */
+    .tile.tip-open { color: var(--accent); background: linear-gradient(var(--tint-accent), var(--tint-accent)), var(--bg); translate: 0 -4px; rotate: 0deg; box-shadow: 0 0 0 1px var(--ring-accent), 0 14px 28px -14px color-mix(in srgb, var(--accent) 55%, transparent); }
     /* playful: the tiles are the same size but tilted and set at different heights (a percentage margin is a share of the tile's own width), led by a dashed line through them */
     .trail { position: absolute; z-index: -1; inset: 0; width: 100%; height: 100%; overflow: visible; color: var(--fg-2); pointer-events: none; }
     .trail path { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-dasharray: 2 7; stroke-linecap: round; opacity: 0.5; }
@@ -74,6 +76,7 @@ import { BuddyFigure } from './buddy';
     .tile .page { transform-origin: 24px 24px; transform-box: view-box; }
     .tile .needle { transform-origin: 24px 24px; transform-box: view-box; }
     @media (hover: hover) { .solve:hover .rays { opacity: 1; } }
+    .solve.tip-open .rays { opacity: 1; }
     @media (hover: hover) and (prefers-reduced-motion: no-preference) {
       .team:hover .p-l { animation: toward-r var(--dur-play) var(--ease-spring) both; }
       .team:hover .p-r { animation: toward-l var(--dur-play) var(--ease-spring) both; }
@@ -85,6 +88,18 @@ import { BuddyFigure } from './buddy';
       .detail:hover .tick { animation: tick var(--dur-play) var(--ease-spring) 250ms both; }
       .solve:hover .bulb { animation: glow var(--dur-play) var(--ease-spring) both; }
       .learn:hover .page { animation: flip 1s ease-in-out both; }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .team.tip-open .p-l { animation: toward-r var(--dur-play) var(--ease-spring) both; }
+      .team.tip-open .p-r { animation: toward-l var(--dur-play) var(--ease-spring) both; }
+      .team.tip-open .p-c { animation: bob var(--dur-play) var(--ease-spring) both; }
+      .comms.tip-open .c1 { animation: chat var(--dur-play) var(--ease-spring) both; }
+      .comms.tip-open .c2 { animation: chat var(--dur-play) var(--ease-spring) 180ms both; }
+      .solo.tip-open .needle { animation: swing 1.4s ease-in-out both; }
+      .detail.tip-open .lens { animation: scan 1.2s ease-in-out both; }
+      .detail.tip-open .tick { animation: tick var(--dur-play) var(--ease-spring) 250ms both; }
+      .solve.tip-open .bulb { animation: glow var(--dur-play) var(--ease-spring) both; }
+      .learn.tip-open .page { animation: flip 1s ease-in-out both; }
     }
     @keyframes toward-r { 40% { translate: 3px 0; } }
     @keyframes toward-l { 40% { translate: -3px 0; } }
