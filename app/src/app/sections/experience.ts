@@ -81,7 +81,7 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
     /* a part-time role is set in a little, as the branch it is: it can be seen at a glance beside which entry it ran */
     .row.side .body { margin-left: 1.25rem; }
     @media (max-width: 480px) { .row.side .body { margin-left: 0.75rem; } }
-    summary { display: grid; gap: 0.125rem; padding-block: 0.5rem; min-height: 44px; }
+    summary { display: grid; gap: 0.125rem; padding-block: calc(0.5rem + 2px) calc(0.5rem - 2px); min-height: 44px; } /* the letters sit a little above the middle of their line box, so the box is weighted down 2px: the title looks centred in its bar, level with the node */
     summary { position: relative; cursor: pointer; margin-inline: -0.5rem; padding-inline: 0.5rem 2rem; border-radius: var(--r-pop); }
     summary::after {
       content: ''; position: absolute; right: 1rem; top: 1.125rem; width: 8px; height: 8px;
@@ -107,7 +107,10 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
         transition: block-size var(--dur-med) var(--ease-spring), opacity var(--dur-fade) var(--ease-out) 50ms, content-visibility var(--dur-med) allow-discrete;
       }
     }
-    details[open] > summary { margin-inline: 0; border-radius: var(--r-pop) var(--r-pop) 0 0; } /* flush with the card's top, so its tint does not round off inside it */
+    details[open] > summary { margin-inline: 0; border-radius: var(--r-pop) var(--r-pop) 0 0; }
+    @media (hover: hover) { details[open] > summary:hover { box-shadow: none; background: linear-gradient(var(--tint-accent) 45%, transparent); } } /* and its tint fades out downward instead of ending on a hard line above the text */
+    .row.lit details[open] > summary { background: linear-gradient(var(--tint-accent) 45%, transparent); }
+    .row.lit.base details[open] > summary { background: linear-gradient(var(--tint-current) 45%, transparent); } /* the open card already has its ring: a second one inside it would read as a double border */ /* flush with the card's top, so its tint does not round off inside it */
     details[open] > :not(summary) { margin-inline: 0.5rem; }
     @media (prefers-reduced-motion: reduce) { summary::after { transition: none; } }
     .role { font-weight: 700; }
