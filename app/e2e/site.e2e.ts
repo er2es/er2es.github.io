@@ -752,6 +752,19 @@ test.describe('career graph', () => {
       await page.touchscreen.tap(8, 8); // elsewhere
       await expect(page.locator('.arc .tip')).toHaveCount(0);
     });
+
+    test('touching a stretch of empty years says so (the whole stretch is one bar), and a touch elsewhere puts it away', async ({ page }) => {
+      await setup(page, 390);
+      const lane = page.locator('.arc .lane').nth(1); // the frontend row: nothing until 2020
+      await lane.scrollIntoViewIfNeeded();
+      await page.waitForTimeout(300);
+      const gap = (await lane.locator('.gap').boundingBox())!;
+      await page.touchscreen.tap(gap.x + gap.width / 2, gap.y + gap.height / 2);
+      await expect(page.locator('.arc .mini')).toHaveText('2011–2019 · nincs hozzájárulás');
+      await expect(page.locator('.arc .tip')).toHaveCount(0);
+      await page.touchscreen.tap(8, 8);
+      await expect(page.locator('.arc .mini')).toHaveCount(0);
+    });
   });
 });
 
@@ -1112,8 +1125,8 @@ test.describe('HIG and motion polish', () => {
       const addr = page.locator('.addr').first();
       await addr.scrollIntoViewIfNeeded();
       await addr.tap();
-      await addr.tap();
-      await addr.tap();
+      await addr.dispatchEvent('click'); // the next two without the tap's own waiting, so that they are quick whatever the load
+      await addr.dispatchEvent('click');
       await expect(page.locator('app-pup .pup')).toBeVisible();
       await page.getByRole('button', { name: 'Bezárás' }).tap();
       await expect(page.locator('app-pup')).toHaveCount(0, { timeout: 3000 });

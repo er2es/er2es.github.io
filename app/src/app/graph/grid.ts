@@ -55,3 +55,27 @@ export function careerGrid(jobs: readonly ArcJob[], baseId: string, lanes: reado
     }),
   };
 }
+
+/** One piece of a row as it is drawn: a bar over a stretch of years with nothing in them, or a square with something in it. */
+export type CellRun = { gap: number; cell?: undefined } | { gap?: undefined; cell: GridCell };
+
+/** The row's cells as drawn: every stretch of empty years is one bar (not a string of separate squares), the other years are squares. */
+export function cellRuns(cells: readonly GridCell[]): CellRun[] {
+  const runs: CellRun[] = [];
+  for (const cell of cells) {
+    const last = runs[runs.length - 1];
+    if (cell.level !== 0) runs.push({ cell });
+    else if (last?.gap !== undefined) last.gap++;
+    else runs.push({ gap: 1 });
+  }
+  return runs;
+}
+
+/** The first and last index of the stretch of empty years around an index (the index itself must be an empty year). */
+export function emptyStretch(cells: readonly GridCell[], at: number): [number, number] {
+  let a = at;
+  let b = at;
+  while (a > 0 && cells[a - 1]!.level === 0) a--;
+  while (b < cells.length - 1 && cells[b + 1]!.level === 0) b++;
+  return [a, b];
+}

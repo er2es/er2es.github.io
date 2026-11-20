@@ -2,7 +2,7 @@ import { Component, ElementRef, computed, inject, input, signal } from '@angular
 import { EXTRA } from '../content/extra';
 import { FACTS, FACT_BY_ID, SKILLS, period, type ItemId, type ItemText, type SiteContent } from '../content/model';
 import { activeAt, fromYear } from '../graph/arc';
-import { careerGrid } from '../graph/grid';
+import { careerGrid, cellRuns, emptyStretch } from '../graph/grid';
 import { usesOf } from './uses';
 
 const JOBS = FACTS.filter((f) => f.kind === 'job').map((f) => ({ id: f.id, start: f.start!, end: f.end!, main: f.main }));
@@ -31,9 +31,12 @@ const ORDER = ['backend', 'frontend', 'quality', 'database', 'devops'];
             <div class="track" aria-hidden="true" (pointermove)="scrub($event, l.id)" (pointerdown)="press($event, l.id)" (pointerup)="lift()" (pointercancel)="lift()" (pointerleave)="leave($event)">
               <div class="cells" [style.grid-template-columns]="'repeat(' + grid().cols + ', minmax(0, 1fr))'">
                 <i class="base" [class.first]="i === 0" [class.last]="last" [class.hot]="overBase()" [style.grid-column]="'span ' + grid().baseYears"></i>
-                @if (l.lead > 0) { <i class="gap" [style.grid-column]="'span ' + l.lead"></i> }
-                @for (cell of l.cells.slice(l.lead); track cell.year) {
-                  <i class="cell" [attr.data-l]="cell.level" [class.dim]="dim(cell.jobs)"><span class="fill"></span></i>
+                @for (run of runs(l.cells); track $index) {
+                  @if (run.cell; as cell) {
+                    <i class="cell" [attr.data-l]="cell.level" [class.dim]="dim(cell.jobs)"><span class="fill"></span></i>
+                  } @else {
+                    <i class="gap" [style.grid-column]="'span ' + run.gap"></i>
+                  }
                 }
               </div>
               @if (year() !== null && !overBase()) { <s class="head" [style.left.%]="head().left" [style.width.%]="head().width"></s> }
@@ -186,14 +189,13 @@ export class CareerArc {
     const h = this.hover();
     const g = this.grid();
     const lane = h && g.lanes.find((l) => l.id === h.lane);
-    if (!h || !lane || h.touch || h.year < g.min + g.baseYears) return null;
+    if (!h || !lane || h.year < g.min + g.baseYears) return null;
     const at = h.year - g.min - g.baseYears;
-    if (at < lane.lead) {
-      const from = g.min + g.baseYears;
-      return { lane: h.lane, center: ((g.baseYears + lane.lead / 2) / g.cols) * 100, text: lane.lead > 1 ? `${from}–${from + lane.lead - 1} · ${this.x().noData}` : `${from} · ${this.x().noData}` };
-    }
     if (lane.cells[at]!.level !== 0) return null;
-    return { lane: h.lane, center: ((h.year - g.min + 0.5) / g.cols) * 100, text: `${h.year} · ${this.x().noData}` };
+    const [from, to] = emptyStretch(lane.cells, at); // the whole stretch of empty years is one bar: it says its years
+    const first = lane.cells[from]!.year;
+    const last = lane.cells[to]!.year;
+    return { lane: h.lane, center: ((g.baseYears + (from + to + 1) / 2) / g.cols) * 100, text: `${first === last ? first : `${first}–${last}`} · ${this.x().noData}` };
   });
   protected readonly tip = computed(() => {
     const h = this.hover();
@@ -234,6 +236,8 @@ export class CareerArc {
     return this.c().items[id as ItemId];
   }
 
+  protected runs = cellRuns;
+
   protected from(y: number): string {
     return fromYear(this.c().lang, y);
   }
@@ -273,7 +277,7 @@ export class CareerArc {
     this.stilled = false;
     if (this.idle(lane, this.yearAt(e))) {
       this.dismiss(); // a square with nothing in it is not a place to point at: it puts away what was shown
-      if (e.pointerType === 'mouse') this.hover.set({ lane, year: this.yearAt(e), touch: false });
+      this.hover.set({ lane, year: this.yearAt(e), touch: e.pointerType !== 'mouse' }); // the small tooltip, for a finger as for a mouse
       return;
     }
     if (e.pointerType !== 'mouse' && h && h.lane === lane && h.year === this.yearAt(e)) {
@@ -294,7 +298,7 @@ export class CareerArc {
     const year = this.yearAt(e);
     if (this.idle(lane, year)) {
       this.dismiss();
-      if (e.pointerType === 'mouse') this.hover.set({ lane, year, touch: false }); // the small tooltip says there is no data: no card and no highlight
+      this.hover.set({ lane, year, touch: e.pointerType !== 'mouse' }); // the small tooltip says there is no data: no card and no highlight
       return;
     }
     this.year.set(year);
@@ -314,7 +318,7 @@ export class CareerArc {
 
   /** A touch outside the graph lets the year go. */
   protected outside(e: Event): void {
-    if (this.year() !== null && !this.host.nativeElement.contains(e.target as Node)) this.dismiss();
+    if ((this.year() !== null || this.hover() !== null) && !this.host.nativeElement.contains(e.target as Node)) this.dismiss();
   }
 
   private dismiss(): void {
