@@ -1102,7 +1102,7 @@ test.describe('HIG and motion polish', () => {
       const before = await woods.evaluate((e) => getComputedStyle(e).color);
       await woods.tap();
       await expect(woods).toHaveClass(/tip-open/);
-      expect(await woods.evaluate((e) => getComputedStyle(e).color)).not.toBe(before); // the accent colour, as under a mouse
+      await expect.poll(() => woods.evaluate((e) => getComputedStyle(e).color)).not.toBe(before); // the accent colour, as under a mouse (it fades in)
       await expect.poll(() => woods.evaluate((e) => e.querySelector('.tree')!.getAnimations().map((a) => (a as CSSAnimation).animationName).join())).toContain('sway'); // the trees sway
     });
   });
