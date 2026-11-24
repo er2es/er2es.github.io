@@ -38,6 +38,12 @@ export interface ExtraText {
   less: string;
   /** Spoken on the round button that closes the dog's scene (the Shift x3 one) on a touch screen. */
   close: string;
+  /** Spoken on the small keys of an open role card: the entry before it, the one after it, and putting the card away. */
+  prevRole: string;
+  nextRole: string;
+  closeRole: string;
+  /** The round X of an open project tile (and its tip): the tile is put away; Escape does the same. */
+  closeTile: string;
 }
 
 export const EXTRA: Record<Locale, ExtraText> = {
@@ -77,22 +83,26 @@ export const EXTRA: Record<Locale, ExtraText> = {
     more: 'Read more',
     less: 'Show less',
     close: 'Close',
+    prevRole: 'Previous role',
+    nextRole: 'Next role',
+    closeRole: 'Close the role',
+    closeTile: 'Close (Esc)',
   },
   hu: {
     copy: 'másolás',
-    copied: 'Az email cím a vágólapra másolva',
+    copied: 'Az e-mail-cím a vágólapra került',
     copiedShort: 'Másolva',
     copyFailed: 'Nem sikerült a másolás. A cím lent olvasható.',
     prizes: [
       { title: 'Egy nigériai herceg írt neked', text: 'Rád hagyna 4,5 millió dollárt, csak a banki adataid kellenek.', small: 'Nincs elgépelés a levélben. Ez már gyanús.' },
       { title: '3412 vírus van a gépeden!', text: 'Hívd azonnal a képernyőn látható számot!', small: 'Nincs ott szám. Soha nem is volt.' },
-      { title: 'Ingyen Bitcoin!', text: 'Kibányásztál 0,00000001 BTC-t. Kifizetés 1 BTC-tól.', small: 'A villanyszámládból már vehettél volna egy autót.' },
+      { title: 'Ingyen Bitcoin!', text: 'Kibányásztál 0,00000001 BTC-t. Kifizetés 1 BTC-től.', small: 'A villanyszámládból már vehettél volna egy autót.' },
       { title: 'Gratulálunk: 404', text: 'A nyereményed nem található.', small: 'Nyugi, stagingen még működött.' },
-      { title: 'Root hozzáférés megadva', text: 'sudo csinálj nekem egy szendvicset', small: 'A felhasználó nincs a sudoers fájlban. Az esetet jelenteni fogjuk.' },
+      { title: 'Root-hozzáférés megadva', text: 'sudo csinálj nekem egy szendvicset', small: 'A felhasználó nincs a sudoers fájlban. Az esetet jelenteni fogjuk.' },
       { title: 'A csomagod kézbesítése sikertelen', text: 'Fizess 490 Ft-ot az újraküldéshez.', small: 'Nem rendeltél semmit, de a kíváncsiság úgyis győz.' },
-      { title: 'Forró szinglik a környéken!', text: '3 pod van a közeledben, mind CrashLoopBackOffban.', small: 'Hiányzik egy környezeti változó, azért hisztiznek.' },
+      { title: 'Forró szinglik a környéken!', text: '3 pod van a közeledben, mind CrashLoopBackOffban.', small: 'Hiányzik egy környezeti változó, ezért hisztiznek.' },
       { title: 'Közvetlenül a mainre pusholtál!', text: 'Péntek 16:59-kor, tesztelés nélkül.', small: 'A DevOps már úton van hozzád, fáklyákkal.' },
-      { title: 'Chrome-memóriaszivárgás', text: 'Megnyitottál egy 5. fület.', small: 'A RAM-od épp a végrendeletét írja.' },
+      { title: 'Chrome-memóriaszivárgás', text: 'Megnyitottad az ötödik fület.', small: 'A RAM-od épp a végrendeletét írja.' },
       { title: 'Sikeres SQL injection!', text: 'SELECT * FROM fizetesek WHERE ember = "én";', small: 'Hozzáférés megtagadva. Próbáld meg a vezérigazgató gépéről.' },
     ],
     claim: 'Az igazi nyeremény átvétele 😁',
@@ -103,16 +113,20 @@ export const EXTRA: Record<Locale, ExtraText> = {
     contentLicence: 'Tartalom: minden jog fenntartva',
     newTab: '(új lapon nyílik)',
     toTop: 'Vissza a tetejére',
-    noData: 'nincs hozzájárulás',
+    noData: 'nincs tevékenység',
     allArticles: 'Mind',
     moreArticles: '{n} további cikk',
-    filterLabel: 'Cikkek szűrése témára',
+    filterLabel: 'Cikkek szűrése téma szerint',
     loadingArticles: 'A cikkek betöltése…',
     articlesFailed: 'A dev.to most nem érhető el, ezért a legutóbbi ismert lista látszik.',
     articlesOnDevto: 'Megnézem a dev.to-n',
     retry: 'Újra',
     more: 'Teljes leírás',
-    less: 'Kevesebb',
+    less: 'Rövid leírás',
     close: 'Bezárás',
+    prevRole: 'Előző munkakör',
+    nextRole: 'Következő munkakör',
+    closeRole: 'Munkakör bezárása',
+    closeTile: 'Bezárás (Esc)',
   },
 };

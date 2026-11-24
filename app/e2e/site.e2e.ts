@@ -419,7 +419,7 @@ test.describe('interaction layer', () => {
 });
 
 test.describe('email address: visible, copyable, answered on the button', () => {
-  const COPIED = { en: 'Email address copied to clipboard', hu: 'Az email cím a vágólapra másolva' };
+  const COPIED = { en: 'Email address copied to clipboard', hu: 'Az e-mail-cím a vágólapra került' };
   const SHORT = { en: 'Copied', hu: 'Másolva' };
   for (const p of PAGES) {
     test(`${p.url}: the address is text in the hero and contact; Enter copies it and a bubble under the button confirms`, async ({ page, context }) => {
@@ -676,7 +676,7 @@ test.describe('career graph', () => {
     await expect(frontend.locator('.cell[data-l="0"]')).toHaveCount(0);
     const gap = (await frontend.locator('.gap').boundingBox())!;
     await page.mouse.move(gap.x + gap.width / 2, gap.y + gap.height / 2);
-    await expect(page.locator('.arc .mini')).toHaveText('2011–2019 · nincs hozzájárulás');
+    await expect(page.locator('.arc .mini')).toHaveText('2011–2019 · nincs tevékenység');
     await expect(page.locator('.arc .tip')).toHaveCount(0);
     await expect(page.locator('.arc .head')).toHaveCount(0);
     const lit = (await frontend.locator('.cell').last().boundingBox())!;
@@ -684,7 +684,7 @@ test.describe('career graph', () => {
     await expect(page.locator('.arc .tip')).toBeVisible(); // a square with something in it has the card, and no small tooltip
     await expect(page.locator('.arc .mini')).toHaveCount(0);
     await page.mouse.move(gap.x + gap.width / 2, gap.y + gap.height / 2);
-    await expect(page.locator('.arc .mini')).toContainText('nincs hozzájárulás');
+    await expect(page.locator('.arc .mini')).toContainText('nincs tevékenység');
     await expect(page.locator('.arc .tip')).toHaveCount(0);
   });
 
@@ -760,7 +760,7 @@ test.describe('career graph', () => {
       await page.waitForTimeout(300);
       const gap = (await lane.locator('.gap').boundingBox())!;
       await page.touchscreen.tap(gap.x + gap.width / 2, gap.y + gap.height / 2);
-      await expect(page.locator('.arc .mini')).toHaveText('2011–2019 · nincs hozzájárulás');
+      await expect(page.locator('.arc .mini')).toHaveText('2011–2019 · nincs tevékenység');
       await expect(page.locator('.arc .tip')).toHaveCount(0);
       await page.touchscreen.tap(8, 8);
       await expect(page.locator('.arc .mini')).toHaveCount(0);
@@ -1330,6 +1330,55 @@ test('a node of the career line opens and closes its entry', async ({ page }) =>
   await expect(row.locator('details')).toHaveAttribute('open', '');
   await node.click();
   await expect(row.locator('details')).not.toHaveAttribute('open', '');
+});
+
+test('on a wide screen Up and Down step from the open role card to the next one, and Escape puts it away', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await ready(page, '/hu/');
+  const rows = page.locator('#experience .row');
+  await rows.nth(1).locator('summary').scrollIntoViewIfNeeded();
+  await rows.nth(1).locator('summary').click();
+  await expect(rows.nth(1).locator('details')).toHaveAttribute('open', '');
+  await expect(rows.nth(1).locator('.keys')).toBeVisible(); // the hint that Up and Down step between the entries
+  await page.keyboard.press('ArrowDown');
+  await expect(rows.nth(2).locator('details')).toHaveAttribute('open', '');
+  await expect(rows.nth(1).locator('details')).not.toHaveAttribute('open', ''); // one at a time
+  await page.keyboard.press('ArrowUp');
+  await page.keyboard.press('ArrowUp');
+  await expect(rows.nth(0).locator('details')).toHaveAttribute('open', '');
+  await page.keyboard.press('ArrowUp'); // at the top of the log: nothing to step to, and the card stays
+  await expect(rows.nth(0).locator('details')).toHaveAttribute('open', '');
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#experience details[open]')).toHaveCount(0);
+});
+
+test('the small keys of an open role card step and close it by a click too', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await ready(page, '/hu/');
+  const rows = page.locator('#experience .row');
+  await rows.nth(1).locator('summary').scrollIntoViewIfNeeded();
+  await rows.nth(1).locator('summary').click();
+  await rows.nth(1).locator('.key.down').click();
+  await expect(rows.nth(2).locator('details')).toHaveAttribute('open', '');
+  await rows.nth(2).locator('.key.up').click();
+  await expect(rows.nth(1).locator('details')).toHaveAttribute('open', '');
+  await rows.nth(1).locator('.key.esc').click();
+  await expect(page.locator('#experience details[open]')).toHaveCount(0);
+});
+
+test('on a wide screen an open project tile is put away by Escape and by its round X', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await ready(page, '/hu/');
+  const more = page.locator('#projects .more.wide').first();
+  await more.scrollIntoViewIfNeeded();
+  await more.click();
+  await expect(page.locator('#projects .card.float.lifted')).toHaveCount(1);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#projects .card.float')).toHaveCount(0, { timeout: 3000 });
+  await more.click();
+  await expect(page.locator('#projects .card.float.lifted')).toHaveCount(1);
+  await page.locator('#projects .card.float .shut').click();
+  await expect(page.locator('#projects .card.float')).toHaveCount(0, { timeout: 3000 });
 });
 
 test('on a phone the "copied" bubble under the hero email button is not cut off', async ({ page, context }) => {

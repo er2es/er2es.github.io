@@ -26,9 +26,9 @@ describe('activeAt', () => {
 
 describe('fromYear', () => {
   it('writes the Hungarian suffix the way the year is spoken', () => {
-    expect(['2008', '2011', '2013', '2016', '2020', '2021'].map((y) => fromYear('hu', +y))).toEqual([
-      '2008-tól', '2011-től', '2013-tól', '2016-tól', '2020-tól', '2021-től',
-    ]);
+    expect(['2008', '2009', '2011', '2013', '2016', '2020', '2021'].map((y) => fromYear('hu', +y))).toEqual([
+      '2008-tól', '2009-től', '2011-től', '2013-tól', '2016-tól', '2020-tól', '2021-től',
+    ]); // (2009: kilenc-től)
     expect(fromYear('en', 2011)).toBe('from 2011');
   });
 });

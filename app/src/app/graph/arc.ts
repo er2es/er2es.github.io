@@ -11,8 +11,8 @@ export function activeAt(jobs: readonly ArcJob[], year: number): string[] {
   return jobs.filter((j) => j.start <= year && (year < j.end || (year === j.end && !jobs.some((o) => o !== j && running(o))))).map((j) => j.id);
 }
 
-// Hungarian suffix of "-tól/-től" follows how the last digit is spoken (egy-től, három-tól, hat-tól, húsz-tól)
-const HU_FROM = ['től', 'től', 'től', 'tól', 'től', 'től', 'tól', 'től', 'tól', 'tól'];
+// Hungarian suffix of "-tól/-től" follows how the last digit is spoken (egy-től, három-tól, hat-tól, kilenc-től, húsz-tól)
+const HU_FROM = ['től', 'től', 'től', 'tól', 'től', 'től', 'tól', 'től', 'tól', 'től'];
 
 /** "from 2011" / "2011-től". */
 export function fromYear(lang: Locale, year: number): string {
