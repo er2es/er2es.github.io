@@ -12,6 +12,11 @@ import { FACT_BY_ID, FILES, PROJECT_ORDER, period, tagLabel, type SiteContent } 
         <ul class="cards">
           @for (id of order; track id) {
             <li class="card reveal" [class.big]="big(id)" [attr.data-p]="id" [id]="'p-' + id" tabindex="-1">
+              @if (wide(id)) {
+                <button type="button" class="shut" [attr.aria-label]="x().closeTile" [attr.data-tip]="x().closeTile" data-tip-pos="bottom" data-tip-align="end" (mousedown)="$event.preventDefault()" (click)="fold(id)">
+                  <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18" /></svg>
+                </button>
+              }
               <h3>{{ c().items[id].title }}</h3>
               @if (per(id)) { <p class="per">{{ per(id) }}</p> }
               <div class="fold" [id]="'sum-' + id" [class.cut]="long(id)" [class.wide]="wide(id)" [class.open]="opened().has(id)">
@@ -78,6 +83,7 @@ import { FACT_BY_ID, FILES, PROJECT_ORDER, period, tagLabel, type SiteContent } 
      * it (it is a flexible part of its tile, which is as tall as the row), with a floor of a few lines, so a row is as tall as its
      * shortest-text tiles need and "more" opens what is really hidden. Not the two big tiles, and not the strip.
      */
+    .shut { display: none; } /* (only a wide screen's open tile has it) */
     @media (min-width: 1000px) {
       .fold.wide { flex: 1 1 0; min-height: 5.5em; overflow: hidden; --keep: 45%; -webkit-mask-image: linear-gradient(#000 var(--keep), transparent); mask-image: linear-gradient(#000 var(--keep), transparent); transition: --keep var(--dur-med) var(--ease-settle); }
       .fold.wide.open { flex: none; --keep: 100%; }
@@ -85,6 +91,11 @@ import { FACT_BY_ID, FILES, PROJECT_ORDER, period, tagLabel, type SiteContent } 
        * An opened tile is a card that comes forward: it grows downward over the tiles below it, and its row does not change (its height is set by the script, and its bottom margin takes back what it grew by, so the grid
        * still sees the height of its place). The others stay as they are. One at a time; a click outside it, or Escape, puts it away.
        */
+      /* the round X of an open tile, at its top right corner: it is there only while the tile is a layer */
+      .shut { position: absolute; z-index: 2; top: 0.5rem; right: 0.5rem; width: 24px; height: 24px; place-items: center; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: none; color: var(--fg-2); cursor: pointer; transition: background-color var(--dur-fade) var(--ease-out), color var(--dur-fade) var(--ease-out), scale var(--dur-short) var(--ease-spring); }
+      .card.float.lifted .shut { display: grid; }
+      @media (hover: hover) { .shut:hover { background: var(--tint-hover); color: var(--fg); } }
+      .shut:active { scale: var(--press-scale); background: var(--tint-hover); transition-duration: var(--dur-tap); transition-timing-function: var(--ease-out); }
       .card.float { align-self: start; z-index: 10; overflow: hidden; transform-origin: 50% 0; transition: box-shadow var(--dur-fade) var(--ease-out) 250ms, scale var(--dur-med) var(--ease-settle), translate var(--dur-med) var(--ease-settle); }
       /* it is a little larger than its place and lifted off the page: it overlaps its neighbours' edges, with a shadow under it, so that it is clearly above them, not fitted between them */
       .card.float.lifted { scale: 1.035; translate: 0 -8px; box-shadow: 0 40px 80px -24px rgb(0 0 0 / 0.5), 0 14px 30px -14px rgb(0 0 0 / 0.3), 0 0 0 1px var(--ring); transition-delay: 0ms; }

@@ -60,7 +60,7 @@
 .block.alt .card { --card: var(--bg-3); }
 
 @supports (corner-shape: squircle) {
-  .card, .glass { corner-shape: squircle; }
+  .card, .glass, .card::after, .glass::after, .glass::before { corner-shape: squircle; } /* the light that follows the pointer (and the sweep) has the same corner as its surface, or a round gradient sits in a squircle corner as a sliver */
 }
 
 /* where a search result or an in-page link lands: a brief highlight (static under reduced motion) */

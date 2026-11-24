@@ -1,2 +1,2 @@
 /** Overwritten by scripts/build-docs.mjs on every build. */
-export const BUILD = { date: '2026-11-20', typescript: '6.0.3', node: 'v26.12.1', version: '2.4.2', unit: 231, e2e: 120, coverage: 100 };
+export const BUILD = { date: '2026-11-24', typescript: '6.0.3', node: 'v26.12.1', version: '2.5.0', unit: 231, e2e: 123, coverage: 100 };
