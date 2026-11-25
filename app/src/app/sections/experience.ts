@@ -89,6 +89,7 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
     .row.side .body { margin-left: 1.25rem; }
     @media (max-width: 480px) { .row.side .body { margin-left: 0.75rem; } }
     summary { display: grid; gap: 0.125rem; padding-block: calc(0.5rem + 2px) calc(0.5rem - 2px); min-height: 44px; } /* the letters sit a little above the middle of their line box, so the box is weighted down 2px: the title looks centred in its bar, level with the node */
+    summary:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; } /* the keyboard's ring lies inside the bar (not a thick one around it, with the card's own corners under it) */
     summary { -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; position: relative; cursor: pointer; margin-inline: -0.5rem; padding-inline: 0.5rem 2rem; border-radius: var(--r-pop); }
     summary::after {
       content: ''; position: absolute; right: 1rem; top: 1.125rem; width: 8px; height: 8px;
