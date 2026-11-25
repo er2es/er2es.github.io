@@ -1352,6 +1352,24 @@ test('on a wide screen Up and Down step from the open role card to the next one,
   await expect(page.locator('#experience details[open]')).toHaveCount(0);
 });
 
+test('an open role card or project tile comes to the middle of the screen', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 820 });
+  await ready(page, '/hu/');
+  const middle = (selector: string) => page.evaluate((sel) => {
+    const r = document.querySelector(sel)!.getBoundingClientRect();
+    return Math.abs(r.top + r.height / 2 - innerHeight / 2);
+  }, selector);
+  const row = page.locator('#experience .row').nth(4);
+  await row.scrollIntoViewIfNeeded();
+  await row.locator('summary').click();
+  await expect.poll(() => middle('#experience details[open]'), { timeout: 4000 }).toBeLessThan(30);
+  await page.locator('#experience details[open] summary').press('Escape');
+  const more = page.locator('#projects .more.wide').first();
+  await more.scrollIntoViewIfNeeded();
+  await more.click();
+  await expect.poll(() => middle('#projects .card.float'), { timeout: 4000 }).toBeLessThan(30);
+});
+
 test('the small keys of an open role card step and close it by a click too', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await ready(page, '/hu/');

@@ -1,5 +1,6 @@
 import { Component, DestroyRef, afterNextRender, computed, inject, input, signal } from '@angular/core';
 import { EXTRA } from '../content/extra';
+import { centreDelta } from '../core/centre';
 import { FACT_BY_ID, FILES, PROJECT_ORDER, period, tagLabel, type SiteContent } from '../content/model';
 
 @Component({
@@ -238,11 +239,11 @@ export class Projects {
     setTimeout(done, 520);
   }
 
-  /** A tile that reaches below the screen brings itself into view: the page scrolls, gently, as far as its last line needs (never so far that its top goes under the bar). */
+  /** An opened tile comes to the middle of the screen (see `centreDelta`). */
   private bring(top: number, height: number): void {
     const bar = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bar-h')) || 64;
-    const delta = Math.min(top + height + 16 - innerHeight, top - (bar + 24));
-    if (delta > 4) scrollBy({ top: delta, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    const delta = centreDelta(top, height, innerHeight, bar + Math.max(32, innerHeight * 0.06));
+    if (Math.abs(delta) > 4) scrollBy({ top: delta, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   }
   /** Moves a fold between its cut height and its full height in pixels (max-height cannot animate to "none"), then hands the height back to the stylesheet. */
   private glide(el: HTMLElement, open: boolean): void {

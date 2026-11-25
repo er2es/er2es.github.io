@@ -1,6 +1,7 @@
 import { Component, DestroyRef, ElementRef, afterNextRender, computed, inject, input } from '@angular/core';
 import { EXTRA } from '../content/extra';
 import { FACTS, FACT_BY_ID, FILES, period, tagLabel, type ItemId, type SiteContent } from '../content/model';
+import { centreDelta } from '../core/centre';
 import { railGeometry } from '../graph/geometry';
 import { layoutGraph } from '../graph/layout';
 import { BASE, CareerArc } from './career-arc';
@@ -88,6 +89,7 @@ const ROWS = LAYOUT.rows.map((row, i) => ({
     .row.side .body { margin-left: 1.25rem; }
     @media (max-width: 480px) { .row.side .body { margin-left: 0.75rem; } }
     summary { display: grid; gap: 0.125rem; padding-block: calc(0.5rem + 2px) calc(0.5rem - 2px); min-height: 44px; } /* the letters sit a little above the middle of their line box, so the box is weighted down 2px: the title looks centred in its bar, level with the node */
+    summary:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; } /* the keyboard's ring lies inside the bar (not a thick one around it, with the card's own corners under it) */
     summary { -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; position: relative; cursor: pointer; margin-inline: -0.5rem; padding-inline: 0.5rem 2rem; border-radius: var(--r-pop); }
     summary::after {
       content: ''; position: absolute; right: 1rem; top: 1.125rem; width: 8px; height: 8px;
@@ -339,15 +341,13 @@ export class Experience {
     if (this.byUser) requestAnimationFrame(() => this.bring(d)); // (a jump from a search result or a link scrolls by itself)
   }
 
-  /** A card that reaches below the screen brings itself into view: the page scrolls, gently, as far as its last line needs (never so far that its top goes under the bar). */
+  /** A card that the reader has opened comes to the middle of the screen (see `centreDelta`), as a card that reaches beyond the screen could not be read. */
   private bring(d: HTMLDetailsElement): void {
     if (!d.open) return;
     const bar = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bar-h')) || 64;
     const top = d.getBoundingClientRect().top;
-    const air = Math.max(40, innerHeight * 0.08); // room around it: a card that is cut to the pixel to the edge of the screen looks pinned there
-    const above = bar + Math.max(32, innerHeight * 0.06);
-    const bottom = (d.lastElementChild as HTMLElement).getBoundingClientRect().bottom + air; // laid out at its full size already, while the card is still growing
-    const delta = top - above < -4 ? top - above : Math.min(bottom - innerHeight, top - above); // its top under the bar: up; its end below the screen: down, but not so far that the top goes under the bar
+    const height = (d.lastElementChild as HTMLElement).getBoundingClientRect().bottom - top + 8; // its last line is laid out at full size already, while the card is still growing
+    const delta = centreDelta(top, height, innerHeight, bar + Math.max(32, innerHeight * 0.06));
     if (Math.abs(delta) > 4) scrollBy({ top: delta, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   }
 
