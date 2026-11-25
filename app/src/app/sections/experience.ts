@@ -1,6 +1,7 @@
 import { Component, DestroyRef, ElementRef, afterNextRender, computed, inject, input } from '@angular/core';
 import { EXTRA } from '../content/extra';
 import { FACTS, FACT_BY_ID, FILES, period, tagLabel, type ItemId, type SiteContent } from '../content/model';
+import { centreDelta } from '../core/centre';
 import { railGeometry } from '../graph/geometry';
 import { layoutGraph } from '../graph/layout';
 import { BASE, CareerArc } from './career-arc';
@@ -339,15 +340,13 @@ export class Experience {
     if (this.byUser) requestAnimationFrame(() => this.bring(d)); // (a jump from a search result or a link scrolls by itself)
   }
 
-  /** A card that reaches below the screen brings itself into view: the page scrolls, gently, as far as its last line needs (never so far that its top goes under the bar). */
+  /** A card that the reader has opened comes to the middle of the screen (see `centreDelta`), as a card that reaches beyond the screen could not be read. */
   private bring(d: HTMLDetailsElement): void {
     if (!d.open) return;
     const bar = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--bar-h')) || 64;
     const top = d.getBoundingClientRect().top;
-    const air = Math.max(40, innerHeight * 0.08); // room around it: a card that is cut to the pixel to the edge of the screen looks pinned there
-    const above = bar + Math.max(32, innerHeight * 0.06);
-    const bottom = (d.lastElementChild as HTMLElement).getBoundingClientRect().bottom + air; // laid out at its full size already, while the card is still growing
-    const delta = top - above < -4 ? top - above : Math.min(bottom - innerHeight, top - above); // its top under the bar: up; its end below the screen: down, but not so far that the top goes under the bar
+    const height = (d.lastElementChild as HTMLElement).getBoundingClientRect().bottom - top + 8; // its last line is laid out at full size already, while the card is still growing
+    const delta = centreDelta(top, height, innerHeight, bar + Math.max(32, innerHeight * 0.06));
     if (Math.abs(delta) > 4) scrollBy({ top: delta, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   }
 
